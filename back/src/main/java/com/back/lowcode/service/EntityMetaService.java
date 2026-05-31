@@ -1,0 +1,255 @@
+package com.back.lowcode.service;
+
+import com.back.lowcode.config.LowCodeConstants;
+import com.back.lowcode.dto.EntityListRequest;
+import com.back.lowcode.dto.EntityMetaDTO;
+import com.back.lowcode.dto.FieldMetaDTO;
+import com.back.lowcode.entity.EntityMeta;
+import com.back.lowcode.entity.FieldMeta;
+import com.back.lowcode.repository.EntityMetaRepository;
+import com.back.lowcode.repository.FieldMetaRepository;
+import com.back.utils.RedisUtil;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
+
+/**
+ * 实体元数据管理服务
+ */
+@Slf4j
+@Service
+@RequiredArgsConstructor
+public class EntityMetaService {
+
+    private final EntityMetaRepository entityMetaRepository;
+    private final FieldMetaRepository fieldMetaRepository;
+    private final DDLService ddlService;
+    private final StringRedisTemplate stringRedisTemplate;
+    private final ObjectMapper objectMapper;
+
+    private static final Pattern CODE_PATTERN = Pattern.compile(LowCodeConstants.ENTITY_CODE_PATTERN);
+
+    // ---- 实体 CRUD ----
+
+    public Page<EntityMeta> listEntities(EntityListRequest request) {
+        return entityMetaRepository.findAll(
+                PageRequest.of(request.getPage() - 1, request.getPageSize()));
+    }
+
+    public Optional<EntityMeta> getEntityById(Long id) {
+        return entityMetaRepository.findById(id);
+    }
+
+    public Optional<EntityMeta> getEntityByCode(String code) {
+        return entityMetaRepository.findByCode(code);
+    }
+
+    @Transactional
+    public EntityMeta createEntity(EntityMeta entity) {
+        validateEntityCode(entity.getCode());
+
+        if (entityMetaRepository.existsByCode(entity.getCode())) {
+            throw new IllegalArgumentException("实体编码已存在: " + entity.getCode());
+        }
+
+        // 自动生成 tableName
+        if (!StringUtils.hasText(entity.getTableName())) {
+            entity.setTableName(LowCodeConstants.TABLE_PREFIX + entity.getCode());
+        }
+
+        return entityMetaRepository.save(entity);
+    }
+
+    @Transactional
+    public EntityMeta updateEntity(Long id, EntityMeta updated) {
+        EntityMeta existing = entityMetaRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("实体不存在: " + id));
+
+        if (!"draft".equals(existing.getStatus())) {
+            throw new IllegalStateException("仅草稿状态的实体可编辑");
+        }
+
+        if (!existing.getCode().equals(updated.getCode()) && entityMetaRepository.existsByCode(updated.getCode())) {
+            throw new IllegalArgumentException("实体编码已存在: " + updated.getCode());
+        }
+
+        existing.setName(updated.getName());
+        existing.setCode(updated.getCode());
+        existing.setDescription(updated.getDescription());
+
+        return entityMetaRepository.save(existing);
+    }
+
+    @Transactional
+    public void deleteEntity(Long id) {
+        EntityMeta entity = entityMetaRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("实体不存在: " + id));
+
+        if ("published".equals(entity.getStatus())) {
+            throw new IllegalStateException("已发布的实体不可删除，请先归档");
+        }
+
+        fieldMetaRepository.deleteByEntityId(id);
+        entityMetaRepository.delete(entity);
+    }
+
+    // ---- 发布 ----
+
+    @Transactional
+    public EntityMeta publishEntity(Long id) {
+        EntityMeta entity = entityMetaRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("实体不存在: " + id));
+
+        List<FieldMeta> fields = fieldMetaRepository.findByEntityIdOrderBySortOrderAsc(id);
+        if (fields.isEmpty()) {
+            throw new IllegalStateException("请至少添加一个字段");
+        }
+
+        ddlService.generateCreateTable(entity, fields);
+
+        entity.setStatus("published");
+        entity = entityMetaRepository.save(entity);
+
+        // 缓存字段元数据到 Redis
+        cacheFieldMeta(entity.getCode(), fields);
+
+        return entity;
+    }
+
+    @Transactional
+    public EntityMeta archiveEntity(Long id) {
+        EntityMeta entity = entityMetaRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("实体不存在: " + id));
+
+        if ("draft".equals(entity.getStatus())) {
+            throw new IllegalStateException("草稿状态无需归档，直接删除即可");
+        }
+
+        entity.setStatus("archived");
+        return entityMetaRepository.save(entity);
+    }
+
+    // ---- 字段管理 ----
+
+    public List<FieldMeta> getFieldsByEntityId(Long entityId) {
+        return fieldMetaRepository.findByEntityIdOrderBySortOrderAsc(entityId);
+    }
+
+    @Transactional
+    public List<FieldMeta> updateFields(Long entityId, List<FieldMeta> newFields) {
+        EntityMeta entity = entityMetaRepository.findById(entityId)
+                .orElseThrow(() -> new IllegalArgumentException("实体不存在: " + entityId));
+
+        // 校验字段编码
+        for (FieldMeta f : newFields) {
+            if (f.getCode() == null || !f.getCode().matches("^[a-z][a-zA-Z0-9_]*$")) {
+                throw new IllegalArgumentException("非法字段编码: " + f.getCode());
+            }
+        }
+
+        List<FieldMeta> oldFields = fieldMetaRepository.findByEntityIdOrderBySortOrderAsc(entityId);
+
+        // 如果实体已发布，执行 ALTER TABLE
+        if ("published".equals(entity.getStatus())) {
+            ddlService.generateAlterTable(entity, oldFields, newFields);
+        }
+
+        // 删除旧字段，保存新字段
+        fieldMetaRepository.deleteByEntityId(entityId);
+
+        // 设置 entityId 和 columnName
+        for (int i = 0; i < newFields.size(); i++) {
+            FieldMeta f = newFields.get(i);
+            f.setId(null); // 新记录
+            f.setEntityId(entityId);
+            if (f.getColumnName() == null || f.getColumnName().isEmpty()) {
+                f.setColumnName(f.getCode());
+            }
+            if (f.getSortOrder() == null) {
+                f.setSortOrder(i);
+            }
+        }
+
+        List<FieldMeta> saved = fieldMetaRepository.saveAll(newFields);
+
+        // 更新 Redis 缓存
+        if ("published".equals(entity.getStatus())) {
+            cacheFieldMeta(entity.getCode(), saved);
+        }
+
+        return saved;
+    }
+
+    // ---- Redis 缓存 ----
+
+    /**
+     * 将字段元数据缓存到 Redis
+     */
+    private void cacheFieldMeta(String entityCode, List<FieldMeta> fields) {
+        String redisKey = LowCodeConstants.REDIS_META_KEY_PREFIX + entityCode + ":fields";
+        try {
+            String json = objectMapper.writeValueAsString(fields);
+            stringRedisTemplate.opsForValue().set(redisKey, json, 30, TimeUnit.DAYS);
+        } catch (JsonProcessingException e) {
+            log.warn("Failed to cache field metadata for entity {}: {}", entityCode, e.getMessage());
+        }
+    }
+
+    /**
+     * 从 Redis 获取缓存的字段元数据
+     */
+    public List<FieldMeta> getCachedFields(String entityCode) {
+        String redisKey = LowCodeConstants.REDIS_META_KEY_PREFIX + entityCode + ":fields";
+        String json = stringRedisTemplate.opsForValue().get(redisKey);
+        if (json == null) {
+            // 缓存未命中，从数据库加载
+            EntityMeta entity = entityMetaRepository.findByCode(entityCode)
+                    .orElse(null);
+            if (entity == null) return List.of();
+
+            List<FieldMeta> fields = fieldMetaRepository.findByEntityIdOrderBySortOrderAsc(entity.getId());
+            cacheFieldMeta(entityCode, fields);
+            return fields;
+        }
+        try {
+            return objectMapper.readValue(json,
+                    objectMapper.getTypeFactory().constructCollectionType(List.class, FieldMeta.class));
+        } catch (JsonProcessingException e) {
+            log.warn("Failed to deserialize cached fields for {}: {}", entityCode, e.getMessage());
+            return List.of();
+        }
+    }
+
+    /**
+     * 清除缓存
+     */
+    public void invalidateCache(String entityCode) {
+        String redisKey = LowCodeConstants.REDIS_META_KEY_PREFIX + entityCode + ":fields";
+        stringRedisTemplate.delete(redisKey);
+    }
+
+    // ---- 工具方法 ----
+
+    public List<EntityMeta> searchByKeyword(String keyword) {
+        return entityMetaRepository.search(keyword);
+    }
+
+    private void validateEntityCode(String code) {
+        if (code == null || !CODE_PATTERN.matcher(code).matches()) {
+            throw new IllegalArgumentException(
+                    "实体编码格式非法: '" + code + "'，需匹配 " + LowCodeConstants.ENTITY_CODE_PATTERN);
+        }
+    }
+}

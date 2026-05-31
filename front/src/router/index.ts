@@ -10,6 +10,11 @@ const loginModules = import.meta.glob("./modules/**/Login.ts", {
     eager: true,
 });
 
+// 添加低代码模块
+const lowcodeModules = import.meta.glob("./modules/**/lowcode.ts", {
+    eager: true,
+});
+
 
 export const homepageRouterList: Array<RouteRecordRaw> =
     mapModuleRouterList(homepageModules);
@@ -18,8 +23,12 @@ export const homepageRouterList: Array<RouteRecordRaw> =
 export const loginRouterList: Array<RouteRecordRaw> =
     mapModuleRouterList(loginModules);
 
+// 添加低代码路由列表
+export const lowcodeRouterList: Array<RouteRecordRaw> =
+    mapModuleRouterList(lowcodeModules);
+
 // 将登录路由添加到所有路由中
-export const allRoutes = [...homepageRouterList, ...loginRouterList];
+export const allRoutes = [...homepageRouterList, ...loginRouterList, ...lowcodeRouterList];
 
 // 固定路由模块转换为路由
 export function mapModuleRouterList(
