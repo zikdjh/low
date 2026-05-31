@@ -1,0 +1,48 @@
+@import 'tdesign-vue-next/es/style/index.css';
+
+/* 基础重置和全局样式 */
+html,
+body {
+  height: 100%;
+  width: 100%;
+  padding: 0;
+  margin: 0;
+  /* 仅在顶层元素应用颜色和背景色的平滑过渡 */
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+#app {
+  height: 100%;
+  width: 100%;
+}
+
+/* 动画效果 */
+@keyframes td-skeleton-flashed {
+  to {
+    background-position: -400px 0;
+  }
+}
+
+/* 全局主题变量 */
+:root {
+  --login-gradient-start: var(--td-brand-color);
+  --login-gradient-end: var(--td-brand-color-8);
+  --login-shadow-color: var(--td-brand-color-1);
+}
+
+/* 登录页面主题适配 */
+.login-container {
+  background: linear-gradient(135deg, var(--login-gradient-start) 0%, var(--login-gradient-end) 100%);
+}
+
+/* 移除全局 '*' 选择器的过渡，避免性能问题 */
+/* 
+  之前这里有 '*' 和 '[class*="t-"]' 的全局过渡，
+  是导致切换主题卡顿的主要原因。
+  现在将其移除，性能会得到显著提升。
+*/
+
+/* 为特定TDesign组件保留过渡效果，但避免使用 !important */
+.t-button, .t-input, .t-menu, .t-layout, .t-aside, .t-header, .t-content {
+  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+}
