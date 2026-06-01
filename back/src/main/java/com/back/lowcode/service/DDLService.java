@@ -108,18 +108,15 @@ public class DDLService {
         StringBuilder sb = new StringBuilder();
         sb.append("CREATE TABLE IF NOT EXISTS `").append(entity.getTableName()).append("` (\n");
 
-        // 主键列收集
         List<FieldMeta> pkFields = fields.stream()
                 .filter(FieldMeta::getIsPrimaryKey)
                 .toList();
 
-        // 如果没有定义主键，自动添加 id 列
         boolean hasAutoId = pkFields.isEmpty();
         if (hasAutoId) {
             sb.append("  `id` BIGINT NOT NULL AUTO_INCREMENT,\n");
         }
 
-        // 业务字段
         for (int i = 0; i < fields.size(); i++) {
             FieldMeta f = fields.get(i);
             validateColumnName(f.getColumnName());
@@ -137,18 +134,16 @@ public class DDLService {
                 sb.append(" DEFAULT '").append(f.getDefaultValue()).append("'");
             }
 
-            // 业务主键
             if (f.getIsPrimaryKey() && f.getIsAutoIncrement()) {
                 sb.append(" AUTO_INCREMENT");
             }
 
-            if (i < fields.size() - 1 || hasAutoId) {
-                sb.append(",");
-            }
-            sb.append("\n");
+            sb.append(",\n");
         }
 
-        // 主键约束
+        sb.append("  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,\n");
+        sb.append("  `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,\n");
+
         if (hasAutoId) {
             sb.append("  PRIMARY KEY (`id`)\n");
         } else if (!pkFields.isEmpty()) {

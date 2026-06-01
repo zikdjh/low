@@ -13,7 +13,8 @@ const state: Record<string, any> = {
     ...STYLE_CONFIG,
     showSettingPanel: false,
     colorList: {} as TColorSeries,
-    chartColors: LIGHT_CHART_COLORS
+    chartColors: LIGHT_CHART_COLORS,
+    isSidebarCollapsed: false
 };
 
 export type TState = typeof state;
@@ -102,6 +103,9 @@ export const useSettingStore = defineStore("setting", {
                     this.changeBrandTheme(payload[key]);
                 }
             }
+        },
+        toggleSidebar() {
+            this.isSidebarCollapsed = !this.isSidebarCollapsed;
         }
     },
     persist: {

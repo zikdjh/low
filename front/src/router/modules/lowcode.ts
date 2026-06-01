@@ -26,6 +26,12 @@ export default [
         component: () => import('../../pages/lowcode/metadata/EntityEdit.vue'),
         meta: { title: { zh_CN: '实体编辑' }, hidden: true },
       },
+      {
+        path: 'data/:entityCode',
+        name: 'DataList',
+        component: () => import('../../pages/lowcode/data/DataList.vue'),
+        meta: { title: { zh_CN: '数据管理' }, hidden: true },
+      },
     ],
   },
 ];

@@ -44,6 +44,11 @@
         <t-space>
           <t-link theme="primary" @click="handleEdit(row)">编辑</t-link>
           <t-link
+            v-if="row.status === 'published'"
+            theme="default"
+            @click="handleDataManage(row)"
+          >数据管理</t-link>
+          <t-link
             v-if="row.status === 'draft'"
             theme="success"
             @click="handlePublish(row)"
@@ -92,7 +97,7 @@ const columns: PrimaryTableCol[] = [
   { colKey: 'tableName', title: '数据表', width: 180 },
   { colKey: 'status', title: '状态', width: 100 },
   { colKey: 'updatedAt', title: '更新时间', width: 180 },
-  { colKey: 'operation', title: '操作', width: 220, fixed: 'right' },
+  { colKey: 'operation', title: '操作', width: 280, fixed: 'right' },
 ];
 
 async function fetchData() {
@@ -130,6 +135,10 @@ function handleCreate() {
 
 function handleEdit(row: any) {
   router.push(`/lowcode/entity/${row.id}`);
+}
+
+function handleDataManage(row: any) {
+  router.push(`/lowcode/data/${row.code}`);
 }
 
 async function handlePublish(row: any) {

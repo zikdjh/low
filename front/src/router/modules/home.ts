@@ -2,6 +2,7 @@ import { DashboardIcon } from 'tdesign-icons-vue-next';
 import { shallowRef } from 'vue';
 
 import Layout from '../../layouts/index.vue';
+import HomePage from '../../pages/home/index.vue';
 
 export default [
     {
@@ -18,6 +19,12 @@ export default [
             },
             icon: shallowRef(DashboardIcon),
             orderNo: 0,
-        }
+        },
+        children: [
+            {
+                path: '',
+                component: HomePage,
+            },
+        ],
     },
 ];

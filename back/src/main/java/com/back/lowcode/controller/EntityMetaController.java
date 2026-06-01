@@ -46,6 +46,20 @@ public class EntityMetaController {
         return Result.success(result);
     }
 
+    /** 根据 Code 获取实体详情（含字段） */
+    @GetMapping("/code/{code}")
+    public Result getEntityByCode(@PathVariable String code) {
+        EntityMeta entity = entityMetaService.getEntityByCode(code)
+                .orElseThrow(() -> new IllegalArgumentException("实体不存在: " + code));
+
+        List<FieldMeta> fields = entityMetaService.getFieldsByEntityId(entity.getId());
+
+        var result = new java.util.HashMap<String, Object>();
+        result.put("entity", entity);
+        result.put("fields", fields);
+        return Result.success(result);
+    }
+
     /** 创建实体 */
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)

@@ -9,6 +9,9 @@ const entityMetaApi = {
   /** 获取实体详情（含字段） */
   getById: (id: number) => service.get(`/lowcode/entity/${id}`),
 
+  /** 根据编码获取实体详情（含字段） */
+  getByCode: (code: string) => service.get(`/lowcode/entity/code/${code}`),
+
   /** 创建实体 */
   create: (data: EntityMeta) => service.post('/lowcode/entity', data),
 
