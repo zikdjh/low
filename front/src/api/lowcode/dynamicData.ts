@@ -19,6 +19,9 @@ const dynamicDataApi = {
 
   batchDelete: (entityCode: string, ids: (number | string)[]) =>
     service.post(`/lowcode/data/${entityCode}/batch-delete`, { ids }),
+
+  exportData: (entityCode: string) =>
+    service.get(`/lowcode/data/${entityCode}/export`, { responseType: 'blob' }),
 };
 
 export default dynamicDataApi;
