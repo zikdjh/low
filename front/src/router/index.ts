@@ -6,7 +6,7 @@ const homepageModules = import.meta.glob("./modules/**/home.ts", {
 });
 
 // 添加登录模块
-const loginModules = import.meta.glob("./modules/**/Login.ts", {
+const loginModules = import.meta.glob("./modules/**/login.ts", {
     eager: true,
 });
 
@@ -47,6 +47,29 @@ export function mapModuleRouterList(
 const router = createRouter({
     history: createWebHistory(),
     routes: allRoutes
+});
+
+// 路由守卫
+router.beforeEach((to) => {
+    // 设置页面标题
+    if (to.meta.title) {
+        document.title = (to.meta.title as any).zh_CN || '低代码开发平台';
+    }
+    
+    // 检查是否需要登录
+    const token = localStorage.getItem('token');
+    const publicPages = ['/login', '/home'];
+    
+    if (!token && !publicPages.includes(to.path)) {
+        // 未登录且访问需要权限的页面，跳转到登录页
+        return {
+            path: '/login',
+            query: { redirect: to.fullPath }
+        };
+    } else if (token && to.path === '/login') {
+        // 已登录访问登录页，跳转到首页
+        return '/home';
+    }
 });
 
 export default router;

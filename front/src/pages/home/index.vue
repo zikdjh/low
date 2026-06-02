@@ -4,18 +4,18 @@
     <div class="welcome-section">
       <div class="welcome-content">
         <h1 class="welcome-title">
-          <t-icon name="sparkles" class="title-icon" />
+          <StarIcon class="title-icon" size="32" />
           欢迎使用低代码开发平台
         </h1>
         <p class="welcome-subtitle">快速构建企业级应用，无需编写大量代码</p>
       </div>
       <div class="welcome-actions">
         <t-button theme="primary" size="large" @click="goTo('/lowcode/entity')">
-          <template #icon><t-icon name="rocket" /></template>
+          <template #icon><RocketIcon /></template>
           开始创建
         </t-button>
         <t-button size="large" @click="goTo('/lowcode/page')">
-          <template #icon><t-icon name="layout" /></template>
+          <template #icon><LayoutIcon /></template>
           页面设计
         </t-button>
       </div>
@@ -26,10 +26,10 @@
       <t-card class="stat-card">
         <div class="stat-header">
           <div class="stat-icon blue">
-            <t-icon name="database" size="28" />
+            <DataBaseIcon size="28" />
           </div>
           <div class="stat-trend positive">
-            <t-icon name="trending-up" size="16" />
+            <TrendingUpIcon size="16" />
             12%
           </div>
         </div>
@@ -45,10 +45,10 @@
       <t-card class="stat-card">
         <div class="stat-header">
           <div class="stat-icon green">
-            <t-icon name="table" size="28" />
+            <TableIcon size="28" />
           </div>
           <div class="stat-trend positive">
-            <t-icon name="trending-up" size="16" />
+            <TrendingUpIcon size="16" />
             8%
           </div>
         </div>
@@ -64,10 +64,10 @@
       <t-card class="stat-card">
         <div class="stat-header">
           <div class="stat-icon orange">
-            <t-icon name="file-text" size="28" />
+            <FileIcon size="28" />
           </div>
           <div class="stat-trend positive">
-            <t-icon name="trending-up" size="16" />
+            <TrendingUpIcon size="16" />
             15%
           </div>
         </div>
@@ -83,10 +83,10 @@
       <t-card class="stat-card">
         <div class="stat-header">
           <div class="stat-icon purple">
-            <t-icon name="layout" size="28" />
+            <LayoutIcon size="28" />
           </div>
           <div class="stat-trend negative">
-            <t-icon name="trending-down" size="16" />
+            <TrendingDownIcon size="16" />
             2%
           </div>
         </div>
@@ -103,31 +103,31 @@
     <!-- 快捷操作 -->
     <div class="quick-actions">
       <h3 class="section-title">
-        <t-icon name="zap" size="18" />
+        <FlashlightIcon size="18" />
         快捷操作
       </h3>
       <div class="action-grid">
         <div class="action-item" @click="goTo('/lowcode/entity')">
           <div class="action-icon">
-            <t-icon name="plus-circle" size="24" />
+            <AddCircleIcon size="24" />
           </div>
           <span class="action-label">创建实体</span>
         </div>
         <div class="action-item" @click="goTo('/lowcode/page')">
           <div class="action-icon">
-            <t-icon name="layout" size="24" />
+            <LayoutIcon size="24" />
           </div>
           <span class="action-label">设计页面</span>
         </div>
         <div class="action-item" @click="showTips">
           <div class="action-icon">
-            <t-icon name="lightbulb" size="24" />
+            <LightbulbIcon size="24" />
           </div>
           <span class="action-label">使用指南</span>
         </div>
         <div class="action-item" @click="showDocs">
           <div class="action-icon">
-            <t-icon name="book" size="24" />
+            <BookIcon size="24" />
           </div>
           <span class="action-label">帮助文档</span>
         </div>
@@ -138,7 +138,7 @@
     <div class="recent-section">
       <div class="section-header">
         <h3 class="section-title">
-          <t-icon name="history" size="18" />
+          <TimeFilledIcon size="18" />
           最近活动
         </h3>
         <t-button variant="text" size="small">查看全部</t-button>
@@ -147,7 +147,7 @@
         <t-timeline>
           <t-timeline-item v-for="(item, index) in recentActivities" :key="index">
             <template #icon>
-              <t-icon :name="item.icon" :size="16" />
+              <component :is="item.iconComponent" :size="16 as any" />
             </template>
             <template #content>
               <div class="activity-content">
@@ -163,34 +163,34 @@
     <!-- 功能介绍 -->
     <div class="features-section">
       <h3 class="section-title">
-        <t-icon name="star" size="18" />
+        <StarIcon size="18" />
         平台特性
       </h3>
       <div class="features-grid">
         <t-card class="feature-card" hover-shadow>
           <div class="feature-icon">
-            <t-icon name="blocks" size="32" />
+            <AppIcon size="32" />
           </div>
           <h4 class="feature-title">可视化设计</h4>
           <p class="feature-desc">拖拽式组件设计，所见即所得的开发体验</p>
         </t-card>
         <t-card class="feature-card" hover-shadow>
           <div class="feature-icon">
-            <t-icon name="database" size="32" />
+            <DataBaseIcon size="32" />
           </div>
           <h4 class="feature-title">数据模型</h4>
           <p class="feature-desc">灵活定义数据实体，自动生成数据表</p>
         </t-card>
         <t-card class="feature-card" hover-shadow>
           <div class="feature-icon">
-            <t-icon name="code" size="32" />
+            <CodeIcon size="32" />
           </div>
           <h4 class="feature-title">代码生成</h4>
           <p class="feature-desc">一键生成前后端代码，快速交付</p>
         </t-card>
         <t-card class="feature-card" hover-shadow>
           <div class="feature-icon">
-            <t-icon name="shield" size="32" />
+            <ShieldErrorIcon size="32" />
           </div>
           <h4 class="feature-title">安全可靠</h4>
           <p class="feature-desc">内置权限管理，数据安全有保障</p>
@@ -201,9 +201,15 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, markRaw } from 'vue';
 import { useRouter } from 'vue-router';
 import { MessagePlugin } from 'tdesign-vue-next';
+import {
+  StarIcon, RocketIcon, LayoutIcon, DataBaseIcon, TableIcon, FileIcon,
+  TrendingUpIcon, TrendingDownIcon, FlashlightIcon, AddCircleIcon,
+  LightbulbIcon, BookIcon, TimeFilledIcon, AppIcon,
+  CodeIcon, ShieldErrorIcon, CheckCircleFilledIcon, EditIcon, DeleteIcon, DownloadIcon
+} from 'tdesign-icons-vue-next';
 import entityMetaApi from '../../api/lowcode/entityMeta';
 
 const router = useRouter();
@@ -216,11 +222,36 @@ const stats = ref({
 });
 
 const recentActivities = ref([
-  { icon: 'plus-circle', text: '创建了实体 "用户信息"', time: '5分钟前' },
-  { icon: 'check-circle', text: '发布了实体 "产品管理"', time: '15分钟前' },
-  { icon: 'edit', text: '编辑了页面 "首页"', time: '30分钟前' },
-  { icon: 'delete', text: '删除了草稿实体', time: '1小时前' },
-  { icon: 'download', text: '导出了数据报表', time: '2小时前' },
+  {
+    icon: 'plus-circle',
+    iconComponent: markRaw(AddCircleIcon),
+    text: '创建了实体 "用户信息"',
+    time: '5分钟前',
+  },
+  {
+    icon: 'check-circle',
+    iconComponent: markRaw(CheckCircleFilledIcon),
+    text: '发布了实体 "产品管理"',
+    time: '15分钟前',
+  },
+  {
+    icon: 'edit',
+    iconComponent: markRaw(EditIcon),
+    text: '编辑了页面 "首页"',
+    time: '30分钟前',
+  },
+  {
+    icon: 'delete',
+    iconComponent: markRaw(DeleteIcon),
+    text: '删除了草稿实体',
+    time: '1小时前',
+  },
+  {
+    icon: 'download',
+    iconComponent: markRaw(DownloadIcon),
+    text: '导出了数据报表',
+    time: '2小时前',
+  },
 ]);
 
 function goTo(path: string) {
@@ -268,7 +299,7 @@ onMounted(() => {
   padding: 48px;
   margin-bottom: 24px;
   text-align: center;
-  
+
   .welcome-content {
     .welcome-title {
       font-size: 32px;
@@ -279,19 +310,19 @@ onMounted(() => {
       align-items: center;
       justify-content: center;
       gap: 12px;
-      
+
       .title-icon {
         animation: pulse 2s ease-in-out infinite;
       }
     }
-    
+
     .welcome-subtitle {
       font-size: 16px;
       color: rgba(255, 255, 255, 0.85);
       margin: 0 0 32px 0;
     }
   }
-  
+
   .welcome-actions {
     display: flex;
     justify-content: center;
@@ -300,8 +331,8 @@ onMounted(() => {
 }
 
 @keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(1.1); }
 }
 
 .stats-section {
@@ -309,19 +340,25 @@ onMounted(() => {
   grid-template-columns: repeat(4, 1fr);
   gap: 16px;
   margin-bottom: 24px;
-  
+
   .stat-card {
     padding: 20px;
     border-radius: 12px;
     background: #fff;
-    
+    transition: transform 0.2s, box-shadow 0.2s;
+
+    &:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    }
+
     .stat-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
       margin-bottom: 12px;
     }
-    
+
     .stat-icon {
       width: 48px;
       height: 48px;
@@ -330,13 +367,13 @@ onMounted(() => {
       align-items: center;
       justify-content: center;
       color: #fff;
-      
+
       &.blue { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
       &.green { background: linear-gradient(135deg, #52c41a 0%, #389e0d 100%); }
       &.orange { background: linear-gradient(135deg, #fa8c16 0%, #d46b08 100%); }
       &.purple { background: linear-gradient(135deg, #722ed1 0%, #531dab 100%); }
     }
-    
+
     .stat-trend {
       display: flex;
       align-items: center;
@@ -344,34 +381,38 @@ onMounted(() => {
       font-size: 12px;
       padding: 2px 8px;
       border-radius: 12px;
-      
+
       &.positive {
         color: #52c41a;
         background: #f6ffed;
       }
-      
+
       &.negative {
         color: #ff4d4f;
         background: #fff2f0;
       }
     }
-    
+
     .stat-info {
       margin-bottom: 12px;
-      
+
       .stat-value {
         font-size: 28px;
-        font-weight: 600;
+        font-weight: 700;
         color: #1f2329;
         margin-bottom: 4px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
       }
-      
+
       .stat-label {
         font-size: 14px;
         color: #8f959e;
       }
     }
-    
+
     .stat-progress {
       height: 6px;
     }
@@ -380,7 +421,7 @@ onMounted(() => {
 
 .quick-actions {
   margin-bottom: 24px;
-  
+
   .section-title {
     display: flex;
     align-items: center;
@@ -390,39 +431,46 @@ onMounted(() => {
     color: #1f2329;
     margin-bottom: 16px;
   }
-  
+
   .action-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 12px;
-    
+
     .action-item {
       display: flex;
       align-items: center;
       gap: 12px;
       padding: 16px 20px;
       background: #fff;
-      border-radius: 8px;
+      border-radius: 10px;
       cursor: pointer;
-      transition: all 0.2s;
-      
+      transition: all 0.3s ease;
+      border: 1px solid transparent;
+
       &:hover {
-        background: #f5f6f8;
-        transform: translateY(-2px);
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        background: #f5f7fa;
+        transform: translateY(-3px);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.15);
+        border-color: #667eea;
       }
-      
+
       .action-icon {
-        width: 40px;
-        height: 40px;
-        border-radius: 10px;
+        width: 44px;
+        height: 44px;
+        border-radius: 11px;
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         display: flex;
         align-items: center;
         justify-content: center;
         color: #fff;
+        transition: transform 0.3s;
       }
-      
+
+      &:hover .action-icon {
+        transform: rotate(5deg) scale(1.05);
+      }
+
       .action-label {
         font-size: 14px;
         color: #1f2329;
@@ -434,14 +482,14 @@ onMounted(() => {
 
 .recent-section {
   margin-bottom: 24px;
-  
+
   .section-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 16px;
   }
-  
+
   .section-title {
     display: flex;
     align-items: center;
@@ -450,21 +498,23 @@ onMounted(() => {
     font-weight: 500;
     color: #1f2329;
   }
-  
+
   .activity-card {
     background: #fff;
-    border-radius: 8px;
-    
+    border-radius: 10px;
+    padding: 20px;
+
     .activity-content {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      
+
       .activity-text {
         font-size: 14px;
         color: #1f2329;
+        font-weight: 500;
       }
-      
+
       .activity-time {
         font-size: 12px;
         color: #bbbfc4;
@@ -483,41 +533,54 @@ onMounted(() => {
     color: #1f2329;
     margin-bottom: 16px;
   }
-  
+
   .features-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 16px;
-    
+
     .feature-card {
-      padding: 24px;
+      padding: 28px 24px;
       text-align: center;
       border-radius: 12px;
-      
+      transition: all 0.3s ease;
+      border: 1px solid transparent;
+
+      &:hover {
+        transform: translateY(-6px);
+        border-color: #667eea;
+        box-shadow: 0 12px 32px rgba(102, 126, 234, 0.2);
+      }
+
       .feature-icon {
-        width: 56px;
-        height: 56px;
-        border-radius: 14px;
+        width: 60px;
+        height: 60px;
+        border-radius: 16px;
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         display: flex;
         align-items: center;
         justify-content: center;
         color: #fff;
-        margin: 0 auto 16px auto;
+        margin: 0 auto 20px auto;
+        transition: transform 0.3s;
       }
-      
+
+      &:hover .feature-icon {
+        transform: scale(1.1) rotate(5deg);
+      }
+
       .feature-title {
-        font-size: 16px;
-        font-weight: 500;
+        font-size: 17px;
+        font-weight: 600;
         color: #1f2329;
-        margin: 0 0 8px 0;
+        margin: 0 0 10px 0;
       }
-      
+
       .feature-desc {
         font-size: 13px;
         color: #8f959e;
         margin: 0;
-        line-height: 1.6;
+        line-height: 1.7;
       }
     }
   }

@@ -4,7 +4,7 @@
     <div class="page-header">
       <div class="header-left">
         <t-button variant="text" @click="goBack">
-          <template #icon><t-icon name="chevron-left" /></template>
+          <template #icon><ChevronLeftIcon /></template>
         </t-button>
         <div class="title-group">
           <h2 class="page-title">{{ entityMeta?.name || '数据管理' }}</h2>
@@ -13,11 +13,11 @@
       </div>
       <div class="header-right">
         <t-button variant="outline" @click="handleExport">
-          <template #icon><t-icon name="download" /></template>
+          <template #icon><DownloadIcon /></template>
           导出数据
         </t-button>
         <t-button theme="primary" @click="handleCreate">
-          <template #icon><t-icon name="add" /></template>
+          <template #icon><PlusIcon /></template>
           新增数据
         </t-button>
       </div>
@@ -26,7 +26,7 @@
     <!-- 筛选区域 -->
     <t-card class="filter-card" v-if="searchFields.length > 0">
       <div class="filter-header">
-        <t-icon name="filter" size="16" />
+        <FilterIcon :size="'16'" />
         <span>筛选条件</span>
       </div>
       <div class="filter-content">
@@ -45,7 +45,7 @@
         <div class="filter-actions">
           <t-button variant="outline" @click="resetSearch">重置</t-button>
           <t-button theme="primary" @click="handleSearch">
-            <template #icon><t-icon name="search" /></template>
+            <template #icon><SearchIcon /></template>
             搜索
           </t-button>
         </div>
@@ -62,7 +62,7 @@
           theme="danger"
           @click="handleBatchDelete"
         >
-          <template #icon><t-icon name="delete" /></template>
+          <template #icon><DeleteIcon /></template>
           批量删除 ({{ selectedRows.length }})
         </t-button>
       </div>
@@ -93,7 +93,7 @@
               variant="text"
               @click="handleView(row)"
             >
-              <template #icon><t-icon name="eye" /></template>
+              <template #icon><ViewImageIcon /></template>
               查看
             </t-button>
             <t-button
@@ -102,7 +102,7 @@
               theme="primary"
               @click="handleEdit(row)"
             >
-              <template #icon><t-icon name="edit" /></template>
+              <template #icon><EditIcon /></template>
               编辑
             </t-button>
             <t-popconfirm
@@ -110,7 +110,7 @@
               @confirm="handleDelete(row)"
             >
               <t-button size="small" theme="danger">
-                <template #icon><t-icon name="delete" /></template>
+                <template #icon><DeleteIcon /></template>
                 删除
               </t-button>
             </t-popconfirm>
@@ -167,6 +167,7 @@ import { ref, reactive, computed, onMounted, markRaw } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { MessagePlugin } from 'tdesign-vue-next';
 import type { PrimaryTableCol } from 'tdesign-vue-next';
+import { ChevronLeftIcon, DownloadIcon, PlusIcon, FilterIcon, SearchIcon, DeleteIcon, EditIcon, ViewImageIcon } from 'tdesign-icons-vue-next';
 import entityMetaApi from '../../../api/lowcode/entityMeta';
 import dynamicDataApi from '../../../api/lowcode/dynamicData';
 import DynamicForm from '../../../components/lowcode/DynamicForm.vue';

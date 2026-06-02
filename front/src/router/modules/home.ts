@@ -12,7 +12,6 @@ export default [
     {
         path: '/home',
         component: Layout,
-        name: 'dashboard',
         meta: {
             title: {
                 zh_CN: '首页',
@@ -23,7 +22,13 @@ export default [
         children: [
             {
                 path: '',
+                name: 'dashboard',
                 component: HomePage,
+                meta: {
+                    title: {
+                        zh_CN: '首页',
+                    },
+                },
             },
         ],
     },

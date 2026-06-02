@@ -8,7 +8,7 @@
       </div>
       <div class="header-right">
         <t-button theme="primary" @click="handleCreate">
-          <template #icon><t-icon name="add" /></template>
+          <template #icon><PlusIcon /></template>
           新建实体
         </t-button>
       </div>
@@ -25,7 +25,7 @@
           @enter="handleSearch"
           @clear="handleSearch"
         >
-          <template #suffix-icon><t-icon name="search" /></template>
+          <template #suffix-icon><SearchIcon /></template>
         </t-input>
         
         <t-select
@@ -47,7 +47,7 @@
           @click="handleBatchArchive"
           :disabled="!canBatchArchive"
         >
-          <template #icon><t-icon name="archive" /></template>
+          <template #icon><FolderIcon /></template>
           批量归档
         </t-button>
         <t-button
@@ -56,7 +56,7 @@
           @click="handleBatchDelete"
           :disabled="!canBatchDelete"
         >
-          <template #icon><t-icon name="delete" /></template>
+          <template #icon><DeleteIcon /></template>
           批量删除
         </t-button>
         <span class="selected-count">已选择 {{ selectedRows.length }} 项</span>
@@ -152,7 +152,7 @@
               theme="primary"
               @click="handleDataManage(row)"
             >
-              <template #icon><t-icon name="database" /></template>
+              <template #icon><DataBaseIcon /></template>
               数据管理
             </t-button>
             <t-button
@@ -161,7 +161,7 @@
               theme="success"
               @click="handlePublish(row)"
             >
-              <template #icon><t-icon name="check" /></template>
+              <template #icon><CheckCircleIcon /></template>
               发布
             </t-button>
             <t-button
@@ -170,7 +170,7 @@
               theme="warning"
               @click="handleArchive(row)"
             >
-              <template #icon><t-icon name="archive" /></template>
+              <template #icon><FolderIcon /></template>
               归档
             </t-button>
             <t-popconfirm
@@ -179,7 +179,7 @@
               @confirm="handleDelete(row)"
             >
               <t-button size="small" theme="danger">
-                <template #icon><t-icon name="delete" /></template>
+                <template #icon><DeleteIcon /></template>
                 删除
               </t-button>
             </t-popconfirm>
@@ -195,6 +195,7 @@ import { ref, reactive, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { MessagePlugin } from 'tdesign-vue-next';
 import type { PrimaryTableCol } from 'tdesign-vue-next';
+import { PlusIcon, SearchIcon, DeleteIcon, DataBaseIcon, CheckCircleIcon, FolderIcon } from 'tdesign-icons-vue-next';
 import entityMetaApi from '../../../api/lowcode/entityMeta';
 
 const router = useRouter();

@@ -7,10 +7,10 @@
         @click="toggleSidebar"
         class="sidebar-toggle"
       >
-        <t-icon name="menu" />
+        <MenuIcon />
       </t-button>
       <div class="logo">
-        <t-icon name="code" />
+        <CodeIcon />
         <span>低代码平台</span>
       </div>
     </div>
@@ -22,10 +22,10 @@
     <div class="header-right">
       <t-space>
         <t-button variant="text" @click="goToSettings">
-          <template #icon><t-icon name="settings" /></template>
+          <template #icon><SettingIcon /></template>
         </t-button>
         <t-button variant="text" @click="logout">
-          <template #icon><t-icon name="logout" /></template>
+          <template #icon><LogoutIcon /></template>
           退出
         </t-button>
       </t-space>
@@ -36,6 +36,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
+import { MenuIcon, CodeIcon, SettingIcon, LogoutIcon } from 'tdesign-icons-vue-next';
 import { useSettingStore } from '../../store';
 
 const router = useRouter();

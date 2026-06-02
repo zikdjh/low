@@ -1,7 +1,7 @@
 import { UserIcon } from 'tdesign-icons-vue-next';
 import { shallowRef } from 'vue';
 
-import LoginPage from '../../pages/login/index.vue';
+import LoginPage from '../../views/login/Login.vue';
 
 export default [
     {
