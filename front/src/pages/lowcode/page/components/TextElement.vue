@@ -4,6 +4,7 @@
       :style="{
         fontSize: element.props.fontSize + 'px',
         color: element.props.color,
+        textAlign: element.props.align,
       }"
     >
       {{ element.props.text || '文本内容' }}

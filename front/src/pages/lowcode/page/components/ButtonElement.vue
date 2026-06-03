@@ -1,6 +1,10 @@
 <template>
   <div class="button-element">
-    <t-button :theme="element.props.theme || 'primary'">
+    <t-button 
+      :theme="element.props.theme || 'primary'"
+      :size="element.props.size || 'medium'"
+      :variant="element.props.variant || 'base'"
+    >
       {{ element.props.text || '按钮' }}
     </t-button>
   </div>

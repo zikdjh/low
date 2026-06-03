@@ -6,7 +6,7 @@
       :hover-shadow="element.props.hoverShadow"
     >
       <div class="card-placeholder">
-        <t-icon name="layout" size="24" />
+        <LayoutIcon size="24" />
         <span>卡片内容区域</span>
       </div>
     </t-card>
@@ -14,6 +14,8 @@
 </template>
 
 <script setup lang="ts">
+import { LayoutIcon } from 'tdesign-icons-vue-next';
+
 defineProps<{
   element: any;
 }>();
