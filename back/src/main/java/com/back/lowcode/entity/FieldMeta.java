@@ -30,7 +30,7 @@ public class FieldMeta {
     private String code;
 
     /** 字段显示名称，如 "客户姓名" */
-    @Column(nullable = false, length = 128)
+    @Column(name = "field_name", nullable = false, length = 128)
     private String name;
 
     /** 数据库列名，与 code 相同或由系统生成 */
@@ -42,9 +42,11 @@ public class FieldMeta {
     private String fieldType;
 
     /** VARCHAR 长度 */
+    @Column(name = "str_length")
     private Integer length;
 
     /** DECIMAL 精度 */
+    @Column(name = "dec_precision")
     private Integer precision;
 
     /** DECIMAL 标度 */
