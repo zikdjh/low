@@ -41,6 +41,7 @@ export interface FieldMeta {
   length?: number;
   precision?: number;
   scale?: number;
+  decimalPlaces?: number;
   nullable: boolean;
   defaultValue?: string;
   isPrimaryKey: boolean;
@@ -51,6 +52,7 @@ export interface FieldMeta {
   showInSearch: boolean;
   dictCode?: string;
   validationRule?: string;
+  sortable?: boolean;
 }
 
 // ---- 组件定义 ----

@@ -6,7 +6,6 @@
     </div>
 
     <t-form
-        ref="formRef"
         :data="formData"
         :rules="formRules"
         label-width="0"
@@ -89,7 +88,7 @@
 <script setup lang="ts">
 import {ref, reactive, computed} from 'vue';
 import {MessagePlugin} from 'tdesign-vue-next';
-import type {FormInstanceFunctions, SubmitContext} from 'tdesign-vue-next';
+import type {SubmitContext} from 'tdesign-vue-next';
 import type {LoginForm} from "../../../api/model/user/Login.ts";
 import {validateCode, validatePhone} from "../../../utils/formatVerification.ts";
 import userApi from "../../../api/user";
@@ -98,7 +97,6 @@ import {useRouter} from "vue-router";
 const router = useRouter();
 
 const loading = ref(false);
-const formRef = ref<FormInstanceFunctions>();
 const smsCountdown = ref(0);
 
 // 表单数据
