@@ -225,12 +225,16 @@ async function handleSubmit({ validateResult }: any) {
 
       if (isLogin.value) {
         // 登录逻辑
-        localStorage.setItem('token', 'mock_token_' + Date.now());
+        const token = 'mock_token_' + Date.now();
+        localStorage.setItem('token', token);
         localStorage.setItem('user', JSON.stringify({
           username: formData.account || 'admin',
           role: 'admin',
           avatar: '',
         }));
+        // 同时设置 API 请求所需的 sessionStorage
+        const accessPayload = { token, expiresAt: Date.now() + 45 * 60 * 1000 };
+        sessionStorage.setItem('access', JSON.stringify(accessPayload));
 
         MessagePlugin.success('登录成功！');
 

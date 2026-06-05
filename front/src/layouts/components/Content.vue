@@ -10,9 +10,10 @@
 <style scoped lang="less">
 .layout-content {
   flex: 1;
-  padding: 20px;
+  padding: 24px;
   overflow-y: auto;
-  background: #f5f5f5;
-  min-height: calc(100vh - 64px);
+  background: #f8fafc;
+  min-height: calc(100vh - 70px);
+  transition: margin-left 0.3s;
 }
 </style>
