@@ -69,20 +69,22 @@
           <SettingIcon />
         </t-button>
         
-        <div class="user-info" @click="toggleUserMenu">
-          <div class="user-avatar">
-            <UserIcon />
-          </div>
-          <span class="user-name">{{ userName }}</span>
-          <ChevronDownIcon class="user-arrow" :class="{ rotated: showUserMenu }" />
-        </div>
-        
         <t-dropdown 
           v-model="showUserMenu"
           :items="userMenuItems"
           placement="bottom-right"
           @click="handleUserMenuClick"
-        />
+        >
+          <t-button variant="text" class="user-btn">
+            <div class="user-info">
+              <div class="user-avatar">
+                <UserIcon />
+              </div>
+              <span class="user-name">{{ userName }}</span>
+              <ChevronDownIcon class="user-arrow" :class="{ rotated: showUserMenu }" />
+            </div>
+          </t-button>
+        </t-dropdown>
       </t-space>
     </div>
     
@@ -200,13 +202,11 @@ function goToSettings() {
   router.push('/settings');
 }
 
-function toggleUserMenu() {
-  showUserMenu.value = !showUserMenu.value;
-}
-
 function handleUserMenuClick(name: string) {
   if (name === 'logout') {
     sessionStorage.removeItem('access');
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
     router.push('/login');
   } else {
     console.log('用户菜单:', name);
@@ -375,6 +375,14 @@ function markAsRead(index: number) {
   padding: 0 5px;
   border: 2px solid #fff;
   box-shadow: 0 2px 4px rgba(239, 68, 68, 0.3);
+}
+
+.user-btn {
+  padding: 0;
+  
+  :deep(.t-button__content) {
+    padding: 0;
+  }
 }
 
 .user-info {
