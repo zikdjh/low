@@ -44,7 +44,7 @@ public class DynamicDataService {
         String tableName = entity.getTableName();
 
         StringBuilder sql = new StringBuilder("SELECT * FROM ").append(tableName);
-        StringBuilder countSql = new StringBuilder("SELECT COUNT(*) FROM ").append(tableName());
+        StringBuilder countSql = new StringBuilder("SELECT COUNT(*) FROM ").append(tableName);
 
         List<String> conditions = new ArrayList<>();
         MapSqlParameterSource params = new MapSqlParameterSource();
