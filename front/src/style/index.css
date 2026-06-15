@@ -46,3 +46,103 @@ body {
 .t-button, .t-input, .t-menu, .t-layout, .t-aside, .t-header, .t-content {
   transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
 }
+
+/* 全局移除所有不必要的边框 */
+.layout-content {
+  border-top: none !important;
+  box-shadow: none !important;
+}
+
+.layout-body {
+  border-top: none !important;
+}
+
+.layout-container {
+  border: none !important;
+}
+
+/* 去除卡片组件的边框 */
+.t-card {
+  border: none !important;
+}
+
+.t-card__header {
+  border-bottom: none !important;
+}
+
+.t-card__body {
+  border: none !important;
+}
+
+/* 去除布局容器的边框 */
+.t-layout {
+  border: none !important;
+}
+
+.t-layout__header {
+  border: none !important;
+  border-bottom: none !important;
+}
+
+.t-layout__aside {
+  border: none !important;
+}
+
+.t-layout__content {
+  border: none !important;
+  border-top: none !important;
+}
+
+/* 去除面包屑组件的多余边框 */
+.t-breadcrumb {
+  border: none !important;
+  border-bottom: none !important;
+}
+
+.t-breadcrumb__separator {
+  border: none !important;
+}
+
+.t-breadcrumb__item {
+  border: none !important;
+}
+
+/* 去除时间线组件的边框 */
+.t-timeline {
+  border-left: none !important;
+}
+
+.t-timeline::before {
+  display: none !important;
+}
+
+.t-timeline-item {
+  border: none !important;
+}
+
+.t-timeline-item::before {
+  display: none !important;
+}
+
+.t-timeline-item__line {
+  border-left: none !important;
+}
+
+/* 去除所有容器的上边框 */
+.recent-section {
+  border-top: none !important;
+  box-shadow: none !important;
+}
+
+.section-header {
+  border-bottom: none !important;
+}
+
+.activity-card {
+  border-top: none !important;
+  border-left: none !important;
+  border-right: none !important;
+  border-bottom: none !important;
+  box-shadow: none !important;
+}
+

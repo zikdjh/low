@@ -1,6 +1,5 @@
 <template>
   <div class="entity-list-page">
-    <!-- 页面头部 -->
     <div class="page-header">
       <div class="header-left">
         <h2 class="page-title">实体管理</h2>
@@ -14,14 +13,13 @@
       </div>
     </div>
 
-    <!-- 工具栏 -->
     <div class="toolbar">
       <div class="toolbar-left">
         <t-input
           v-model="keyword"
           placeholder="搜索实体名称或编码..."
           clearable
-          :style="{ width: '280px' }"
+          :style="{ width: '320px' }"
           @enter="handleSearch"
           @clear="handleSearch"
         >
@@ -31,7 +29,7 @@
         <t-select
           v-model="statusFilter"
           placeholder="全部状态"
-          :style="{ width: '140px', marginLeft: '12px' }"
+          :style="{ width: '160px', marginLeft: '16px' }"
           @change="handleSearch"
         >
           <t-option value="" label="全部状态" />
@@ -63,11 +61,10 @@
       </div>
     </div>
 
-    <!-- 统计卡片 -->
     <div class="stats-cards">
       <t-card class="stat-card">
         <div class="stat-icon total">
-          <t-icon name="database" size="24" />
+          <DataBaseIcon size="24" />
         </div>
         <div class="stat-info">
           <div class="stat-value">{{ stats.total }}</div>
@@ -76,7 +73,7 @@
       </t-card>
       <t-card class="stat-card">
         <div class="stat-icon draft">
-          <t-icon name="file-edit" size="24" />
+          <FileEditIcon size="24" />
         </div>
         <div class="stat-info">
           <div class="stat-value">{{ stats.draft }}</div>
@@ -85,7 +82,7 @@
       </t-card>
       <t-card class="stat-card">
         <div class="stat-icon published">
-          <t-icon name="check-circle" size="24" />
+          <CheckCircleIcon size="24" />
         </div>
         <div class="stat-info">
           <div class="stat-value">{{ stats.published }}</div>
@@ -94,7 +91,7 @@
       </t-card>
       <t-card class="stat-card">
         <div class="stat-icon archived">
-          <t-icon name="archive" size="24" />
+          <FolderIcon size="24" />
         </div>
         <div class="stat-info">
           <div class="stat-value">{{ stats.archived }}</div>
@@ -103,7 +100,6 @@
       </t-card>
     </div>
 
-    <!-- 实体列表 -->
     <t-card class="table-card">
       <t-table
         :data="tableData"
@@ -142,7 +138,7 @@
               variant="text"
               @click="handleEdit(row)"
             >
-              <template #icon><t-icon name="edit" /></template>
+              <template #icon><EditIcon /></template>
               编辑
             </t-button>
             <t-button
@@ -195,7 +191,10 @@ import { ref, reactive, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { MessagePlugin } from 'tdesign-vue-next';
 import type { PrimaryTableCol } from 'tdesign-vue-next';
-import { PlusIcon, SearchIcon, DeleteIcon, DataBaseIcon, CheckCircleIcon, FolderIcon } from 'tdesign-icons-vue-next';
+import { 
+  PlusIcon, SearchIcon, DeleteIcon, DataBaseIcon, CheckCircleIcon, 
+  FolderIcon, FileEditIcon, EditIcon 
+} from 'tdesign-icons-vue-next';
 import entityMetaApi from '../../../api/lowcode/entityMeta';
 
 const router = useRouter();
@@ -270,7 +269,7 @@ const columns: PrimaryTableCol[] = [
   { 
     colKey: 'operation', 
     title: '操作', 
-    width: 280, 
+    width: 300, 
     fixed: 'right',
   },
 ];
@@ -442,28 +441,34 @@ onMounted(() => {
 
 <style scoped lang="less">
 .entity-list-page {
-  padding: 24px;
-  background: #f5f6f8;
-  min-height: calc(100vh - 64px);
+  padding: 0;
+  background: #f8fafc;
+  min-height: calc(100vh - 70px);
 }
 
 .page-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 24px;
+  padding: 24px;
+  background: #ffffff;
+  border-bottom: 1px solid #e2e8f0;
   
   .header-left {
     .page-title {
-      font-size: 24px;
-      font-weight: 600;
-      color: #1f2329;
+      font-size: 26px;
+      font-weight: 700;
+      color: #1e293b;
       margin: 0 0 8px 0;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
     }
     
     .page-subtitle {
       font-size: 14px;
-      color: #8f959e;
+      color: #64748b;
       margin: 0;
     }
   }
@@ -473,7 +478,9 @@ onMounted(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 24px;
+  padding: 16px 24px;
+  background: #ffffff;
+  border-bottom: 1px solid #e2e8f0;
   
   .toolbar-right {
     display: flex;
@@ -482,95 +489,113 @@ onMounted(() => {
   }
   
   .selected-count {
-    font-size: 14px;
-    color: #646a73;
-    background: #f2f3f5;
-    padding: 6px 12px;
-    border-radius: 4px;
+    font-size: 13px;
+    color: #64748b;
+    background: #f1f5f9;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-weight: 500;
   }
 }
 
 .stats-cards {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 16px;
-  margin-bottom: 24px;
+  gap: 20px;
+  padding: 24px;
   
   .stat-card {
     display: flex;
     align-items: center;
-    padding: 20px;
-    background: #fff;
-    border-radius: 8px;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+    padding: 24px;
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+    border: 1px solid #f1f5f9;
     
     .stat-icon {
-      width: 48px;
-      height: 48px;
-      border-radius: 12px;
+      width: 52px;
+      height: 52px;
+      border-radius: 14px;
       display: flex;
       align-items: center;
       justify-content: center;
-      margin-right: 16px;
+      margin-right: 20px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
       
       &.total {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: #fff;
+        
+        :deep(.t-icon) {
+          color: #fff;
+        }
       }
       
       &.draft {
-        background: #e8f4fd;
-        color: #1677ff;
+        background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+        
+        :deep(.t-icon) {
+          color: #3b82f6;
+        }
       }
       
       &.published {
-        background: #e8fae8;
-        color: #52c41a;
+        background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+        
+        :deep(.t-icon) {
+          color: #22c55e;
+        }
       }
       
       &.archived {
-        background: #fff7e6;
-        color: #fa8c16;
+        background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+        
+        :deep(.t-icon) {
+          color: #f59e0b;
+        }
       }
     }
     
     .stat-info {
       .stat-value {
-        font-size: 24px;
-        font-weight: 600;
-        color: #1f2329;
+        font-size: 28px;
+        font-weight: 700;
+        color: #1e293b;
         margin-bottom: 4px;
       }
       
       .stat-label {
         font-size: 14px;
-        color: #8f959e;
+        color: #64748b;
       }
     }
   }
 }
 
 .table-card {
-  background: #fff;
-  border-radius: 8px;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  margin: 0 24px 24px;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+  border: 1px solid #f1f5f9;
   
   :deep(.t-table) {
     .table-name {
-      font-family: monospace;
+      font-family: 'JetBrains Mono', 'Consolas', monospace;
       font-size: 12px;
-      color: #1677ff;
-      background: #e8f4fd;
-      padding: 2px 8px;
-      border-radius: 4px;
+      color: #3b82f6;
+      background: #dbeafe;
+      padding: 3px 10px;
+      border-radius: 6px;
     }
     
     .field-badge {
-      background: #f2f3f5;
-      color: #646a73;
-      padding: 2px 8px;
-      border-radius: 4px;
+      background: #f1f5f9;
+      color: #64748b;
+      padding: 3px 10px;
+      border-radius: 6px;
       font-size: 12px;
+      font-weight: 500;
     }
   }
 }

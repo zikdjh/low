@@ -1,10 +1,9 @@
 <template>
   <div class="data-list-page">
-    <!-- 页面头部 -->
     <div class="page-header">
       <div class="header-left">
-        <t-button variant="text" @click="goBack">
-          <template #icon><ChevronLeftIcon /></template>
+        <t-button variant="text" @click="goBack" class="back-btn">
+          <template #icon><ChevronLeftIcon size="18" /></template>
         </t-button>
         <div class="title-group">
           <h2 class="page-title">{{ entityMeta?.name || '数据管理' }}</h2>
@@ -13,20 +12,19 @@
       </div>
       <div class="header-right">
         <t-button variant="outline" @click="handleExport">
-          <template #icon><DownloadIcon /></template>
+          <template #icon><DownloadIcon size="16" /></template>
           导出数据
         </t-button>
         <t-button theme="primary" @click="handleCreate">
-          <template #icon><PlusIcon /></template>
+          <template #icon><PlusIcon size="16" /></template>
           新增数据
         </t-button>
       </div>
     </div>
 
-    <!-- 筛选区域 -->
     <t-card class="filter-card" v-if="searchFields.length > 0">
       <div class="filter-header">
-        <FilterIcon :size="'16'" />
+        <FilterIcon size="16" />
         <span>筛选条件</span>
       </div>
       <div class="filter-content">
@@ -38,21 +36,21 @@
                 v-model="searchForm[field.code]"
                 :placeholder="`请输入${field.name}`"
                 clearable
+                size="small"
               />
             </t-form-item>
           </t-col>
         </t-row>
         <div class="filter-actions">
-          <t-button variant="outline" @click="resetSearch">重置</t-button>
-          <t-button theme="primary" @click="handleSearch">
-            <template #icon><SearchIcon /></template>
+          <t-button variant="outline" @click="resetSearch" size="small">重置</t-button>
+          <t-button theme="primary" @click="handleSearch" size="small">
+            <template #icon><SearchIcon size="14" /></template>
             搜索
           </t-button>
         </div>
       </div>
     </t-card>
 
-    <!-- 统计信息 -->
     <div class="stats-bar">
       <span class="stats-text">共 <strong>{{ pagination.total }}</strong> 条记录</span>
       <div class="stats-actions">
@@ -61,14 +59,14 @@
           variant="outline"
           theme="danger"
           @click="handleBatchDelete"
+          size="small"
         >
-          <template #icon><DeleteIcon /></template>
+          <template #icon><DeleteIcon size="14" /></template>
           批量删除 ({{ selectedRows.length }})
         </t-button>
       </div>
     </div>
 
-    <!-- 数据列表 -->
     <t-card class="table-card">
       <t-table
         :data="tableData"
@@ -93,7 +91,7 @@
               variant="text"
               @click="handleView(row)"
             >
-              <template #icon><ViewImageIcon /></template>
+              <template #icon><KeyIcon size="14" /></template>
               查看
             </t-button>
             <t-button
@@ -102,7 +100,7 @@
               theme="primary"
               @click="handleEdit(row)"
             >
-              <template #icon><EditIcon /></template>
+              <template #icon><EditIcon size="14" /></template>
               编辑
             </t-button>
             <t-popconfirm
@@ -110,7 +108,7 @@
               @confirm="handleDelete(row)"
             >
               <t-button size="small" theme="danger">
-                <template #icon><DeleteIcon /></template>
+                <template #icon><DeleteIcon size="14" /></template>
                 删除
               </t-button>
             </t-popconfirm>
@@ -119,7 +117,6 @@
       </t-table>
     </t-card>
 
-    <!-- 查看详情弹窗 -->
     <t-dialog
       v-model:visible="viewDialogVisible"
       :header="`查看 ${entityMeta?.name}`"
@@ -143,7 +140,6 @@
       </div>
     </t-dialog>
 
-    <!-- 编辑弹窗 -->
     <t-dialog
       v-model:visible="dialogVisible"
       :header="dialogTitle"
@@ -167,7 +163,7 @@ import { ref, reactive, computed, onMounted, markRaw } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { MessagePlugin } from 'tdesign-vue-next';
 import type { PrimaryTableCol } from 'tdesign-vue-next';
-import { ChevronLeftIcon, DownloadIcon, PlusIcon, FilterIcon, SearchIcon, DeleteIcon, EditIcon, ViewImageIcon } from 'tdesign-icons-vue-next';
+import { ChevronLeftIcon, DownloadIcon, PlusIcon, FilterIcon, SearchIcon, DeleteIcon, EditIcon, KeyIcon } from 'tdesign-icons-vue-next';
 import entityMetaApi from '../../../api/lowcode/entityMeta';
 import dynamicDataApi from '../../../api/lowcode/dynamicData';
 import DynamicForm from '../../../components/lowcode/DynamicForm.vue';
@@ -226,7 +222,7 @@ const tableColumns = computed<PrimaryTableCol[]>(() => {
   cols.push({ 
     colKey: 'operation', 
     title: '操作', 
-    width: 200, 
+    width: 220, 
     fixed: 'right',
   });
   return cols;
@@ -492,16 +488,18 @@ onMounted(() => {
 
 <style scoped lang="less">
 .data-list-page {
-  padding: 24px;
-  background: #f5f6f8;
-  min-height: calc(100vh - 64px);
+  padding: 0;
+  background: #f8fafc;
+  min-height: calc(100vh - 70px);
 }
 
 .page-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 24px;
+  padding: 24px;
+  background: #ffffff;
+  border-bottom: 1px solid #e2e8f0;
   
   .header-left {
     display: flex;
@@ -510,15 +508,19 @@ onMounted(() => {
     
     .title-group {
       .page-title {
-        font-size: 24px;
-        font-weight: 600;
-        color: #1f2329;
+        font-size: 26px;
+        font-weight: 700;
+        color: #1e293b;
         margin: 0 0 8px 0;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
       }
       
       .page-subtitle {
         font-size: 14px;
-        color: #8f959e;
+        color: #64748b;
         margin: 0;
       }
     }
@@ -528,22 +530,39 @@ onMounted(() => {
     display: flex;
     gap: 12px;
   }
+  
+  .back-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    
+    &:hover {
+      background: #f1f5f9;
+    }
+  }
 }
 
 .filter-card {
-  margin-bottom: 24px;
-  border-radius: 8px;
+  margin: 24px;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+  border: 1px solid #f1f5f9;
   
   .filter-header {
     display: flex;
     align-items: center;
     gap: 8px;
     font-size: 14px;
-    font-weight: 500;
-    color: #1f2329;
+    font-weight: 600;
+    color: #1e293b;
     padding-bottom: 16px;
-    border-bottom: 1px solid #f0f0f0;
+    border-bottom: 1px solid #e2e8f0;
     margin-bottom: 16px;
+    
+    :deep(.t-icon) {
+      color: #667eea;
+    }
   }
   
   .filter-content {
@@ -553,7 +572,7 @@ onMounted(() => {
       gap: 12px;
       margin-top: 16px;
       padding-top: 16px;
-      border-top: 1px solid #f0f0f0;
+      border-top: 1px solid #e2e8f0;
     }
   }
 }
@@ -562,14 +581,14 @@ onMounted(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 16px;
+  padding: 0 24px 16px;
   
   .stats-text {
     font-size: 14px;
-    color: #646a73;
+    color: #64748b;
     
     strong {
-      color: #1f2329;
+      color: #1e293b;
       font-weight: 600;
     }
   }
@@ -581,14 +600,16 @@ onMounted(() => {
 }
 
 .table-card {
-  background: #fff;
-  border-radius: 8px;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  margin: 0 24px 24px;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+  border: 1px solid #f1f5f9;
 }
 
 .detail-content {
   .empty-value {
-    color: #bbbfc4;
+    color: #94a3b8;
   }
 }
 </style>

@@ -69,20 +69,27 @@
           <SettingIcon />
         </t-button>
         
-        <div class="user-info" @click="toggleUserMenu">
-          <div class="user-avatar">
-            <UserIcon />
+        <div class="user-dropdown">
+          <t-button variant="text" class="user-btn" @click="toggleUserMenu">
+            <div class="user-info">
+              <div class="user-avatar">
+                <UserIcon />
+              </div>
+              <span class="user-name">{{ userName }}</span>
+              <ChevronDownIcon class="user-arrow" :class="{ rotated: showUserMenu }" />
+            </div>
+          </t-button>
+          <div v-show="showUserMenu" class="dropdown-menu">
+            <div 
+              v-for="item in userMenuItems" 
+              :key="item.value" 
+              class="dropdown-item"
+              @click="handleUserMenuClick(item.value)"
+            >
+              {{ item.label }}
+            </div>
           </div>
-          <span class="user-name">{{ userName }}</span>
-          <ChevronDownIcon class="user-arrow" :class="{ rotated: showUserMenu }" />
         </div>
-        
-        <t-dropdown 
-          v-model="showUserMenu"
-          :items="userMenuItems"
-          placement="bottom-right"
-          @click="handleUserMenuClick"
-        />
       </t-space>
     </div>
     
@@ -175,10 +182,8 @@ const breadcrumbItems = computed(() => {
 });
 
 const userMenuItems = [
-  { label: '个人中心', name: 'profile' },
-  { label: '修改密码', name: 'password' },
-  { type: 'divider' },
-  { label: '退出登录', name: 'logout' }
+  { label: '个人信息', value: 'profile' },
+  { label: '退出登录', value: 'logout' }
 ];
 
 function toggleSidebar() {
@@ -204,12 +209,14 @@ function toggleUserMenu() {
   showUserMenu.value = !showUserMenu.value;
 }
 
-function handleUserMenuClick(name: string) {
-  if (name === 'logout') {
+function handleUserMenuClick(value: string) {
+  if (value === 'logout') {
     sessionStorage.removeItem('access');
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
     router.push('/login');
   } else {
-    console.log('用户菜单:', name);
+    console.log('用户菜单:', value);
   }
   showUserMenu.value = false;
 }
@@ -235,11 +242,9 @@ function markAsRead(index: number) {
   height: 70px;
   padding: 0 24px;
   background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-  border-bottom: 1px solid #e2e8f0;
   position: sticky;
   top: 0;
   z-index: 100;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
 
 .header-left {
@@ -325,6 +330,12 @@ function markAsRead(index: number) {
 
 .breadcrumb {
   flex: 1;
+
+  :deep(.t-breadcrumb) {
+    border: none !important;
+    border-bottom: none !important;
+    box-shadow: none !important;
+  }
 }
 
 .header-right {
@@ -375,6 +386,14 @@ function markAsRead(index: number) {
   padding: 0 5px;
   border: 2px solid #fff;
   box-shadow: 0 2px 4px rgba(239, 68, 68, 0.3);
+}
+
+.user-btn {
+  padding: 0;
+  
+  :deep(.t-button__content) {
+    padding: 0;
+  }
 }
 
 .user-info {
@@ -512,6 +531,47 @@ function markAsRead(index: number) {
   
   :deep(.t-icon) {
     font-size: 18px;
+  }
+}
+
+.user-dropdown {
+  position: relative;
+  
+  .dropdown-menu {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    min-width: 160px;
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+    padding: 4px 0;
+    z-index: 1000;
+    
+    &::before {
+      content: '';
+      position: absolute;
+      top: -6px;
+      right: 16px;
+      width: 12px;
+      height: 12px;
+      background: #fff;
+      transform: rotate(45deg);
+      border-top: 1px solid #e2e8f0;
+      border-left: 1px solid #e2e8f0;
+    }
+  }
+  
+  .dropdown-item {
+    padding: 10px 16px;
+    font-size: 14px;
+    color: #334155;
+    cursor: pointer;
+    transition: background 0.2s;
+    
+    &:hover {
+      background: #f1f5f9;
+    }
   }
 }
 </style>
