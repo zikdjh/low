@@ -58,15 +58,17 @@ router.beforeEach((to) => {
     
     // 检查是否需要登录
     const token = localStorage.getItem('token');
-    const publicPages = ['/login', '/home'];
+    const access = sessionStorage.getItem('access');
+    const isLoggedIn = token || access;
+    const publicPages = ['/login'];
     
-    if (!token && !publicPages.includes(to.path)) {
+    if (!isLoggedIn && !publicPages.includes(to.path)) {
         // 未登录且访问需要权限的页面，跳转到登录页
         return {
             path: '/login',
             query: { redirect: to.fullPath }
         };
-    } else if (token && to.path === '/login') {
+    } else if (isLoggedIn && to.path === '/login') {
         // 已登录访问登录页，跳转到首页
         return '/home';
     }

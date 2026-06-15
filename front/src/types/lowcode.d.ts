@@ -1,5 +1,26 @@
 // 低代码平台相关类型定义
 
+// ---- 数据字典 ----
+
+export interface DictType {
+  id?: number;
+  code: string;
+  name: string;
+  description?: string;
+  status?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface DictItem {
+  id?: number;
+  dictCode?: string;
+  value: string;
+  label: string;
+  sortOrder?: number;
+  status?: string;
+}
+
 // ---- 枚举 ----
 
 export type FieldType =

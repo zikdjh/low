@@ -1,16 +1,22 @@
 import request from '../index';
 import type { PageSchema } from '../../types/lowcode';
 
+interface ApiResponse<T> {
+  code: number;
+  data: T;
+  message?: string;
+}
+
 export const pageSchemaApi = {
-  getAllPages: () => request.get<PageSchema[]>('/lowcode/page'),
+  getAllPages: () => request.get<ApiResponse<PageSchema[]>>('/lowcode/page'),
   
   getPagesByStatus: (status: string) => 
-    request.get<PageSchema[]>(`/lowcode/page/status/${status}`),
+    request.get<ApiResponse<PageSchema[]>>(`/lowcode/page/status/${status}`),
   
   getByPageCode: (pageCode: string) => 
-    request.get<PageSchema>(`/lowcode/page/code/${pageCode}`),
+    request.get<ApiResponse<PageSchema>>(`/lowcode/page/code/${pageCode}`),
   
-  getById: (id: number) => request.get<PageSchema>(`/lowcode/page/${id}`),
+  getById: (id: number) => request.get<ApiResponse<PageSchema>>(`/lowcode/page/${id}`),
   
   create: (data: PageSchema) => request.post<PageSchema>('/lowcode/page', data),
   

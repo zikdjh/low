@@ -15,26 +15,26 @@
           <div class="logo-wrapper">
             <CodeIcon size="48" />
           </div>
-          <h1 class="brand-title">低代码开发平台</h1>
-          <p class="brand-subtitle">Low Code Development Platform</p>
+          <h1 class="brand-title">LOWCODE</h1>
+          <p class="brand-subtitle">低代码开发平台</p>
           <div class="features">
             <div class="feature-item">
-              <CheckCircleFilledIcon size="16" />
-              <span>可视化页面设计</span>
+              <CheckCircleFilledIcon size="18" />
+              <span>快速构建应用</span>
             </div>
             <div class="feature-item">
-              <CheckCircleFilledIcon size="16" />
-              <span>动态数据管理</span>
+              <CheckCircleFilledIcon size="18" />
+              <span>可视化设计</span>
             </div>
             <div class="feature-item">
-              <CheckCircleFilledIcon size="16" />
-              <span>快速应用构建</span>
+              <CheckCircleFilledIcon size="18" />
+              <span>一键部署</span>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- 右侧登录表单区域 -->
+      <!-- 右侧表单区域 -->
       <div class="form-section">
         <div class="form-header">
           <h2>{{ isLogin ? '欢迎回来' : '创建账户' }}</h2>
@@ -73,83 +73,83 @@
           </t-form-item>
 
           <t-form-item name="password">
-          <t-input
-            v-model="formData.password"
-            type="password"
-            placeholder="请输入密码"
-            size="large"
-            clearable
-          >
-            <template #prefix-icon><LockOnIcon /></template>
-          </t-input>
-        </t-form-item>
+            <t-input
+              v-model="formData.password"
+              type="password"
+              placeholder="请输入密码"
+              size="large"
+              clearable
+            >
+              <template #prefix-icon><LockOnIcon /></template>
+            </t-input>
+          </t-form-item>
 
-        <!-- 注册时显示确认密码 -->
-        <t-form-item v-if="!isLogin" name="confirmPassword">
-          <t-input
-            v-model="formData.confirmPassword"
-            type="password"
-            placeholder="请再次输入密码"
-            size="large"
-            clearable
-          >
-            <template #prefix-icon><LockOnIcon /></template>
-          </t-input>
-        </t-form-item>
+          <!-- 注册时显示确认密码 -->
+          <t-form-item v-if="!isLogin" name="confirmPassword">
+            <t-input
+              v-model="formData.confirmPassword"
+              type="password"
+              placeholder="请再次输入密码"
+              size="large"
+              clearable
+            >
+              <template #prefix-icon><LockOnIcon /></template>
+            </t-input>
+          </t-form-item>
 
-        <!-- 登录时的额外选项 -->
-        <div v-if="isLogin" class="form-options">
-          <t-checkbox v-model="rememberMe">记住我</t-checkbox>
-          <a href="#" class="forgot-link">忘记密码？</a>
+          <!-- 登录时的额外选项 -->
+          <div v-if="isLogin" class="form-options">
+            <t-checkbox v-model="rememberMe">记住我</t-checkbox>
+            <a href="#" class="forgot-link">忘记密码？</a>
+          </div>
+
+          <t-form-item>
+            <t-button
+              theme="primary"
+              type="submit"
+              block
+              size="large"
+              :loading="loading"
+              class="submit-btn"
+            >
+              {{ isLogin ? '登 录' : '注 册' }}
+            </t-button>
+          </t-form-item>
+        </t-form>
+
+        <!-- 切换登录/注册 -->
+        <div class="switch-mode">
+          <span>{{ isLogin ? '还没有账号？' : '已有账号？' }}</span>
+          <a href="#" @click.prevent="toggleMode">{{ isLogin ? '立即注册' : '返回登录' }}</a>
         </div>
 
-        <t-form-item>
-          <t-button
-            theme="primary"
-            type="submit"
-            block
-            size="large"
-            :loading="loading"
-            class="submit-btn"
-          >
-            {{ isLogin ? '登 录' : '注 册' }}
-          </t-button>
-        </t-form-item>
-      </t-form>
+        <!-- 第三方登录 -->
+        <div v-if="isLogin" class="third-party-login">
+          <t-divider>其他登录方式</t-divider>
+          <div class="social-icons">
+            <t-tooltip content="微信登录">
+              <div class="social-icon wechat">
+                <LogoWechatpayIcon size="20" />
+              </div>
+            </t-tooltip>
+            <t-tooltip content="GitHub登录">
+              <div class="social-icon github">
+                <LogoGithubIcon size="20" />
+              </div>
+            </t-tooltip>
+            <t-tooltip content="企业微信">
+              <div class="social-icon work">
+                <LogoWecomIcon size="20" />
+              </div>
+            </t-tooltip>
+          </div>
+        </div>
 
-      <!-- 切换登录/注册 -->
-      <div class="switch-mode">
-        <span>{{ isLogin ? '还没有账号？' : '已有账号？' }}</span>
-        <a href="#" @click.prevent="toggleMode">{{ isLogin ? '立即注册' : '返回登录' }}</a>
-      </div>
-
-      <!-- 第三方登录 -->
-      <div v-if="isLogin" class="third-party-login">
-        <t-divider>其他登录方式</t-divider>
-        <div class="social-icons">
-          <t-tooltip content="微信登录">
-            <div class="social-icon wechat">
-              <LogoWechatpayIcon size="20" />
-            </div>
-          </t-tooltip>
-          <t-tooltip content="GitHub登录">
-            <div class="social-icon github">
-              <LogoGithubIcon size="20" />
-            </div>
-          </t-tooltip>
-          <t-tooltip content="企业微信">
-            <div class="social-icon work">
-              <LogoWecomIcon size="20" />
-            </div>
-          </t-tooltip>
+        <!-- 底部信息 -->
+        <div class="footer-info">
+          <p>&copy; 2024 低代码开发平台 · 让开发更简单</p>
         </div>
       </div>
-    </div>
-  </div>
-
-    <!-- 底部信息 -->
-    <div class="footer-info">
-      <p>&copy; 2024 低代码开发平台 · 让开发更简单</p>
     </div>
   </div>
 </template>
@@ -197,7 +197,7 @@ const rules = {
     { min: 2, max: 20, message: '用户名长度在 2 到 20 个字符', trigger: 'blur' },
   ],
   confirmPassword: [
-    { required: true, message: '请再次输入密码', trigger: 'blur' },
+    { required: true, message: '请再次输入密码', trigger: 'blur' },        
     {
       validator: (val: string) => val === formData.password,
       message: '两次输入的密码不一致',
@@ -234,9 +234,9 @@ async function handleSubmit({ validateResult }: any) {
         }));
         // 同时设置 API 请求所需的 sessionStorage
         const accessPayload = { token, expiresAt: Date.now() + 45 * 60 * 1000 };
-        sessionStorage.setItem('access', JSON.stringify(accessPayload));
+        sessionStorage.setItem('access', JSON.stringify(accessPayload));        
 
-        MessagePlugin.success('登录成功！');
+        MessagePlugin.success('登录成功');
 
         // 跳转到目标页面或首页
         const redirect = route.query.redirect as string;
@@ -245,7 +245,7 @@ async function handleSubmit({ validateResult }: any) {
         }, 500);
       } else {
         // 注册逻辑
-        MessagePlugin.success('注册成功！请登录');
+        MessagePlugin.success('注册成功，请登录');
         isLogin.value = true;
         formData.password = '';
         formData.confirmPassword = '';
@@ -548,17 +548,15 @@ async function handleSubmit({ validateResult }: any) {
       }
     }
   }
-}
 
-.footer-info {
-  position: absolute;
-  bottom: 20px;
-  left: 0;
-  right: 0;
-  text-align: center;
-  color: rgba(255, 255, 255, 0.75);
-  font-size: 13px;
-  z-index: 5;
+  .footer-info {
+    text-align: center;
+    color: #94a3b8;
+    font-size: 13px;
+    padding: 20px 0;
+    border-top: 1px solid #e2e8f0;
+    margin-top: 20px;
+  }
 }
 
 @media (max-width: 768px) {

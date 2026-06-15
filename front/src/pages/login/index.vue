@@ -5,6 +5,7 @@
       <div class="decoration-circle circle-1"></div>
       <div class="decoration-circle circle-2"></div>
       <div class="decoration-circle circle-3"></div>
+      <div class="decoration-circle circle-4"></div>
     </div>
 
     <!-- 主要内容区域 -->
@@ -12,13 +13,11 @@
       <!-- 左侧品牌展示区 -->
       <div class="brand-section">
         <div class="brand-content">
-          <h1 class="brand-title">
+          <div class="brand-icon-wrapper">
             <t-icon name="logo-vue" size="48px" class="brand-icon"/>
-            欢迎来到系统
-          </h1>
-          <p class="brand-description">
-            为您提供优质的服务体验
-          </p>
+          </div>
+          <h1 class="brand-title">欢迎来到系统</h1>
+          <p class="brand-description">为您提供优质的服务体验</p>
           <div class="feature-list">
             <div class="feature-item">
               <t-icon name="check-circle"/>
@@ -39,6 +38,10 @@
       <!-- 右侧表单区域 -->
       <div class="form-section">
         <div class="form-container">
+          <div class="form-header">
+            <h2 class="form-title">欢迎回来</h2>
+            <p class="form-subtitle">登录您的账号，开启精彩之旅</p>
+          </div>
           <Login @success="handleLoginSuccess"/>
         </div>
       </div>

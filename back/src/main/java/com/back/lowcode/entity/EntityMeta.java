@@ -28,7 +28,7 @@ public class EntityMeta {
     private String code;
 
     /** 实体显示名称，如 "客户"、"订单" */
-    @Column(nullable = false, length = 128)
+    @Column(name = "entity_name", nullable = false, length = 128)
     private String name;
 
     /** 实际数据库表名，由 code 加 lc_ 前缀生成 */
@@ -45,7 +45,7 @@ public class EntityMeta {
      * published — 已创建物理表，可进行 CRUD
      * archived — 已归档，不可操作
      */
-    @Column(nullable = false, length = 16)
+    @Column(name = "entity_status", nullable = false, length = 16)
     @Builder.Default
     private String status = "draft";
 

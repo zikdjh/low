@@ -50,7 +50,7 @@
           </div>
           <div class="card-info">
             <h3 class="card-name">{{ page.name }}</h3>
-            <p class="card-code">{{ page.pageCode }}</p>
+            <p class="card-code">{{ page.code }}</p>
           </div>
           <div class="card-footer">
             <span class="status-tag" :class="page.status">
@@ -134,7 +134,7 @@
             <input
               type="text"
               class="form-input"
-              v-model="formData.pageCode"
+              v-model="formData.code"
               placeholder="请输入页面编码（小写字母和连字符）"
             />
           </div>
@@ -149,20 +149,12 @@
           </div>
           <div class="form-item">
             <label>关联实体</label>
-            <select class="form-select" v-model="formData.entityCode">
-              <option value="">不关联实体</option>
-              <option v-for="entity in entities" :key="entity.code" :value="entity.code">
+            <select class="form-select" v-model="formData.entityId">
+              <option :value="undefined">不关联实体</option>
+              <option v-for="entity in entities" :key="entity.id" :value="entity.id">
                 {{ entity.name }} ({{ entity.code }})
               </option>
             </select>
-          </div>
-          <div class="form-item">
-            <label>描述</label>
-            <textarea
-              class="form-textarea"
-              v-model="formData.description"
-              placeholder="请输入页面描述"
-            ></textarea>
           </div>
         </div>
         <div class="modal-footer">
@@ -176,10 +168,10 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
-import { pageSchemaApi } from '../../api/lowcode/pageSchema';
-import { entityMetaApi } from '../../api/lowcode/entityMeta';
-import type { PageSchema, EntityMeta } from '../../types/lowcode';
-import { ElMessage } from 'tdesign-vue-next';
+import { pageSchemaApi } from '../../../api/lowcode/pageSchema';
+import entityMetaApi from '../../../api/lowcode/entityMeta';
+import type { PageSchema, EntityMeta, PageType } from '../../../types/lowcode';
+import { MessagePlugin } from 'tdesign-vue-next';
 
 const pages = ref<PageSchema[]>([]);
 const searchKeyword = ref('');
@@ -189,10 +181,9 @@ const entities = ref<EntityMeta[]>([]);
 
 const formData = ref({
   name: '',
-  pageCode: '',
-  pageType: 'custom',
-  entityCode: '',
-  description: '',
+  code: '',
+  pageType: 'custom' as PageType,
+  entityId: undefined as number | undefined,
 });
 
 onMounted(() => {
@@ -202,14 +193,14 @@ onMounted(() => {
 
 async function loadPages() {
   const res = await pageSchemaApi.getAllPages();
-  if (res.code === 0) {
-    let data = res.data;
+  if (res.data.code === 0) {
+    let data = res.data.data;
     if (searchKeyword.value) {
       const keyword = searchKeyword.value.toLowerCase();
       data = data.filter(
         (page: PageSchema) =>
           page.name.toLowerCase().includes(keyword) ||
-          page.pageCode.toLowerCase().includes(keyword)
+          page.code.toLowerCase().includes(keyword)
       );
     }
     pages.value = data;
@@ -217,9 +208,9 @@ async function loadPages() {
 }
 
 async function loadEntities() {
-  const res = await entityMetaApi.getList({ page: 1, pageSize: 100 });
-  if (res.code === 0) {
-    entities.value = res.data.records || [];
+  const res = await entityMetaApi.list({ page: 1, pageSize: 100 });
+  if (res.data.code === 0) {
+    entities.value = res.data.data.records || [];
   }
 }
 
@@ -227,10 +218,9 @@ function handleCreate() {
   editingPage.value = null;
   formData.value = {
     name: '',
-    pageCode: '',
-    pageType: 'custom',
-    entityCode: '',
-    description: '',
+    code: '',
+    pageType: 'custom' as PageType,
+    entityId: undefined,
   };
   showCreateModal.value = true;
 }
@@ -239,17 +229,16 @@ function handleEdit(page: PageSchema) {
   editingPage.value = page;
   formData.value = {
     name: page.name || '',
-    pageCode: page.pageCode || '',
+    code: page.code || '',
     pageType: page.pageType || 'custom',
-    entityCode: page.entityCode || '',
-    description: page.description || '',
+    entityId: page.entityId,
   };
   showCreateModal.value = true;
 }
 
 async function handleSubmit() {
-  if (!formData.value.name || !formData.value.pageCode) {
-    ElMessage.warning('请填写页面名称和编码');
+  if (!formData.value.name || !formData.value.code) {
+    MessagePlugin.warning('请填写页面名称和编码');
     return;
   }
 
@@ -259,7 +248,7 @@ async function handleSubmit() {
         ...editingPage.value,
         ...formData.value,
       });
-      ElMessage.success('更新成功');
+      MessagePlugin.success('更新成功');
     } else {
       await pageSchemaApi.create({
         ...formData.value,
@@ -267,36 +256,36 @@ async function handleSubmit() {
         version: 1,
         status: 'draft',
       });
-      ElMessage.success('创建成功');
+      MessagePlugin.success('创建成功');
     }
     showCreateModal.value = false;
     loadPages();
   } catch (error) {
-    ElMessage.error('操作失败');
+    MessagePlugin.error('操作失败');
   }
 }
 
 function handleView(page: PageSchema) {
-  window.open(`/lowcode/view/${page.pageCode}`, '_blank');
+  window.open(`/lowcode/view/${page.code}`, '_blank');
 }
 
 async function handlePublish(page: PageSchema) {
   try {
     await pageSchemaApi.publish(page.id!);
-    ElMessage.success('发布成功');
+    MessagePlugin.success('发布成功');
     loadPages();
   } catch (error) {
-    ElMessage.error('发布失败');
+    MessagePlugin.error('发布失败');
   }
 }
 
 async function handleUnpublish(page: PageSchema) {
   try {
     await pageSchemaApi.unpublish(page.id!);
-    ElMessage.success('已取消发布');
+    MessagePlugin.success('已取消发布');
     loadPages();
   } catch (error) {
-    ElMessage.error('操作失败');
+    MessagePlugin.error('操作失败');
   }
 }
 
@@ -306,10 +295,10 @@ async function handleDelete(page: PageSchema) {
   }
   try {
     await pageSchemaApi.delete(page.id!);
-    ElMessage.success('删除成功');
+    MessagePlugin.success('删除成功');
     loadPages();
   } catch (error) {
-    ElMessage.error('删除失败');
+    MessagePlugin.error('删除失败');
   }
 }
 </script>

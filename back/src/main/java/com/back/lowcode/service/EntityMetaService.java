@@ -1,6 +1,7 @@
 package com.back.lowcode.service;
 
 import com.back.lowcode.config.LowCodeConstants;
+import com.back.lowcode.config.MySQLReservedWords;
 import com.back.lowcode.dto.EntityListRequest;
 import com.back.lowcode.dto.EntityMetaDTO;
 import com.back.lowcode.dto.FieldMetaDTO;
@@ -157,6 +158,10 @@ public class EntityMetaService {
             if (f.getCode() == null || !f.getCode().matches("^[a-z][a-zA-Z0-9_]*$")) {
                 throw new IllegalArgumentException("非法字段编码: " + f.getCode());
             }
+            if (MySQLReservedWords.isReserved(f.getCode())) {
+                throw new IllegalArgumentException(
+                        "字段编码不能使用 MySQL 保留字: '" + f.getCode() + "'，请换一个名称");
+            }
         }
 
         List<FieldMeta> oldFields = fieldMetaRepository.findByEntityIdOrderBySortOrderAsc(entityId);
@@ -250,6 +255,10 @@ public class EntityMetaService {
         if (code == null || !CODE_PATTERN.matcher(code).matches()) {
             throw new IllegalArgumentException(
                     "实体编码格式非法: '" + code + "'，需匹配 " + LowCodeConstants.ENTITY_CODE_PATTERN);
+        }
+        if (MySQLReservedWords.isReserved(code)) {
+            throw new IllegalArgumentException(
+                    "实体编码不能使用 MySQL 保留字: '" + code + "'，请换一个名称");
         }
     }
 }

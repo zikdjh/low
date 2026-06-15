@@ -36,7 +36,7 @@ public class DdlLog {
     private String operationType;
 
     /** 执行结果: SUCCESS, FAILED */
-    @Column(nullable = false, length = 16)
+    @Column(name = "exec_result", nullable = false, length = 16)
     private String result;
 
     /** 错误信息（如果有） */

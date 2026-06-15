@@ -1,6 +1,7 @@
 package com.back.lowcode.service;
 
 import com.back.lowcode.config.LowCodeConstants;
+import com.back.lowcode.config.MySQLReservedWords;
 import com.back.lowcode.entity.DdlLog;
 import com.back.lowcode.entity.EntityMeta;
 import com.back.lowcode.entity.FieldMeta;
@@ -206,6 +207,10 @@ public class DDLService {
     private void validateColumnName(String columnName) {
         if (columnName == null || !COLUMN_PATTERN.matcher(columnName).matches()) {
             throw new IllegalArgumentException("非法列名: " + columnName);
+        }
+        if (MySQLReservedWords.isReserved(columnName)) {
+            throw new IllegalArgumentException(
+                    "列名不能使用 MySQL 保留字: '" + columnName + "'，请换一个名称");
         }
     }
 }
