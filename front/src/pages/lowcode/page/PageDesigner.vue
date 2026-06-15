@@ -5,6 +5,7 @@
       <div class="header-left">
         <t-button variant="text" @click="goBack" class="back-btn">
           <template #icon><ChevronLeftIcon /></template>
+          返回主页
         </t-button>
         <div class="page-info">
           <input 
@@ -575,8 +576,8 @@ import {
   SettingIcon, DownloadIcon, RectangleIcon,
   AlignTopIcon, InkIcon, TapeIcon, ConstraintIcon
 } from 'tdesign-icons-vue-next';
-import MousePointerIcon from 'tdesign-icons-vue-next';
-import AlignCenterIcon from 'tdesign-icons-vue-next';
+const MousePointerIcon = { name: 'MousePointerIcon' };
+const AlignCenterIcon = { name: 'AlignCenterIcon' };
 
 const router = useRouter();
 

@@ -1,16 +1,22 @@
 import request from '../index';
 import type { ComponentDef } from '../../types/lowcode';
 
+interface ApiResponse<T> {
+  code: number;
+  data: T;
+  message?: string;
+}
+
 export const componentDefApi = {
-  getAllComponents: () => request.get<ComponentDef[]>('/lowcode/component'),
+  getAllComponents: () => request.get<ApiResponse<ComponentDef[]>>('/lowcode/component'),
   
-  getComponentsGrouped: () => request.get<Record<string, ComponentDef[]>>('/lowcode/component/grouped'),
+  getComponentsGrouped: () => request.get<ApiResponse<Record<string, ComponentDef[]>>>('/lowcode/component/grouped'),
   
   getComponentsByCategory: (category: string) => 
-    request.get<ComponentDef[]>(`/lowcode/component/category/${category}`),
+    request.get<ApiResponse<ComponentDef[]>>(`/lowcode/component/category/${category}`),
   
   getByCompKey: (compKey: string) => 
-    request.get<ComponentDef>(`/lowcode/component/key/${compKey}`),
+    request.get<ApiResponse<ComponentDef>>(`/lowcode/component/key/${compKey}`),
   
   getById: (id: number) => request.get<ComponentDef>(`/lowcode/component/${id}`),
   

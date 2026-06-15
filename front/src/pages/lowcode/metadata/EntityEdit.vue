@@ -2,10 +2,16 @@
   <div class="entity-edit-page">
     <!-- 页面头部 -->
     <div class="page-header">
-      <t-button variant="text" @click="goBack">
-        <template #icon><t-icon name="chevron-left" /></template>
-        返回
-      </t-button>
+      <t-space>
+        <t-button variant="text" @click="goHome">
+          <template #icon><HomeIcon /></template>
+          返回主页
+        </t-button>
+        <t-button variant="text" @click="goBack">
+          <template #icon><t-icon name="chevron-left" /></template>
+          返回列表
+        </t-button>
+      </t-space>
       <h2>{{ isNew ? '新建实体' : '编辑实体' }}</h2>
       <t-space>
         <t-button @click="goBack">取消</t-button>
@@ -87,6 +93,7 @@ import { ref, reactive, onMounted, computed } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { MessagePlugin } from 'tdesign-vue-next';
 import type { PrimaryTableCol } from 'tdesign-vue-next';
+import { HomeIcon } from 'tdesign-icons-vue-next';
 import entityMetaApi from '../../../api/lowcode/entityMeta';
 import type { EntityMeta, FieldMeta, FieldType } from '../../../types/lowcode';
 
@@ -212,6 +219,10 @@ async function handleSave() {
 
 function goBack() {
   router.push('/lowcode/entity');
+}
+
+function goHome() {
+  router.push('/home');
 }
 
 onMounted(async () => {

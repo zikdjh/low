@@ -9,7 +9,7 @@
           title="撤销"
           class="toolbar-btn"
         >
-          <template #icon><RotateCcwIcon size="18" /></template>
+          <template #icon><RollbackIcon size="18" /></template>
         </t-button>
         <t-button
           variant="text"
@@ -18,7 +18,7 @@
           title="重做"
           class="toolbar-btn"
         >
-          <template #icon><RotateCwIcon size="18" /></template>
+          <template #icon><ForwardIcon size="18" /></template>
         </t-button>
         <div class="divider"></div>
         <t-button
@@ -74,10 +74,13 @@ import { useDesignerStore } from '../../../store/modules/designer';
 import CanvasComponent from './CanvasComponent.vue';
 import { pageSchemaApi } from '../../../api/lowcode/pageSchema';
 import { MessagePlugin } from 'tdesign-vue-next';
-import { RotateCcwIcon, RotateCwIcon, DeleteIcon, SaveIcon, KeyIcon, LayoutIcon } from 'tdesign-icons-vue-next';
+import { RollbackIcon, ForwardIcon, DeleteIcon, SaveIcon, KeyIcon, LayoutIcon } from 'tdesign-icons-vue-next';
+
+import { storeToRefs } from 'pinia';
 
 const designerStore = useDesignerStore();
-const { componentTree, selectedComponentId, canUndo, canRedo, addComponent, deleteComponent, selectComponent, undo, redo, savePage, pageSchema } = designerStore;
+const { componentTree, selectedComponentId, pageSchema } = storeToRefs(designerStore);
+const { canUndo, canRedo, addComponent, deleteComponent, selectComponent, undo, redo, savePage } = designerStore;
 
 function handleDrop(event: DragEvent) {
   if (event.dataTransfer) {
@@ -125,9 +128,9 @@ function handleDelete() {
 
 async function handleSave() {
   const name = (pageSchema.value?.name || '未命名页面').trim() || '未命名页面';
-  const pageCode = (pageSchema.value?.pageCode || name.toLowerCase().replace(/\s+/g, '-')).trim();
+  const code = (pageSchema.value?.code || name.toLowerCase().replace(/\s+/g, '-')).trim();
   
-  const saved = savePage(name, pageCode);
+  const saved = savePage(name, code);
   
   try {
     if (saved.id) {

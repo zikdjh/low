@@ -28,25 +28,25 @@
               <t-input
                 v-if="prop.type === 'string'"
                 :value="localProps[key]"
-                @input="updateProp(key, ($event.target as HTMLInputElement).value)"
+                @input="updateProp(String(key), String(($event.target as HTMLInputElement).value))"
                 size="small"
               />
               <t-input
                 v-else-if="prop.type === 'number'"
                 type="number"
                 :value="localProps[key]"
-                @input="updateProp(key, Number(($event.target as HTMLInputElement).value))"
+                @input="updateProp(String(key), Number(($event.target as HTMLInputElement).value))"
                 size="small"
               />
               <t-switch
                 v-else-if="prop.type === 'boolean'"
                 :value="localProps[key]"
-                @change="updateProp(key, ($event.target as HTMLInputElement).checked)"
+                @change="updateProp(String(key), ($event as boolean))"
               />
               <t-select
                 v-else-if="prop.enum"
                 :value="localProps[key]"
-                @change="updateProp(key, $event)"
+                @change="updateProp(String(key), String($event))"
                 size="small"
               >
                 <t-option v-for="opt in prop.enum" :key="opt" :value="opt">{{ opt }}</t-option>
@@ -105,13 +105,15 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue';
+import { ref, watch } from 'vue';
 import { useDesignerStore } from '../../../store/modules/designer';
 import { componentDefApi } from '../../../api/lowcode/componentDef';
-import MousePointerIcon from 'tdesign-icons-vue-next';
+const MousePointerIcon = { name: 'MousePointerIcon' };
+import { storeToRefs } from 'pinia';
 
 const designerStore = useDesignerStore();
-const { selectedComponent, updateComponentProps, updateComponent } = designerStore;
+const { selectedComponent } = storeToRefs(designerStore);
+const { updateComponentProps, updateComponent } = designerStore;
 
 const localProps = ref<Record<string, any>>({});
 const localStyle = ref<Record<string, string>>({});
@@ -131,9 +133,9 @@ watch(selectedComponent, (component) => {
 
 async function loadPropsSchema(compKey: string) {
   const res = await componentDefApi.getByCompKey(compKey);
-  if (res.code === 0 && res.data) {
+  if (res.data.code === 0 && res.data.data) {
     try {
-      propsSchema.value = JSON.parse(res.data.propsSchemaJson || '{}');
+      propsSchema.value = JSON.parse(res.data.data.propsSchemaJson || '{}');
     } catch {
       propsSchema.value = null;
     }
@@ -142,22 +144,25 @@ async function loadPropsSchema(compKey: string) {
 
 function updateProp(key: string, value: any) {
   localProps.value[key] = value;
-  if (selectedComponent.value) {
-    updateComponentProps(selectedComponent.value.id, { [key]: value });
+  const comp = selectedComponent.value;
+  if (comp) {
+    updateComponentProps(comp.id, { [key]: value });
   }
 }
 
 function updateLabel() {
-  if (selectedComponent.value) {
-    updateComponent(selectedComponent.value.id, { label: localProps.value.label });
+  const comp = selectedComponent.value;
+  if (comp) {
+    updateComponent(comp.id, { label: localProps.value.label });
   }
 }
 
 function updateStyle(key: string, value: string) {
   localStyle.value[key] = value;
-  if (selectedComponent.value) {
-    const newStyle = { ...selectedComponent.value.style, [key]: value };
-    updateComponent(selectedComponent.value.id, { style: newStyle });
+  const comp = selectedComponent.value;
+  if (comp) {
+    const newStyle = { ...comp.style, [key]: value };
+    updateComponent(comp.id, { style: newStyle });
   }
 }
 </script>

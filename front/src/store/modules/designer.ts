@@ -27,7 +27,7 @@ export const useDesignerStore = defineStore('designer', () => {
 
   function initPage(schema: PageSchema | null = null) {
     pageSchema.value = schema || {
-      pageCode: '',
+      code: '',
       name: '',
       layoutJson: JSON.stringify([]),
       pageType: 'custom',
@@ -169,10 +169,10 @@ export const useDesignerStore = defineStore('designer', () => {
     return JSON.stringify(componentTree.value, null, 2);
   }
 
-  function savePage(name: string, pageCode: string) {
+  function savePage(name: string, code: string) {
     if (!pageSchema.value) {
       pageSchema.value = {
-        pageCode,
+        code,
         name,
         layoutJson: getLayoutJson(),
         pageType: 'custom',
@@ -181,7 +181,7 @@ export const useDesignerStore = defineStore('designer', () => {
       };
     } else {
       pageSchema.value.name = name;
-      pageSchema.value.pageCode = pageCode;
+      pageSchema.value.code = code;
       pageSchema.value.layoutJson = getLayoutJson();
     }
     return pageSchema.value;

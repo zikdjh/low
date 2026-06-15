@@ -41,8 +41,8 @@ const groupedComponents = ref<Record<string, ComponentDef[]>>({});
 
 onMounted(async () => {
   const res = await componentDefApi.getComponentsGrouped();
-  if (res.code === 0) {
-    groupedComponents.value = res.data;
+  if (res.data.code === 0) {
+    groupedComponents.value = res.data.data;
   }
 });
 

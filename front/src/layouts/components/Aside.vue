@@ -75,11 +75,6 @@
       </div>
     </div>
     
-    <!-- 折叠提示 -->
-    <div class="collapse-hint" :class="{ hidden: settingStore.isSidebarCollapsed }">
-      <ChevronLeftIcon class="collapse-icon" />
-      <span>点击收起</span>
-    </div>
   </aside>
 </template>
 
@@ -88,7 +83,7 @@ import { computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { 
   CodeIcon, PlusIcon, UploadIcon, DownloadIcon, 
-  FileTxtIcon, HelpCircleIcon, ChevronLeftIcon
+  FileTxtIcon, HelpCircleIcon
 } from 'tdesign-icons-vue-next';
 import { useSettingStore } from '../../store';
 import { homepageRouterList, lowcodeRouterList } from '../../router';
@@ -173,7 +168,6 @@ function openHelp() {
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
-  box-shadow: 2px 0 20px rgba(0, 0, 0, 0.1);
   
   &.collapsed {
     width: 72px;
@@ -414,47 +408,6 @@ function openHelp() {
   &:hover {
     background: rgba(255, 255, 255, 0.1);
     color: #fff;
-  }
-}
-
-.collapse-hint {
-  position: absolute;
-  bottom: 100px;
-  left: 0;
-  right: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  padding: 8px;
-  background: rgba(102, 126, 234, 0.2);
-  border-top: 1px solid rgba(102, 126, 234, 0.3);
-  font-size: 11px;
-  color: rgba(255, 255, 255, 0.6);
-  cursor: pointer;
-  transition: all 0.2s;
-  
-  &:hover {
-    background: rgba(102, 126, 234, 0.3);
-    color: #fff;
-  }
-  
-  &.hidden {
-    display: none;
-  }
-}
-
-.collapse-icon {
-  font-size: 12px;
-  animation: bounce 2s infinite;
-}
-
-@keyframes bounce {
-  0%, 100% {
-    transform: translateX(0);
-  }
-  50% {
-    transform: translateX(-3px);
   }
 }
 </style>

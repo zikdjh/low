@@ -1,7 +1,37 @@
 <template>
-  <div class="schema-renderer">
+  <div class="schema-renderer" v-if="!component">
     <div v-for="comp in componentTree" :key="comp.id">
-      <RenderComponent :component="comp" />
+      <div class="render-component">
+        <component
+          :is="getRenderComponent(comp.compKey)"
+          v-bind="getMergedProps(comp.props)"
+          class="inner-component"
+        >
+          <template v-if="comp.children.length > 0">
+            <div v-for="child in comp.children" :key="child.id">
+              <div class="render-component">
+                <component
+                  :is="getRenderComponent(child.compKey)"
+                  v-bind="getMergedProps(child.props)"
+                  class="inner-component"
+                >
+                  <template v-if="child.children.length > 0">
+                    <div v-for="grandchild in child.children" :key="grandchild.id">
+                      <div class="render-component">
+                        <component
+                          :is="getRenderComponent(grandchild.compKey)"
+                          v-bind="getMergedProps(grandchild.props)"
+                          class="inner-component"
+                        />
+                      </div>
+                    </div>
+                  </template>
+                </component>
+              </div>
+            </div>
+          </template>
+        </component>
+      </div>
     </div>
     <div v-if="componentTree.length === 0" class="empty-tip">
       <p>暂无内容</p>
@@ -58,63 +88,22 @@ onMounted(() => {
     }
   }
 });
-</script>
 
-<script setup lang="ts" name="RenderComponent">
-import { computed } from 'vue';
-import type { ComponentInstance } from '../../types/lowcode';
-
-const props = defineProps<{
-  component: ComponentInstance;
+defineProps<{
+  component?: ComponentInstance;
 }>();
 
-const componentMap: Record<string, any> = {
-  button: ButtonElement,
-  card: CardElement,
-  chart: ChartElement,
-  checkbox: CheckboxElement,
-  date: DateElement,
-  divider: DividerElement,
-  form: FormElement,
-  grid: GridElement,
-  input: InputElement,
-  list: ListElement,
-  radio: RadioElement,
-  select: SelectElement,
-  space: SpaceElement,
-  table: TableElement,
-  text: TextElement,
-};
+function getRenderComponent(compKey: string) {
+  return componentMap[compKey] || TextElement;
+}
 
-const renderComponent = computed(() => {
-  return componentMap[props.component.compKey] || TextElement;
-});
-
-const mergedProps = computed(() => {
+function getMergedProps(propsData: Record<string, any>) {
   return {
-    ...props.component.props,
-    modelValue: props.component.props.value,
+    ...propsData,
+    modelValue: propsData.value,
   };
-});
+}
 </script>
-
-<template>
-  <div class="render-component">
-    <component
-      :is="renderComponent"
-      v-bind="mergedProps"
-      class="inner-component"
-    >
-      <template v-if="component.children.length > 0">
-        <RenderComponent
-          v-for="child in component.children"
-          :key="child.id"
-          :component="child"
-        />
-      </template>
-    </component>
-  </div>
-</template>
 
 <style scoped>
 .schema-renderer {
