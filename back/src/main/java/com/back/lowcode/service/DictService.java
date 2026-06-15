@@ -4,7 +4,7 @@ import com.back.lowcode.entity.DictItem;
 import com.back.lowcode.entity.DictType;
 import com.back.lowcode.repository.DictItemRepository;
 import com.back.lowcode.repository.DictTypeRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -13,13 +13,11 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class DictService {
 
-    @Autowired
-    private DictTypeRepository dictTypeRepository;
-
-    @Autowired
-    private DictItemRepository dictItemRepository;
+    private final DictTypeRepository dictTypeRepository;
+    private final DictItemRepository dictItemRepository;
 
     public List<DictType> getAllDictTypes() {
         return dictTypeRepository.findByStatus("active");

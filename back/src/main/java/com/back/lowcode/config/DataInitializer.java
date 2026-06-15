@@ -6,7 +6,7 @@ import com.back.lowcode.entity.DictType;
 import com.back.lowcode.repository.ComponentDefRepository;
 import com.back.lowcode.repository.DictItemRepository;
 import com.back.lowcode.repository.DictTypeRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
@@ -14,16 +14,12 @@ import java.util.Arrays;
 import java.util.List;
 
 @Component
+@RequiredArgsConstructor
 public class DataInitializer implements CommandLineRunner {
 
-    @Autowired
-    private ComponentDefRepository componentDefRepository;
-
-    @Autowired
-    private DictTypeRepository dictTypeRepository;
-
-    @Autowired
-    private DictItemRepository dictItemRepository;
+    private final ComponentDefRepository componentDefRepository;
+    private final DictTypeRepository dictTypeRepository;
+    private final DictItemRepository dictItemRepository;
 
     @Override
     public void run(String... args) {

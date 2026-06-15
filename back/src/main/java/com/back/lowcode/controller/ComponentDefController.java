@@ -3,43 +3,42 @@ package com.back.lowcode.controller;
 import com.back.common.Result;
 import com.back.lowcode.entity.ComponentDef;
 import com.back.lowcode.service.ComponentDefService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/lowcode/component")
+@RequiredArgsConstructor
 public class ComponentDefController {
 
-    @Autowired
-    private ComponentDefService componentDefService;
+    private final ComponentDefService componentDefService;
 
     @GetMapping
-    public Result<List<ComponentDef>> getAllComponents() {
+    public Result getAllComponents() {
         return Result.success(componentDefService.getAllActiveComponents());
     }
 
     @GetMapping("/grouped")
-    public Result<Map<String, List<ComponentDef>>> getComponentsGroupedByCategory() {
+    public Result getComponentsGroupedByCategory() {
         return Result.success(componentDefService.getComponentsGroupedByCategory());
     }
 
     @GetMapping("/category/{category}")
-    public Result<List<ComponentDef>> getComponentsByCategory(@PathVariable String category) {
+    public Result getComponentsByCategory(@PathVariable String category) {
         return Result.success(componentDefService.getComponentsByCategory(category));
     }
 
     @GetMapping("/key/{compKey}")
-    public Result<ComponentDef> getByCompKey(@PathVariable String compKey) {
+    public Result getByCompKey(@PathVariable String compKey) {
         return componentDefService.getByCompKey(compKey)
                 .map(Result::success)
                 .orElse(Result.error("组件不存在"));
     }
 
     @GetMapping("/{id}")
-    public Result<ComponentDef> getById(@PathVariable Long id) {
+    public Result getById(@PathVariable Long id) {
         ComponentDef component = componentDefService.getById(id);
         if (component == null) {
             return Result.error("组件不存在");
@@ -48,23 +47,23 @@ public class ComponentDefController {
     }
 
     @PostMapping
-    public Result<ComponentDef> create(@RequestBody ComponentDef componentDef) {
+    public Result create(@RequestBody ComponentDef componentDef) {
         return Result.success(componentDefService.create(componentDef));
     }
 
     @PutMapping("/{id}")
-    public Result<ComponentDef> update(@PathVariable Long id, @RequestBody ComponentDef componentDef) {
+    public Result update(@PathVariable Long id, @RequestBody ComponentDef componentDef) {
         return Result.success(componentDefService.update(id, componentDef));
     }
 
     @DeleteMapping("/{id}")
-    public Result<Void> delete(@PathVariable Long id) {
+    public Result delete(@PathVariable Long id) {
         componentDefService.delete(id);
         return Result.success();
     }
 
     @PostMapping("/batch")
-    public Result<Void> batchSave(@RequestBody List<ComponentDef> components) {
+    public Result batchSave(@RequestBody List<ComponentDef> components) {
         componentDefService.batchSave(components);
         return Result.success();
     }

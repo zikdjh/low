@@ -2,98 +2,107 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## Project Overview
+## Repository layout
 
-A full-stack web application split into two modules:
+Two independent projects in one repo:
 
-- **`back/`** — Spring Boot 3.5.14 REST API, Java 21, Maven, MySQL + Redis
-- **`front/`** — Vue 3 + TypeScript SPA, Vite 8, TDesign Vue Next component library
+- `back/` — Spring Boot 3.5.14 / Java 17 / Maven backend (port **8080**)
+- `front/` — Vue 3 + TypeScript + Vite frontend (dev port **5174**)
 
-## Build & Run
+The frontend dev server proxies `/api/*` → `http://0.0.0.0:8080/*` (path prefix `/api` is stripped — see `front/vite.config.ts`). The backend itself does **not** mount controllers under `/api`; that prefix exists only as a frontend convention.
 
-### Backend (requires JDK 21, MySQL, Redis)
+## Common commands
+
+### Backend (`back/`)
 
 ```bash
-# Development run (Maven wrapper)
-cd back && ./mvnw spring-boot:run     # Windows: mvnw.cmd spring-boot:run
-
-# Run all tests
-./mvnw test
-
-# Run a single test class
-./mvnw test -Dtest=BackApplicationTests
-
-# Package JAR
-./mvnw clean package -DskipTests
+# from back/
+./mvnw spring-boot:run          # run dev server
+./mvnw.cmd spring-boot:run      # Windows / cmd
+./mvnw test                     # run all tests
+./mvnw test -Dtest=ClassName    # run a single test class
+./mvnw clean package            # build jar
 ```
 
-Server starts on port **8080**. Requires MySQL database `low_end` and Redis on localhost:6379.
-Configuration: `back/src/main/resources/application.yaml`.
+Requires MySQL on `127.0.0.1:3306` with database `low_end` and Redis on `localhost:6379`. Credentials are hard-coded in `back/src/main/resources/application.yaml` (`root` / `zc@qq.com0501`) — change locally rather than committing. `spring.jpa.hibernate.ddl-auto: update` auto-creates schema for the metadata tables on startup.
 
-### Frontend (requires Node.js)
+### Frontend (`front/`)
 
 ```bash
-cd front
+# from front/
 npm install
-npm run dev       # Start dev server on port 5174
-npm run build     # Type-check + production build
-npm run preview   # Preview production build
+npm run dev                     # vite dev server on :5174
+npm run build                   # vue-tsc + vite build
+npm run preview                 # preview built bundle
 ```
 
-Vite dev server proxies `/api` → `http://0.0.0.0:8080` (strips `/api` prefix on rewrite).
+Backend must be running for any low-code feature; the frontend proxies all `/api` calls to it.
 
 ## Architecture
 
-### Backend (`com.back`)
+This is a **low-code platform**: end users define business entities in the UI, the backend creates real MySQL tables for them, and a visual page designer composes pages over those entities.
 
-Flat package-by-feature structure (early stage — no controllers/services/repositories exist yet):
+### Two layers of "data"
 
-| Package | Purpose |
-|---------|---------|
-| `common/` | `Result` — unified API response `{code, msg, data}` (1=success, 0=error). `Constant` — thread pool sizes, token type strings (`access`/`refresh`). `RedisConstant` — Redis scan defaults. |
-| `config/` | `WebConfig` — registers `PathInterceptor` globally and configures CORS (all origins, credentials). `basic/JacksonConfig` — custom `ObjectMapper` bean (`endObjectMapper`) with JavaTimeModule, no timestamp serialization, lenient unknown properties. `basic/ThreadPoolConfig` — `deleteDataExecutor` bean with `@PreDestroy` graceful shutdown. |
-| `interceptors/` | `PathInterceptor` — logs every request path via SLF4J, always returns `true`. |
-| `annotation/` | `@RateLimit` — method-level annotation for Redis-backed rate limiting (prefix, time window, count limit, custom message). Not yet wired to an aspect/interceptor. |
-| `exception/` | `GlobalExceptionHandler` (@RestControllerAdvice) — catches `Exception`, `NoResourceFoundException` (404), `HandlerMethodValidationException`, `MissingServletRequestParameterException`, `RejectedExecutionException`, `HttpRequestMethodNotSupportedException`. Custom `SqlInsertException`/`SqlUpdateException`/`SqlDeleteException` extend `RuntimeException`. |
-| `utils/` | `RedisUtil` — static utility for Redis Hash CRUD with Jackson serialization. Handles: JSON-to-hash, hash-to-object, pipelined batch operations, SCAN-based key listing (avoids `KEYS *`), object-to-map conversion with nested JSON handling. All methods take `StringRedisTemplate` and `ObjectMapper` explicitly. |
+There are two completely separate data planes — keep them straight when reading code:
 
-**Dependencies**: Spring Boot Web, Spring Data JPA (MySQL via HikariCP pool, max 30 connections), Spring Data Redis (Lettuce, pool max 10), Validation, java-jwt 4.5.1, Lombok.
+1. **Metadata plane** — JPA entities under `back/src/main/java/com/back/lowcode/entity/` (`EntityMeta`, `FieldMeta`, `PageSchema`, `ComponentDef`, `DictType`, `DictItem`, `DdlLog`). Stored in fixed tables prefixed `lc_*`, managed by Spring Data JPA repositories.
+2. **Dynamic data plane** — user-defined business tables. These have **no JPA entity classes**; they are accessed through `JdbcTemplate` / `NamedParameterJdbcTemplate` in `DynamicDataService`, with column lists driven by `FieldMeta` rows looked up at request time.
 
-### Frontend
+When changing low-code code, never mix the two: don't add `@Entity` for user data, don't bypass `FieldMeta` to read user tables.
 
-**Routing** — `router/index.ts` auto-discovers route modules via `import.meta.glob`:
-- `./modules/**/home.ts` — main routes (currently `/` → redirect to `/home`, using `Layout`)
-- `./modules/**/Login.ts` — login route (`/login`, hidden from nav)
+### Entity lifecycle
 
-**State management** — Pinia 3 with `pinia-plugin-persistedstate`:
-- `useSettingStore` — layout mode (`light`/`dark`/`auto`), side mode, brand theme color. Generates TDesign color palettes via `tvision-color`. Persisted to localStorage.
-- `useMarkdownEditorStore` — editor/preview/code themes. Persisted.
-- `useCropperStore` — image cropping modal state with Promise-based `open()`/`confirm()`/`cancel()` API. Not persisted.
-- `useUserStore` — empty stub (defined in `modules/user.ts`, file is effectively empty).
+`EntityMeta.status` is a strict state machine, enforced in `EntityMetaService`:
 
-**API layer** (`api/index.ts`) — Axios instance with base URL `/api`:
-- **Auth**: Access token stored in `sessionStorage` under key `access` as `{token, expiresAt}` (45-minute expiry). Sent as `access` header on write-protected endpoints.
-- **Write list**: A hardcoded `writeList` array of read-only endpoint paths that skip auth (article GETs, comment GETs, tag GET, login, phone code, token refresh).
-- **Token refresh**: On HTTP 499 response, queues concurrent failed requests and refreshes the access token once via `PATCH /user/refresh/access`. Retries all queued requests with the new token.
-- **User API** (`api/user/index.ts`): `getPhoneCode`, `login`, `getEmailCode`, `emailBind`, `updateUserName`, `updateUserAvatar`, `updateUserSelfIntroduction`, `getUserInfo`, `getUserInfoPersonal`, `refreshToken`.
+- `draft` — metadata exists, no physical table. Editable. Deletable.
+- `published` — physical table created via `DDLService.generateCreateTable`. Field edits go through `DDLService.generateAlterTable` (additive: new fields → `ADD COLUMN`; removed fields are **soft-deleted** by renaming to `__deleted_*`, never `DROP`). `DynamicDataController` only accepts CRUD when status is `published`.
+- `archived` — read-only.
 
-**UI Framework**: TDesign Vue Next (v1.20) with `tdesign-icons-vue-next`. Login page uses TDesign form components with custom validation. Theme system uses CSS custom properties (`--td-brand-color`, `--td-bg-color-container`, etc.).
+CRUD on user data is gated by `published` status in every `DynamicDataService` method — preserve this guard when adding operations.
 
-**Key dependencies**: `md-editor-v3` (Markdown editor), `vue-cropper` (image cropping), `echarts` + `tvision-color` (charts & color), `katex` + `highlight.js` + `mermaid` (content rendering), `@speechmatics/browser-audio-input` + `@tdesign-vue-next/chat` (AI assistant).
+### DDL safety contract
 
-## Auth Flow
+`DDLService` is the only path that emits DDL. It enforces three invariants — preserve them when editing:
 
-1. User submits phone number → `POST /api/end/user/code/phone` sends SMS code
-2. User submits phone + code → `POST /api/end/user/login` returns access token
-3. Access token stored in `sessionStorage`, sent as `access` header on write operations
-4. Refresh token is HttpOnly cookie (handled automatically by browser)
-5. On 499 status from any request → `PATCH /end/user/refresh/access` using the HttpOnly cookie → new access token
-6. Concurrent requests during refresh are queued and retried once
+1. Tables it touches must start with `LowCodeConstants.TABLE_PREFIX` (`lc_`). Anything else throws.
+2. Column names must match `^[a-zA-Z][a-zA-Z0-9_]*$` and not be a MySQL reserved word (`MySQLReservedWords.isReserved`). Same check is duplicated for entity codes / field codes in `EntityMetaService`.
+3. Every executed statement is logged to `lc_ddl_log` (`DdlLog`) with success/failure, regardless of outcome.
 
-## Code Patterns
+`FieldType` (enum) is the bridge between metadata and SQL — it knows the MySQL column type per logical type and how to render `VARCHAR(n)` / `DECIMAL(p,s)`. New field types go here.
 
-- **Backend** uses Lombok (`@Data`, `@AllArgsConstructor`, `@NoArgsConstructor`, `@Slf4j`, `@RequiredArgsConstructor`). No `@Service`/`@Repository`/`@Controller` classes exist yet — the project is in scaffolding phase.
-- **Result wrapper**: All API responses should use `Result.success(data)` or `Result.error(msg)`. Code `1` = success, `0` = error.
-- **Redis access**: Always use `RedisUtil` static methods; pass `StringRedisTemplate` and `ObjectMapper` (bean name `endObjectMapper`) explicitly. Use SCAN over KEYS.
-- **Frontend types**: API model types in `api/model/`, shared interfaces in `types/interface.d.ts`. Route metadata uses `RouteMeta` interface from `types/interface.d.ts`.
-- **Frontend layout**: Uses `<router-view/>` with side-navigation layout pattern. Layout components (Aside, Header, Content) are currently empty stubs.
+### REST surface
+
+All low-code controllers live under `/lowcode/*`:
+
+- `/lowcode/entity` — entity & field metadata CRUD; `POST /{id}/publish`, `POST /{id}/archive`
+- `/lowcode/data/{entityCode}` — dynamic CRUD over a published entity
+- `/lowcode/page` — `PageSchema` (visual designer output, stored as JSON in `layout_json`)
+- `/lowcode/component` — `ComponentDef` palette items (seeded by `DataInitializer` on first run)
+- `/lowcode/dict` — dictionaries (seeded by `DataInitializer`)
+
+All responses are wrapped in `com.back.common.Result` with non-standard codes: **`code: 1` means success, `code: 0` means error** (not the HTTP-style 200/500). The frontend's axios interceptor in `front/src/api/index.ts` relies on this.
+
+### Caching
+
+`EntityMetaService` writes published field metadata to Redis under `lc:meta:{code}:fields` with a 30-day TTL, and re-populates on cache miss in `getCachedFields`. Any code path that mutates `FieldMeta` for a published entity must call `cacheFieldMeta` (or `invalidateCache`) afterwards — or queries that read from Redis will see stale schema.
+
+### Auth
+
+`back/src/main/java/com/back/interceptors/PathInterceptor.java` currently only logs the request path — there is no real auth interceptor wired up despite the `java-jwt` dependency and the `access`-header logic in the frontend's axios interceptor. Treat backend endpoints as effectively unauthenticated for now; if you add auth, register the new interceptor in `WebConfig`.
+
+CORS in `WebConfig` allows all origins with credentials — broad by design for the dynamic-host dev setup.
+
+### Frontend structure
+
+- `src/api/lowcode/*` — typed axios wrappers, one file per backend resource (`entityMeta`, `dynamicData`, `pageSchema`, `componentDef`, `dict`).
+- `src/pages/lowcode/`
+  - `metadata/` — `EntityList.vue`, `EntityEdit.vue` (entity + field designer)
+  - `data/DataList.vue` — generic CRUD UI driven by `FieldMeta`
+  - `page/PageDesigner.vue` + `designer/` — drag-and-drop page builder. Designer state (component tree, selection, undo history) lives in `src/store/modules/designer.ts` (Pinia). The runtime renderer is `src/pages/lowcode/SchemaRenderer.vue`.
+- `src/router/modules/lowcode.ts` — routes for the above.
+- UI components are TDesign Vue Next (`tdesign-vue-next`); icons from `tdesign-icons-vue-next`.
+
+### Seeding
+
+`DataInitializer` (a `CommandLineRunner`) seeds the component palette and three default dictionaries (`status`, `gender`, `yes_no`) on first start — guarded by `count() > 0` checks so it's idempotent. To re-seed, truncate `lc_component_def` / `lc_dict_type` / `lc_dict_item`.

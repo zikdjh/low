@@ -2,7 +2,7 @@ package com.back.lowcode.service;
 
 import com.back.lowcode.entity.ComponentDef;
 import com.back.lowcode.repository.ComponentDefRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -12,10 +12,10 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class ComponentDefService {
 
-    @Autowired
-    private ComponentDefRepository componentDefRepository;
+    private final ComponentDefRepository componentDefRepository;
 
     public List<ComponentDef> getAllActiveComponents() {
         return componentDefRepository.findByStatus("active");

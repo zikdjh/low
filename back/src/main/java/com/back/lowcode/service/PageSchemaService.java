@@ -2,7 +2,7 @@ package com.back.lowcode.service;
 
 import com.back.lowcode.entity.PageSchema;
 import com.back.lowcode.repository.PageSchemaRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -10,10 +10,10 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class PageSchemaService {
 
-    @Autowired
-    private PageSchemaRepository pageSchemaRepository;
+    private final PageSchemaRepository pageSchemaRepository;
 
     public List<PageSchema> getAllPages() {
         return pageSchemaRepository.findAll();

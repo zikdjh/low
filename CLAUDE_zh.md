@@ -1,99 +1,108 @@
-# CLAUDE_zh.md
+# CLAUDE.md
 
-本文件为 Claude Code (claude.ai/code) 在此仓库中工作时提供指导。
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## 项目概览
+## 仓库结构
 
-一个前后端分离的全栈 Web 应用：
+一个仓库内两个独立项目：
 
-- **`back/`** — Spring Boot 3.5.14 REST API，Java 21，Maven，MySQL + Redis
-- **`front/`** — Vue 3 + TypeScript SPA，Vite 8，TDesign Vue Next 组件库
+- `back/` — Spring Boot 3.5.14 / Java 17 / Maven 后端（端口 **8080**）
+- `front/` — Vue 3 + TypeScript + Vite 前端（开发端口 **5174**）
 
-## 构建与运行
+前端开发服务器将 `/api/*` 代理到 `http://0.0.0.0:8080/*`，并去掉 `/api` 前缀（见 `front/vite.config.ts`）。后端本身**并不**把 controller 挂在 `/api` 下，该前缀只是前端约定。
 
-### 后端（需要 JDK 21、MySQL、Redis）
+## 常用命令
+
+### 后端（`back/`）
 
 ```bash
-# 开发运行（Maven wrapper）
-cd back && ./mvnw spring-boot:run     # Windows: mvnw.cmd spring-boot:run
-
-# 运行全部测试
-./mvnw test
-
-# 运行单个测试类
-./mvnw test -Dtest=BackApplicationTests
-
-# 打包 JAR
-./mvnw clean package -DskipTests
+# 在 back/ 目录下
+./mvnw spring-boot:run          # 启动开发服务器
+./mvnw.cmd spring-boot:run      # Windows / cmd
+./mvnw test                     # 跑全部测试
+./mvnw test -Dtest=ClassName    # 跑单个测试类
+./mvnw clean package            # 打 jar
 ```
 
-服务启动端口为 **8080**。需要 MySQL 数据库 `low_end` 和 Redis（localhost:6379）。
-配置文件：`back/src/main/resources/application.yaml`。
+需要本机 MySQL 在 `127.0.0.1:3306` 上有 `low_end` 库，以及 Redis 在 `localhost:6379`。账号密码硬编码在 `back/src/main/resources/application.yaml`（`root` / `zc@qq.com0501`）——本地修改即可，不要提交。`spring.jpa.hibernate.ddl-auto: update` 会在启动时自动建/更新元数据表的结构。
 
-### 前端（需要 Node.js）
+### 前端（`front/`）
 
 ```bash
-cd front
+# 在 front/ 目录下
 npm install
-npm run dev       # 启动开发服务器，端口 5174
-npm run build     # 类型检查 + 生产构建
-npm run preview   # 预览生产构建
+npm run dev                     # vite 开发服务器，端口 5174
+npm run build                   # vue-tsc + vite build
+npm run preview                 # 预览打包产物
 ```
 
-Vite 开发服务器将 `/api` 代理到 `http://0.0.0.0:8080`（重写时去除 `/api` 前缀）。
+任何低代码功能都需要后端已启动；前端会把所有 `/api` 请求代理到后端。
 
 ## 架构
 
-### 后端（`com.back`）
+这是一个**低代码平台**：终端用户在界面上定义业务实体，后端为它们创建真实的 MySQL 表，再用一个可视化页面设计器在这些实体上拼装页面。
 
-扁平化按功能分包结构（项目早期阶段——尚无 controller/service/repository）：
+### 两个截然不同的"数据层"
 
-| 包名 | 用途 |
-|------|------|
-| `common/` | `Result` — 统一 API 响应 `{code, msg, data}`（1=成功，0=失败）。`Constant` — 线程池参数、令牌类型常量（`access`/`refresh`）。`RedisConstant` — Redis 扫描默认值。 |
-| `config/` | `WebConfig` — 全局注册 `PathInterceptor` 并配置 CORS（允许所有来源，支持凭证）。`basic/JacksonConfig` — 自定义 `ObjectMapper` Bean（`endObjectMapper`），注册 JavaTimeModule，禁用时间戳序列化，忽略未知属性。`basic/ThreadPoolConfig` — `deleteDataExecutor` Bean，带 `@PreDestroy` 优雅关闭。 |
-| `interceptors/` | `PathInterceptor` — 通过 SLF4J 记录每个请求路径，始终返回 `true`。 |
-| `annotation/` | `@RateLimit` — 方法级注解，用于基于 Redis 的限流（支持前缀、时间窗口、次数限制、自定义提示语）。尚未接入 AOP/拦截器。 |
-| `exception/` | `GlobalExceptionHandler`（@RestControllerAdvice）— 捕获 `Exception`、`NoResourceFoundException`（404）、`HandlerMethodValidationException`、`MissingServletRequestParameterException`、`RejectedExecutionException`、`HttpRequestMethodNotSupportedException`。自定义异常 `SqlInsertException`/`SqlUpdateException`/`SqlDeleteException` 继承 `RuntimeException`。 |
-| `utils/` | `RedisUtil` — Redis Hash 增删改查的静态工具类，基于 Jackson 序列化。支持：JSON 写入 Hash、Hash 读取为对象、Pipeline 批量操作、基于 SCAN 的键扫描（避免 `KEYS *`）、对象与 Map 互转（含嵌套 JSON 处理）。所有方法需显式传入 `StringRedisTemplate` 和 `ObjectMapper`。 |
+读代码时必须区分这两套数据平面，不要混在一起：
 
-**依赖**：Spring Boot Web、Spring Data JPA（MySQL，HikariCP 连接池，最大 30 连接）、Spring Data Redis（Lettuce，连接池最大 10）、Validation、java-jwt 4.5.1、Lombok。
+1. **元数据平面** —— `back/src/main/java/com/back/lowcode/entity/` 下的 JPA 实体（`EntityMeta`、`FieldMeta`、`PageSchema`、`ComponentDef`、`DictType`、`DictItem`、`DdlLog`）。存在固定的 `lc_*` 前缀表里，由 Spring Data JPA 仓库管理。
+2. **动态数据平面** —— 用户自定义的业务表。**没有任何 JPA 实体类**；统一通过 `DynamicDataService` 里的 `JdbcTemplate` / `NamedParameterJdbcTemplate` 访问，列名由请求时查询到的 `FieldMeta` 行驱动。
 
-### 前端
+修改低代码相关代码时，绝不能把这两层混用：不要给用户数据加 `@Entity`，也不要绕开 `FieldMeta` 直接读用户表。
 
-**路由** — `router/index.ts` 通过 `import.meta.glob` 自动发现路由模块：
-- `./modules/**/home.ts` — 主路由（当前：`/` → 重定向到 `/home`，使用 `Layout` 布局）
-- `./modules/**/Login.ts` — 登录路由（`/login`，导航菜单中隐藏）
+### 实体生命周期
 
-**状态管理** — Pinia 3 + `pinia-plugin-persistedstate`：
-- `useSettingStore` — 布局模式（`light`/`dark`/`auto`）、侧边栏模式、品牌主题色。通过 `tvision-color` 生成 TDesign 色阶。持久化到 localStorage。
-- `useMarkdownEditorStore` — 编辑器/预览/代码主题。持久化。
-- `useCropperStore` — 图片裁剪弹窗状态，提供基于 Promise 的 `open()`/`confirm()`/`cancel()` API。不持久化。
-- `useUserStore` — 空桩（定义在 `modules/user.ts`，文件实际为空）。
+`EntityMeta.status` 是一个严格的状态机，由 `EntityMetaService` 强制约束：
 
-**API 层**（`api/index.ts`）— Axios 实例，基础路径 `/api`：
-- **认证**：Access Token 存储在 `sessionStorage` 中，键为 `access`，格式 `{token, expiresAt}`（45 分钟过期）。在需要鉴权的写操作请求中作为 `access` 请求头发送。
-- **白名单**：硬编码的 `writeList` 数组，列出跳过鉴权的只读接口路径（文章 GET、评论 GET、标签 GET、登录、手机验证码、Token 刷新）。
-- **Token 刷新**：收到 HTTP 499 响应时，将并发的失败请求排队，通过 `PATCH /user/refresh/access` 仅刷新一次 Access Token。刷新成功后用新 Token 重试所有排队请求。
-- **用户 API**（`api/user/index.ts`）：`getPhoneCode`、`login`、`getEmailCode`、`emailBind`、`updateUserName`、`updateUserAvatar`、`updateUserSelfIntroduction`、`getUserInfo`、`getUserInfoPersonal`、`refreshToken`。
+- `draft` —— 只有元数据，没有物理表。可编辑、可删除。
+- `published` —— 物理表已经通过 `DDLService.generateCreateTable` 创建。字段编辑走 `DDLService.generateAlterTable`（仅做加法：新增字段 → `ADD COLUMN`；被删除的字段是**软删除**，重命名为 `__deleted_*`，永远不会 `DROP`）。`DynamicDataController` 仅在状态为 `published` 时接受 CRUD。
+- `archived` —— 只读。
 
-**UI 框架**：TDesign Vue Next（v1.20）+ `tdesign-icons-vue-next`。登录页使用 TDesign 表单组件及自定义校验。主题系统使用 CSS 自定义属性（`--td-brand-color`、`--td-bg-color-container` 等）。
+`DynamicDataService` 的每个方法都会用 `published` 状态做兜底校验——新增操作时要保留这个守卫。
 
-**关键依赖**：`md-editor-v3`（Markdown 编辑器）、`vue-cropper`（图片裁剪）、`echarts` + `tvision-color`（图表与配色）、`katex` + `highlight.js` + `mermaid`（内容渲染）、`@speechmatics/browser-audio-input` + `@tdesign-vue-next/chat`（AI 助手）。
+### DDL 安全契约
 
-## 认证流程
+`DDLService` 是唯一发出 DDL 的入口，它强制三条不变量，改代码时不要破坏：
 
-1. 用户提交手机号 → `POST /api/end/user/code/phone` 发送短信验证码
-2. 用户提交手机号 + 验证码 → `POST /api/end/user/login` 返回 Access Token
-3. Access Token 存入 `sessionStorage`，写操作请求中作为 `access` 请求头发送
-4. Refresh Token 为 HttpOnly Cookie（由浏览器自动携带）
-5. 任意请求收到 499 状态码时 → 使用 HttpOnly Cookie 调用 `PATCH /end/user/refresh/access` → 获取新的 Access Token
-6. 刷新期间的并发请求会被排队，刷新完成后重试一次
+1. 操作的表名必须以 `LowCodeConstants.TABLE_PREFIX`（`lc_`）开头，否则直接抛异常。
+2. 列名必须匹配 `^[a-zA-Z][a-zA-Z0-9_]*$` 且不能是 MySQL 保留字（`MySQLReservedWords.isReserved`）。同样的校验在 `EntityMetaService` 里对实体编码 / 字段编码也重复做了一遍。
+3. 每一条执行过的语句都会写入 `lc_ddl_log`（`DdlLog`），无论成功失败。
 
-## 代码规范
+`FieldType`（枚举）是元数据和 SQL 之间的桥梁——它知道每种逻辑类型对应什么 MySQL 列类型，以及如何拼出 `VARCHAR(n)` / `DECIMAL(p,s)`。新增字段类型在这里加。
 
-- **后端**使用 Lombok 注解（`@Data`、`@AllArgsConstructor`、`@NoArgsConstructor`、`@Slf4j`、`@RequiredArgsConstructor`）。当前处于脚手架阶段，尚无 `@Service`/`@Repository`/`@Controller` 类。
-- **Result 包装器**：所有 API 响应应使用 `Result.success(data)` 或 `Result.error(msg)`。`code=1` 表示成功，`code=0` 表示失败。
-- **Redis 访问**：统一使用 `RedisUtil` 静态方法；显式传入 `StringRedisTemplate` 和 `ObjectMapper`（Bean 名称为 `endObjectMapper`）。使用 SCAN 替代 KEYS。
-- **前端类型**：API 模型类型定义在 `api/model/`，共享接口定义在 `types/interface.d.ts`。路由元数据使用 `types/interface.d.ts` 中的 `RouteMeta` 接口。
-- **前端布局**：使用 `<router-view/>` + 侧边导航布局模式。布局子组件（Aside、Header、Content）当前为空桩。
+### REST 接口
+
+所有低代码 controller 都挂在 `/lowcode/*` 下：
+
+- `/lowcode/entity` —— 实体和字段元数据 CRUD；`POST /{id}/publish`、`POST /{id}/archive`
+- `/lowcode/data/{entityCode}` —— 已发布实体的动态 CRUD
+- `/lowcode/page` —— `PageSchema`（可视化设计器输出的 JSON 存在 `layout_json` 字段）
+- `/lowcode/component` —— `ComponentDef` 组件面板项（首次启动由 `DataInitializer` 写入）
+- `/lowcode/dict` —— 字典（同样由 `DataInitializer` 写入）
+
+所有响应都用 `com.back.common.Result` 包裹，**约定与常见的不同：`code: 1` 表示成功，`code: 0` 表示失败**（不是 HTTP 风格的 200/500）。前端 `front/src/api/index.ts` 里的 axios 拦截器依赖这一约定。
+
+### 缓存
+
+`EntityMetaService` 会把已发布实体的字段元数据写到 Redis，键为 `lc:meta:{code}:fields`，TTL 30 天；缓存未命中时在 `getCachedFields` 中重新填充。任何修改已发布实体 `FieldMeta` 的代码路径之后，都必须调用 `cacheFieldMeta`（或 `invalidateCache`），否则从 Redis 读到的 schema 会变陈旧。
+
+### 鉴权
+
+`back/src/main/java/com/back/interceptors/PathInterceptor.java` 目前只打印一行请求路径——尽管引入了 `java-jwt` 依赖，前端 axios 拦截器也带了 `access` 请求头，**实际上后端并没有真实的鉴权拦截器接进来**。当前可以认为后端接口是不鉴权的；如果要加鉴权，记得在 `WebConfig` 里注册新拦截器。
+
+`WebConfig` 里的 CORS 允许所有来源带凭证——这是为了适配开发期动态域名，刻意放开的。
+
+### 前端结构
+
+- `src/api/lowcode/*` —— 带类型的 axios 封装，每个后端资源一个文件（`entityMeta`、`dynamicData`、`pageSchema`、`componentDef`、`dict`）。
+- `src/pages/lowcode/`
+  - `metadata/` —— `EntityList.vue`、`EntityEdit.vue`（实体 + 字段设计器）
+  - `data/DataList.vue` —— 由 `FieldMeta` 驱动的通用 CRUD 页面
+  - `page/PageDesigner.vue` + `designer/` —— 拖拽式页面构建器。设计器状态（组件树、选中项、撤销历史）在 `src/store/modules/designer.ts`（Pinia）。运行时渲染器是 `src/pages/lowcode/SchemaRenderer.vue`。
+- `src/router/modules/lowcode.ts` —— 上述页面的路由。
+- UI 组件用 TDesign Vue Next（`tdesign-vue-next`）；图标来自 `tdesign-icons-vue-next`。
+
+### 数据初始化
+
+`DataInitializer` 是一个 `CommandLineRunner`，首次启动时写入组件面板和三个默认字典（`status`、`gender`、`yes_no`）——通过 `count() > 0` 判空保证幂等。如果想重新初始化，清空 `lc_component_def` / `lc_dict_type` / `lc_dict_item` 即可。
