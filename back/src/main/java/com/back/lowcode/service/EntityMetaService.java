@@ -153,7 +153,7 @@ public class EntityMetaService {
         EntityMeta entity = entityMetaRepository.findById(entityId)
                 .orElseThrow(() -> new IllegalArgumentException("实体不存在: " + entityId));
 
-        // 校验字段编码
+        // 校验字段编码和 REFERENCE 字段引用
         for (FieldMeta f : newFields) {
             if (f.getCode() == null || !f.getCode().matches("^[a-z][a-zA-Z0-9_]*$")) {
                 throw new IllegalArgumentException("非法字段编码: " + f.getCode());
@@ -161,6 +161,19 @@ public class EntityMetaService {
             if (MySQLReservedWords.isReserved(f.getCode())) {
                 throw new IllegalArgumentException(
                         "字段编码不能使用 MySQL 保留字: '" + f.getCode() + "'，请换一个名称");
+            }
+
+            if ("REFERENCE".equals(f.getFieldType())) {
+                if (f.getRefEntityCode() == null || f.getRefEntityCode().isEmpty()) {
+                    throw new IllegalArgumentException("引用类型字段 '" + f.getCode() + "' 必须指定引用实体编码");
+                }
+                EntityMeta refEntity = entityMetaRepository.findByCode(f.getRefEntityCode())
+                        .orElseThrow(() -> new IllegalArgumentException(
+                                "引用实体 '" + f.getRefEntityCode() + "' 不存在"));
+                if (!"published".equals(refEntity.getStatus())) {
+                    throw new IllegalArgumentException(
+                            "引用实体 '" + f.getRefEntityCode() + "' 必须是已发布状态");
+                }
             }
         }
 

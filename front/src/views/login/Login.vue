@@ -1,155 +1,115 @@
 <template>
-  <div class="login-container">
+  <div class="login-wrapper">
     <!-- 背景装饰 -->
-    <div class="bg-decoration">
-      <div class="circle circle-1"></div>
-      <div class="circle circle-2"></div>
-      <div class="circle circle-3"></div>
+    <div class="bg-layer">
+      <div class="bg-circle c1"></div>
+      <div class="bg-circle c2"></div>
+      <div class="bg-circle c3"></div>
+      <div class="bg-dots"></div>
     </div>
 
     <!-- 登录卡片 -->
     <div class="login-card">
-      <!-- 左侧品牌区域 -->
-      <div class="brand-section">
-        <div class="brand-content">
-          <div class="logo-wrapper">
-            <CodeIcon size="48" />
+      <!-- 左侧品牌区 -->
+      <div class="brand-panel">
+        <div class="brand-inner">
+          <div class="brand-logo-wrap">
+            <svg viewBox="0 0 60 60" fill="none" class="brand-logo">
+              <rect width="60" height="60" rx="14" fill="#fff" fill-opacity="0.2"/>
+              <path d="M18 21l12-6 12 6-12 6-12-6z" fill="#fff" opacity="0.85"/>
+              <path d="M18 30l12 6 12-6M18 39l12 6 12-6" stroke="#fff" stroke-width="2.5" stroke-linecap="round" opacity="0.7"/>
+            </svg>
           </div>
-          <h1 class="brand-title">LOWCODE</h1>
-          <p class="brand-subtitle">低代码开发平台</p>
-          <div class="features">
-            <div class="feature-item">
-              <CheckCircleFilledIcon size="18" />
-              <span>快速构建应用</span>
+          <h1 class="brand-name">LowCode</h1>
+          <p class="brand-tagline">低代码开发平台</p>
+          <div class="brand-features">
+            <div class="bf-item">
+              <CheckCircleFilledIcon size="16" />
+              <span>可视化拖拽设计</span>
             </div>
-            <div class="feature-item">
-              <CheckCircleFilledIcon size="18" />
-              <span>可视化设计</span>
+            <div class="bf-item">
+              <CheckCircleFilledIcon size="16" />
+              <span>一键生成代码</span>
             </div>
-            <div class="feature-item">
-              <CheckCircleFilledIcon size="18" />
-              <span>一键部署</span>
+            <div class="bf-item">
+              <CheckCircleFilledIcon size="16" />
+              <span>企业级安全架构</span>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- 右侧表单区域 -->
-      <div class="form-section">
-        <div class="form-header">
-          <h2>{{ isLogin ? '欢迎回来' : '创建账户' }}</h2>
-          <p>{{ isLogin ? '请登录您的账号' : '填写以下信息注册新账号' }}</p>
-        </div>
-
-        <t-form
-          ref="formRef"
-          :data="formData"
-          :rules="rules"
-          @submit="handleSubmit"
-          label-width="0"
-          class="login-form"
-        >
-          <!-- 注册时显示用户名 -->
-          <t-form-item v-if="!isLogin" name="username">
-            <t-input
-              v-model="formData.username"
-              placeholder="请输入用户名"
-              size="large"
-              clearable
-            >
-              <template #prefix-icon><UserIcon /></template>
-            </t-input>
-          </t-form-item>
-
-          <t-form-item name="account">
-            <t-input
-              v-model="formData.account"
-              :placeholder="isLogin ? '请输入账号/邮箱/手机号' : '请输入邮箱或手机号'"
-              size="large"
-              clearable
-            >
-              <template #prefix-icon><UserIcon /></template>
-            </t-input>
-          </t-form-item>
-
-          <t-form-item name="password">
-            <t-input
-              v-model="formData.password"
-              type="password"
-              placeholder="请输入密码"
-              size="large"
-              clearable
-            >
-              <template #prefix-icon><LockOnIcon /></template>
-            </t-input>
-          </t-form-item>
-
-          <!-- 注册时显示确认密码 -->
-          <t-form-item v-if="!isLogin" name="confirmPassword">
-            <t-input
-              v-model="formData.confirmPassword"
-              type="password"
-              placeholder="请再次输入密码"
-              size="large"
-              clearable
-            >
-              <template #prefix-icon><LockOnIcon /></template>
-            </t-input>
-          </t-form-item>
-
-          <!-- 登录时的额外选项 -->
-          <div v-if="isLogin" class="form-options">
-            <t-checkbox v-model="rememberMe">记住我</t-checkbox>
-            <a href="#" class="forgot-link">忘记密码？</a>
+      <!-- 右侧表单区 -->
+      <div class="form-panel">
+        <div class="form-inner">
+          <div class="form-header">
+            <h2>{{ isLogin ? '欢迎回来' : '创建账户' }}</h2>
+            <p>{{ isLogin ? '请登录您的账号继续使用' : '填写信息注册新账号' }}</p>
           </div>
 
-          <t-form-item>
-            <t-button
-              theme="primary"
-              type="submit"
-              block
-              size="large"
-              :loading="loading"
-              class="submit-btn"
-            >
-              {{ isLogin ? '登 录' : '注 册' }}
-            </t-button>
-          </t-form-item>
-        </t-form>
+          <t-form
+            ref="formRef"
+            :data="formData"
+            :rules="rules"
+            @submit="handleSubmit"
+            label-width="0"
+            class="login-form"
+          >
+            <t-form-item v-if="!isLogin" name="username">
+              <t-input v-model="formData.username" placeholder="请输入用户名" size="large" clearable>
+                <template #prefix-icon><UserIcon /></template>
+              </t-input>
+            </t-form-item>
 
-        <!-- 切换登录/注册 -->
-        <div class="switch-mode">
-          <span>{{ isLogin ? '还没有账号？' : '已有账号？' }}</span>
-          <a href="#" @click.prevent="toggleMode">{{ isLogin ? '立即注册' : '返回登录' }}</a>
-        </div>
+            <t-form-item name="account">
+              <t-input v-model="formData.account" :placeholder="isLogin ? '请输入账号/邮箱/手机号' : '请输入邮箱或手机号'" size="large" clearable>
+                <template #prefix-icon><UserIcon /></template>
+              </t-input>
+            </t-form-item>
 
-        <!-- 第三方登录 -->
-        <div v-if="isLogin" class="third-party-login">
-          <t-divider>其他登录方式</t-divider>
-          <div class="social-icons">
-            <t-tooltip content="微信登录">
-              <div class="social-icon wechat">
-                <LogoWechatpayIcon size="20" />
-              </div>
-            </t-tooltip>
-            <t-tooltip content="GitHub登录">
-              <div class="social-icon github">
-                <LogoGithubIcon size="20" />
-              </div>
-            </t-tooltip>
-            <t-tooltip content="企业微信">
-              <div class="social-icon work">
-                <LogoWecomIcon size="20" />
-              </div>
-            </t-tooltip>
+            <t-form-item name="password">
+              <t-input v-model="formData.password" type="password" placeholder="请输入密码" size="large" clearable>
+                <template #prefix-icon><LockOnIcon /></template>
+              </t-input>
+            </t-form-item>
+
+            <t-form-item v-if="!isLogin" name="confirmPassword">
+              <t-input v-model="formData.confirmPassword" type="password" placeholder="请再次输入密码" size="large" clearable>
+                <template #prefix-icon><LockOnIcon /></template>
+              </t-input>
+            </t-form-item>
+
+            <div v-if="isLogin" class="form-extras">
+              <t-checkbox v-model="rememberMe">记住我</t-checkbox>
+              <a href="#" class="forgot-link">忘记密码？</a>
+            </div>
+
+            <t-form-item>
+              <t-button theme="primary" type="submit" block size="large" :loading="loading" class="submit-btn">
+                {{ isLogin ? '登 录' : '注 册' }}
+              </t-button>
+            </t-form-item>
+          </t-form>
+
+          <div class="switch-row">
+            <span>{{ isLogin ? '还没有账号？' : '已有账号？' }}</span>
+            <a href="#" @click.prevent="toggleMode">{{ isLogin ? '立即注册' : '返回登录' }}</a>
           </div>
-        </div>
 
-        <!-- 底部信息 -->
-        <div class="footer-info">
-          <p>&copy; 2024 低代码开发平台 · 让开发更简单</p>
+          <div v-if="isLogin" class="social-login">
+            <t-divider>其他方式登录</t-divider>
+            <div class="social-icons">
+              <t-tooltip content="微信登录"><div class="social-btn wechat"><LogoWechatpayIcon size="18" /></div></t-tooltip>
+              <t-tooltip content="GitHub登录"><div class="social-btn github"><LogoGithubIcon size="18" /></div></t-tooltip>
+              <t-tooltip content="企业微信"><div class="social-btn wecom"><LogoWecomIcon size="18" /></div></t-tooltip>
+            </div>
+          </div>
         </div>
       </div>
+    </div>
+
+    <div class="login-footer">
+      &copy; 2024 LowCode Platform · 低代码开发平台
     </div>
   </div>
 </template>
@@ -159,13 +119,8 @@ import { ref, reactive } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { MessagePlugin } from 'tdesign-vue-next';
 import {
-  CodeIcon,
-  CheckCircleFilledIcon,
-  UserIcon,
-  LockOnIcon,
-  LogoWechatpayIcon,
-  LogoGithubIcon,
-  LogoWecomIcon
+  CheckCircleFilledIcon, UserIcon, LockOnIcon,
+  LogoWechatpayIcon, LogoGithubIcon, LogoWecomIcon
 } from 'tdesign-icons-vue-next';
 
 const router = useRouter();
@@ -182,7 +137,6 @@ const formData = reactive({
   confirmPassword: '',
 });
 
-// 表单验证规则
 const rules = {
   account: [
     { required: true, message: '请输入账号', trigger: 'blur' },
@@ -197,18 +151,13 @@ const rules = {
     { min: 2, max: 20, message: '用户名长度在 2 到 20 个字符', trigger: 'blur' },
   ],
   confirmPassword: [
-    { required: true, message: '请再次输入密码', trigger: 'blur' },        
-    {
-      validator: (val: string) => val === formData.password,
-      message: '两次输入的密码不一致',
-      trigger: 'blur',
-    },
+    { required: true, message: '请再次输入密码', trigger: 'blur' },
+    { validator: (val: string) => val === formData.password, message: '两次输入的密码不一致', trigger: 'blur' },
   ],
 };
 
 function toggleMode() {
   isLogin.value = !isLogin.value;
-  // 清空表单
   formData.username = '';
   formData.account = '';
   formData.password = '';
@@ -218,39 +167,24 @@ function toggleMode() {
 async function handleSubmit({ validateResult }: any) {
   if (validateResult === true) {
     loading.value = true;
-
     try {
-      // 模拟登录/注册请求
       await new Promise(resolve => setTimeout(resolve, 1500));
-
       if (isLogin.value) {
-        // 登录逻辑
         const token = 'mock_token_' + Date.now();
         localStorage.setItem('token', token);
-        localStorage.setItem('user', JSON.stringify({
-          username: formData.account || 'admin',
-          role: 'admin',
-          avatar: '',
-        }));
-        // 同时设置 API 请求所需的 sessionStorage
+        localStorage.setItem('user', JSON.stringify({ username: formData.account || 'admin', role: 'admin', avatar: '' }));
         const accessPayload = { token, expiresAt: Date.now() + 45 * 60 * 1000 };
-        sessionStorage.setItem('access', JSON.stringify(accessPayload));        
-
+        sessionStorage.setItem('access', JSON.stringify(accessPayload));
         MessagePlugin.success('登录成功');
-
-        // 跳转到目标页面或首页
         const redirect = route.query.redirect as string;
-        setTimeout(() => {
-          router.push(redirect || '/home');
-        }, 500);
+        setTimeout(() => router.push(redirect || '/home'), 500);
       } else {
-        // 注册逻辑
         MessagePlugin.success('注册成功，请登录');
         isLogin.value = true;
         formData.password = '';
         formData.confirmPassword = '';
       }
-    } catch (error) {
+    } catch {
       MessagePlugin.error(isLogin.value ? '登录失败，请重试' : '注册失败，请重试');
     } finally {
       loading.value = false;
@@ -260,323 +194,177 @@ async function handleSubmit({ validateResult }: any) {
 </script>
 
 <style scoped lang="less">
-.login-container {
+.login-wrapper {
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #f5a623 0%, #e8a317 40%, #d4920a 100%);
   position: relative;
   overflow: hidden;
 }
 
-.bg-decoration {
+/* ===== 背景装饰 ===== */
+.bg-layer { position: absolute; inset: 0; pointer-events: none; }
+.bg-circle {
   position: absolute;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-
-  .circle {
-    position: absolute;
-    border-radius: 50%;
-    opacity: 0.1;
-    background: #fff;
-
-    &.circle-1 {
-      width: 400px;
-      height: 400px;
-      top: -100px;
-      right: -100px;
-      animation: float 6s ease-in-out infinite;
-    }
-
-    &.circle-2 {
-      width: 300px;
-      height: 300px;
-      bottom: -80px;
-      left: -80px;
-      animation: float 8s ease-in-out infinite reverse;
-    }
-
-    &.circle-3 {
-      width: 200px;
-      height: 200px;
-      top: 50%;
-      left: 10%;
-      animation: float 7s ease-in-out infinite 1s;
-    }
-  }
+  border-radius: 50%;
+  background: #fff;
+  opacity: 0.07;
+  &.c1 { width: 500px; height: 500px; top: -150px; right: -100px; }
+  &.c2 { width: 350px; height: 350px; bottom: -100px; left: -80px; }
+  &.c3 { width: 180px; height: 180px; top: 45%; left: 15%; opacity: 0.05; }
+}
+.bg-dots {
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgba(255,255,255,0.1) 1px, transparent 1px);
+  background-size: 40px 40px;
 }
 
-@keyframes float {
-  0%, 100% {
-    transform: translateY(0) rotate(0deg);
-  }
-  50% {
-    transform: translateY(-20px) rotate(5deg);
-  }
-}
-
+/* ===== 登录卡片 ===== */
 .login-card {
   display: flex;
-  width: 900px;
+  width: 960px;
   max-width: 95vw;
   background: #fff;
   border-radius: 24px;
-  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 30px 80px rgba(0,0,0,0.25);
   overflow: hidden;
   z-index: 10;
-  animation: slideUp 0.5s ease-out;
+  animation: cardIn 0.6s ease-out;
+}
+@keyframes cardIn {
+  from { opacity: 0; transform: translateY(30px) scale(0.97); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(40px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.brand-section {
-  width: 400px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  padding: 60px 40px;
+/* ===== 品牌面板 ===== */
+.brand-panel {
+  width: 420px;
+  background: linear-gradient(160deg, #f5a623 0%, #e8a317 50%, #d4920a 100%);
+  padding: 60px 48px;
   display: flex;
   align-items: center;
   justify-content: center;
   color: #fff;
+  position: relative;
+  overflow: hidden;
 
-  .brand-content {
-    text-align: center;
-
-    .logo-wrapper {
-      width: 96px;
-      height: 96px;
-      background: rgba(255, 255, 255, 0.15);
-      border-radius: 24px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin: 0 auto 28px;
-      backdrop-filter: blur(10px);
-    }
-
-    .brand-title {
-      font-size: 28px;
-      font-weight: 700;
-      margin: 0 0 12px 0;
-      letter-spacing: 2px;
-    }
-
-    .brand-subtitle {
-      font-size: 14px;
-      opacity: 0.85;
-      margin: 0 0 36px 0;
-      letter-spacing: 1px;
-    }
-
-    .features {
-      text-align: left;
-      display: inline-block;
-
-      .feature-item {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        margin-bottom: 18px;
-        font-size: 14px;
-        opacity: 0.9;
-
-        &:last-child {
-          margin-bottom: 0;
-        }
-      }
-    }
+  &::before {
+    content: '';
+    position: absolute;
+    width: 300px;
+    height: 300px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 50%;
+    bottom: -100px;
+    right: -60px;
   }
 }
-
-.form-section {
-  flex: 1;
-  padding: 50px 45px;
-  display: flex;
+.brand-inner { text-align: center; position: relative; z-index: 2; }
+.brand-logo-wrap { margin-bottom: 28px; }
+.brand-logo { width: 72px; height: 72px; }
+.brand-name {
+  font-size: 32px;
+  font-weight: 700;
+  margin: 0 0 8px;
+  letter-spacing: 1px;
+}
+.brand-tagline {
+  font-size: 15px;
+  opacity: 0.85;
+  margin: 0 0 40px;
+  letter-spacing: 1px;
+}
+.brand-features {
+  display: inline-flex;
   flex-direction: column;
-
-  .form-header {
-    margin-bottom: 32px;
-
-    h2 {
-      font-size: 26px;
-      font-weight: 600;
-      color: #1f2329;
-      margin: 0 0 8px 0;
-    }
-
-    p {
-      font-size: 14px;
-      color: #8f959e;
-      margin: 0;
-    }
-  }
-
-  .login-form {
-    flex: 1;
-
-    :deep(.t-form-item) {
-      margin-bottom: 22px;
-    }
-
-    :deep(.t-input) {
-      height: 46px;
-      border-radius: 8px;
-      font-size: 14px;
-    }
-  }
-
-  .form-options {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 22px;
-
-    .forgot-link {
-      font-size: 13px;
-      color: #1677ff;
-      text-decoration: none;
-
-      &:hover {
-        text-decoration: underline;
-      }
-    }
-  }
-
-  .submit-btn {
-    height: 46px;
-    border-radius: 8px;
-    font-size: 16px;
-    font-weight: 500;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    border: none;
-
-    &:hover:not(:disabled) {
-      background: linear-gradient(135deg, #5568d3 0%, #654191 100%);
-    }
-  }
-
-  .switch-mode {
-    text-align: center;
-    margin-top: 20px;
-    font-size: 14px;
-    color: #8f959e;
-
-    a {
-      color: #1677ff;
-      text-decoration: none;
-      font-weight: 500;
-      margin-left: 4px;
-
-      &:hover {
-        text-decoration: underline;
-      }
-    }
-  }
-
-  .third-party-login {
-    margin-top: 24px;
-
-    :deep(.t-divider) {
-      margin: 16px 0;
-
-      .t-divider__inner-text {
-        font-size: 12px;
-        color: #bbbfc4;
-      }
-    }
-
-    .social-icons {
-      display: flex;
-      justify-content: center;
-      gap: 20px;
-
-      .social-icon {
-        width: 42px;
-        height: 42px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        transition: all 0.3s;
-        border: 1px solid #e8e8e8;
-
-        &:hover {
-          transform: translateY(-3px);
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-        }
-
-        &.wechat {
-          color: #07c160;
-
-          &:hover {
-            background: #07c160;
-            color: #fff;
-            border-color: #07c160;
-          }
-        }
-
-        &.github {
-          color: #333;
-
-          &:hover {
-            background: #333;
-            color: #fff;
-            border-color: #333;
-          }
-        }
-
-        &.work {
-          color: #3370ff;
-
-          &:hover {
-            background: #3370ff;
-            color: #fff;
-            border-color: #3370ff;
-          }
-        }
-      }
-    }
-  }
-
-  .footer-info {
-    text-align: center;
-    color: #94a3b8;
-    font-size: 13px;
-    padding: 20px 0;
-    border-top: 1px solid #e2e8f0;
-    margin-top: 20px;
-  }
+  gap: 14px;
+  text-align: left;
+}
+.bf-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  opacity: 0.9;
 }
 
+/* ===== 表单面板 ===== */
+.form-panel {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px;
+}
+.form-inner { width: 100%; max-width: 360px; }
+.form-header {
+  margin-bottom: 36px;
+  h2 { font-size: 26px; font-weight: 700; color: #1a1a1a; margin: 0 0 8px; letter-spacing: -0.3px; }
+  p { font-size: 14px; color: #999; margin: 0; }
+}
+
+.login-form {
+  :deep(.t-form-item) { margin-bottom: 20px; }
+  :deep(.t-input) { height: 48px; border-radius: 10px; font-size: 14px; }
+}
+.form-extras {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  .forgot-link { font-size: 13px; color: var(--td-brand-color, #E8A317); text-decoration: none; }
+}
+.submit-btn {
+  height: 48px;
+  border-radius: 10px !important;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 2px;
+}
+
+.switch-row {
+  text-align: center;
+  margin-top: 24px;
+  font-size: 14px;
+  color: #999;
+  a { color: var(--td-brand-color, #E8A317); text-decoration: none; font-weight: 500; margin-left: 4px; }
+}
+
+/* ===== 社交登录 ===== */
+.social-login {
+  margin-top: 28px;
+  :deep(.t-divider) { margin: 16px 0; .t-divider__inner-text { font-size: 12px; color: #ccc; } }
+}
+.social-icons { display: flex; justify-content: center; gap: 16px; }
+.social-btn {
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: all 0.3s;
+  border: 1.5px solid #eee;
+  color: #888;
+  &:hover { transform: translateY(-3px); box-shadow: 0 6px 16px rgba(0,0,0,0.1); }
+  &.wechat:hover { background: #07c160; color: #fff; border-color: #07c160; }
+  &.github:hover { background: #24292e; color: #fff; border-color: #24292e; }
+  &.wecom:hover { background: #3370ff; color: #fff; border-color: #3370ff; }
+}
+
+/* ===== 底部 ===== */
+.login-footer {
+  color: rgba(255,255,255,0.5);
+  font-size: 13px;
+  margin-top: 32px;
+  z-index: 10;
+}
+
+/* ===== 响应式 ===== */
 @media (max-width: 768px) {
-  .login-card {
-    flex-direction: column;
-    width: 95vw;
-    max-width: 420px;
-  }
-
-  .brand-section {
-    width: 100%;
-    padding: 40px 30px;
-
-    .features {
-      display: none !important;
-    }
-  }
-
-  .form-section {
-    padding: 35px 30px;
-  }
+  .login-card { flex-direction: column; max-width: 420px; }
+  .brand-panel { width: 100%; padding: 40px 30px; .brand-features { display: none !important; } }
+  .form-panel { padding: 32px 28px; }
 }
 </style>

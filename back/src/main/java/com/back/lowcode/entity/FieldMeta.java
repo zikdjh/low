@@ -88,6 +88,14 @@ public class FieldMeta {
     @Column(length = 64)
     private String dictCode;
 
+    /** 引用实体编码（FieldType=REFERENCE 时必填） */
+    @Column(name = "ref_entity_code", length = 64)
+    private String refEntityCode;
+
+    /** 引用实体的显示字段编码，用于下拉显示文本（默认取主键） */
+    @Column(name = "ref_display_code", length = 64)
+    private String refDisplayCode;
+
     /**
      * 校验规则 JSON 字符串
      * 格式: {"required":true,"min":1,"max":100,"pattern":"..."}

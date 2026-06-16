@@ -9,95 +9,107 @@
       >
         <MenuIcon />
       </t-button>
-      <div class="logo">
-        <div class="logo-icon">
-          <CodeIcon />
-        </div>
-        <span class="logo-text">低代码开发平台</span>
+      <div class="header-brand">
+        <svg viewBox="0 0 32 32" fill="none" class="brand-logo">
+          <rect width="32" height="32" rx="8" fill="url(#hgrad)"/>
+          <path d="M10 11.5l6-3 6 3-6 3-6-3z" fill="#fff" opacity="0.9"/>
+          <path d="M10 16l6 3 6-3M10 20.5l6 3 6-3" stroke="#fff" stroke-width="1.8" stroke-linecap="round" opacity="0.8"/>
+          <defs>
+            <linearGradient id="hgrad" x1="0" y1="0" x2="32" y2="32">
+              <stop offset="0%" stop-color="#F5A623"/>
+              <stop offset="100%" stop-color="#E8A317"/>
+            </linearGradient>
+          </defs>
+        </svg>
+        <span class="brand-text">LowCode</span>
       </div>
     </div>
-    
+
     <div class="header-center">
       <div class="search-box">
         <SearchIcon class="search-icon" />
-        <input 
-          type="text" 
-          class="search-input" 
-          placeholder="搜索组件、页面..." 
+        <input
+          type="text"
+          class="search-input"
+          placeholder="搜索页面、组件、实体..."
           v-model="searchText"
           @keyup.enter="handleSearch"
         />
-        <t-button 
-          v-if="searchText" 
-          variant="text" 
+        <t-button
+          v-if="searchText"
+          variant="text"
+          size="small"
           class="clear-btn"
           @click="searchText = ''"
         >
           <CloseIcon size="14" />
         </t-button>
+        <kbd class="search-shortcut">⌘K</kbd>
       </div>
-      <t-breadcrumb :items="breadcrumbItems" class="breadcrumb" />
     </div>
-    
+
     <div class="header-right">
-      <t-space :size="16">
-        <t-button 
-          variant="text" 
-          class="icon-btn"
-          @click="toggleTheme"
-          title="切换主题"
-        >
+      <!-- 主题切换 -->
+      <t-tooltip :content="isDarkTheme ? '切换亮色模式' : '切换暗色模式'">
+        <t-button variant="text" class="icon-btn" @click="toggleTheme">
           <component :is="isDarkTheme ? SunnyIcon : MoonIcon" />
         </t-button>
-        
-        <t-button 
-          variant="text" 
-          class="icon-btn notification-btn"
-          @click="showNotifications = true"
-          title="通知"
-        >
+      </t-tooltip>
+
+      <!-- 通知 -->
+      <t-badge :count="unreadCount" :offset="[-2, 4]">
+        <t-button variant="text" class="icon-btn" @click="showNotifications = true">
           <NotificationIcon />
-          <span v-if="unreadCount > 0" class="notification-badge">{{ unreadCount }}</span>
         </t-button>
-        
-        <t-button 
-          variant="text" 
-          class="icon-btn"
-          @click="goToSettings"
-          title="设置"
-        >
+      </t-badge>
+
+      <!-- 设置 -->
+      <t-tooltip content="设置">
+        <t-button variant="text" class="icon-btn" @click="goToSettings">
           <SettingIcon />
         </t-button>
-        
-        <div class="user-dropdown">
-          <t-button variant="text" class="user-btn" @click="toggleUserMenu">
-            <div class="user-info">
-              <div class="user-avatar">
-                <UserIcon />
-              </div>
-              <span class="user-name">{{ userName }}</span>
-              <ChevronDownIcon class="user-arrow" :class="{ rotated: showUserMenu }" />
-            </div>
-          </t-button>
-          <div v-show="showUserMenu" class="dropdown-menu">
-            <div 
-              v-for="item in userMenuItems" 
-              :key="item.value" 
-              class="dropdown-item"
-              @click="handleUserMenuClick(item.value)"
-            >
-              {{ item.label }}
+      </t-tooltip>
+
+      <!-- 用户 -->
+      <div class="user-dropdown">
+        <t-button variant="text" class="user-btn" @click="toggleUserMenu">
+          <div class="user-info">
+            <t-avatar size="32px" class="user-avatar">
+              <template #icon><UserIcon /></template>
+            </t-avatar>
+            <span class="user-name">{{ userName }}</span>
+            <ChevronDownIcon class="user-arrow" :class="{ rotated: showUserMenu }" />
+          </div>
+        </t-button>
+        <div v-show="showUserMenu" class="dropdown-menu" @click.stop>
+          <div class="dropdown-header">
+            <t-avatar size="40px">
+              <template #icon><UserIcon /></template>
+            </t-avatar>
+            <div>
+              <div class="dropdown-user-name">{{ userName }}</div>
+              <div class="dropdown-user-role">管理员</div>
             </div>
           </div>
+          <div class="dropdown-divider"></div>
+          <div
+            v-for="item in userMenuItems"
+            :key="item.value"
+            class="dropdown-item"
+            @click="handleUserMenuClick(item.value)"
+          >
+            <component :is="item.icon" size="16" />
+            <span>{{ item.label }}</span>
+          </div>
         </div>
-      </t-space>
+      </div>
     </div>
-    
+
     <!-- 通知面板 -->
-    <t-drawer 
-      v-model="showNotifications" 
-      title="通知中心" 
-      :width="400"
+    <t-drawer
+      v-model="showNotifications"
+      title="通知中心"
+      :width="420"
       placement="right"
     >
       <div class="notification-panel">
@@ -106,14 +118,14 @@
           <t-button variant="text" size="small" @click="markAllRead">全部已读</t-button>
         </div>
         <div class="notification-list">
-          <div 
-            v-for="(item, index) in notifications" 
+          <div
+            v-for="(item, index) in notifications"
             :key="index"
             class="notification-item"
             :class="{ unread: !item.read }"
             @click="markAsRead(index)"
           >
-            <div class="notification-icon">
+            <div class="notification-icon" :style="{ background: item.bgColor }">
               <component :is="item.icon" />
             </div>
             <div class="notification-content">
@@ -121,6 +133,7 @@
               <p class="notification-desc">{{ item.description }}</p>
               <span class="notification-time">{{ item.time }}</span>
             </div>
+            <div v-if="!item.read" class="unread-dot"></div>
           </div>
         </div>
       </div>
@@ -129,103 +142,96 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
-import { 
-  MenuIcon, CodeIcon, SettingIcon, SearchIcon, CloseIcon,
+import {
+  MenuIcon, SettingIcon, SearchIcon, CloseIcon,
   MoonIcon, UserIcon, ChevronDownIcon,
-  CheckCircleIcon, InkIcon, ArticleIcon, NotificationIcon, SunnyIcon
+  CheckCircleIcon, TipsIcon, FileIcon,
+  NotificationIcon, SunnyIcon, UserCircleIcon, LogoutIcon
 } from 'tdesign-icons-vue-next';
-import { useSettingStore } from '../../store';
+import { useSettingStore, useUserStore } from '../../store';
 
 const router = useRouter();
 const route = useRoute();
 const settingStore = useSettingStore();
+const userStore = useUserStore();
 
 const searchText = ref('');
 const isDarkTheme = ref(false);
 const showUserMenu = ref(false);
 const showNotifications = ref(false);
-const userName = ref('管理员');
+const userName = computed(() => userStore.displayName);
 const unreadCount = ref(3);
+
+onMounted(() => {
+  userStore.restoreSession();
+});
 
 const notifications = ref([
   {
     title: '系统更新',
-    description: '低代码平台已更新至 v2.0.0，新增多项功能',
+    description: '低代码平台已更新至 v2.0.0，全新黄色主题上线',
     time: '5分钟前',
     read: false,
-    icon: InkIcon
+    icon: TipsIcon,
+    bgColor: 'linear-gradient(135deg, #f5a623, #e8a317)'
   },
   {
     title: '任务完成',
     description: '您创建的页面"首页"已成功发布',
     time: '15分钟前',
     read: false,
-    icon: CheckCircleIcon
+    icon: CheckCircleIcon,
+    bgColor: 'linear-gradient(135deg, #52c41a, #73d13d)'
   },
   {
-    title: '警告',
-    description: '检测到浏览器版本过低，建议升级',
+    title: '新消息',
+    description: '团队成员邀请您协作编辑页面',
     time: '1小时前',
     read: true,
-    icon: ArticleIcon
+    icon: FileIcon,
+    bgColor: 'linear-gradient(135deg, #1677ff, #69b1ff)'
   }
 ]);
 
-const breadcrumbItems = computed(() => {
-  const matched = route.matched.filter(r => !r.meta?.hidden);
-  return matched.map(r => ({
-    label: (r.meta?.title as any)?.zh_CN || r.name,
-    path: r.path,
-  }));
-});
-
 const userMenuItems = [
-  { label: '个人信息', value: 'profile' },
-  { label: '退出登录', value: 'logout' }
+  { label: '个人信息', value: 'profile', icon: UserCircleIcon },
+  { label: '退出登录', value: 'logout', icon: LogoutIcon }
 ];
 
-function toggleSidebar() {
-  settingStore.toggleSidebar();
-}
-
+function toggleSidebar() { settingStore.toggleSidebar(); }
 function toggleTheme() {
   isDarkTheme.value = !isDarkTheme.value;
   document.body.classList.toggle('dark-theme', isDarkTheme.value);
 }
-
 function handleSearch() {
-  if (searchText.value.trim()) {
-    console.log('搜索:', searchText.value);
+  const keyword = searchText.value.trim().toLowerCase();
+  if (!keyword) return;
+  // 智能搜索：根据关键词跳转到对应模块
+  if (keyword.includes('实体') || keyword.includes('entity') || keyword.includes('数据模型')) {
+    router.push('/lowcode/entity');
+  } else if (keyword.includes('页面') || keyword.includes('设计') || keyword.includes('page')) {
+    router.push('/lowcode/page/list');
+  } else if (keyword.includes('数据') || keyword.includes('data')) {
+    router.push('/lowcode/entity');
+  } else {
+    router.push('/lowcode/page/list');
   }
+  searchText.value = '';
 }
-
-function goToSettings() {
-  router.push('/settings');
-}
-
-function toggleUserMenu() {
-  showUserMenu.value = !showUserMenu.value;
-}
-
+function goToSettings() { router.push('/lowcode/entity'); }
+function toggleUserMenu() { showUserMenu.value = !showUserMenu.value; }
 function handleUserMenuClick(value: string) {
   if (value === 'logout') {
-    sessionStorage.removeItem('access');
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    router.push('/login');
-  } else {
-    console.log('用户菜单:', value);
+    userStore.logout();
   }
   showUserMenu.value = false;
 }
-
 function markAllRead() {
   notifications.value.forEach(n => n.read = true);
   unreadCount.value = 0;
 }
-
 function markAsRead(index: number) {
   if (!notifications.value[index].read) {
     notifications.value[index].read = true;
@@ -239,245 +245,203 @@ function markAsRead(index: number) {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 70px;
+  height: 64px;
   padding: 0 24px;
-  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  background: #fff;
+  border-bottom: 1px solid #f0f0f0;
   position: sticky;
   top: 0;
   z-index: 100;
+  backdrop-filter: blur(8px);
 }
 
+/* ===== 左侧 ===== */
 .header-left {
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 12px;
+  min-width: 260px;
 }
-
-.logo {
+.header-brand {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
 }
-
-.logo-icon {
+.brand-logo { width: 32px; height: 32px; flex-shrink: 0; }
+.brand-text {
+  font-size: 17px;
+  font-weight: 700;
+  color: #1a1a1a;
+  letter-spacing: -0.3px;
+}
+.sidebar-toggle {
   width: 40px;
   height: 40px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  
-  :deep(.t-icon) {
-    color: #fff;
-    font-size: 20px;
-  }
+  color: #666;
+  &:hover { background: #f5f5f5; color: #333; }
 }
 
-.logo-text {
-  font-size: 19px;
-  font-weight: 700;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
+/* ===== 中间搜索 ===== */
 .header-center {
   flex: 1;
   display: flex;
   align-items: center;
-  gap: 24px;
-  padding: 0 40px;
+  max-width: 480px;
+  margin: 0 24px;
 }
-
 .search-box {
   position: relative;
   display: flex;
   align-items: center;
-  background: #f1f5f9;
-  border-radius: 12px;
-  padding: 8px 16px;
-  transition: all 0.3s;
-  width: 320px;
-  
+  background: #f5f5f5;
+  border-radius: 10px;
+  padding: 8px 14px;
+  transition: all 0.25s;
+  width: 100%;
+  border: 1.5px solid transparent;
+
   &:focus-within {
     background: #fff;
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-    border: 1px solid #667eea;
+    border-color: var(--td-brand-color, #E8A317);
+    box-shadow: 0 0 0 3px rgba(232, 163, 23, 0.08);
   }
 }
-
-.search-icon {
-  color: #94a3b8;
-  margin-right: 10px;
-  font-size: 16px;
-}
-
+.search-icon { color: #999; margin-right: 8px; font-size: 16px; flex-shrink: 0; }
 .search-input {
   flex: 1;
   border: none;
   background: transparent;
   outline: none;
   font-size: 14px;
-  color: #334155;
+  color: #333;
+  &::placeholder { color: #bbb; }
+}
+.clear-btn { padding: 2px; color: #bbb; flex-shrink: 0; }
+.search-shortcut {
+  margin-left: 8px;
+  padding: 2px 7px;
+  font-size: 11px;
+  color: #999;
+  background: #fff;
+  border: 1px solid #e5e5e5;
+  border-radius: 5px;
+  font-family: inherit;
+  flex-shrink: 0;
 }
 
-.clear-btn {
-  padding: 4px;
-  color: #94a3b8;
-}
-
-.breadcrumb {
-  flex: 1;
-
-  :deep(.t-breadcrumb) {
-    border: none !important;
-    border-bottom: none !important;
-    box-shadow: none !important;
-  }
-}
-
+/* ===== 右侧 ===== */
 .header-right {
   display: flex;
   align-items: center;
+  gap: 4px;
 }
-
 .icon-btn {
   width: 40px;
   height: 40px;
   border-radius: 10px;
+  color: #666;
   display: flex;
   align-items: center;
   justify-content: center;
-  
-  &:hover {
-    background: #f1f5f9;
-  }
-  
-  :deep(.t-icon) {
-    font-size: 18px;
-    color: #475569;
-  }
-  
-  &:hover :deep(.t-icon) {
-    color: #667eea;
-  }
+  &:hover { background: #f5f5f5; color: var(--td-brand-color, #E8A317); }
+  :deep(.t-icon) { font-size: 20px; }
 }
 
-.notification-btn {
-  position: relative;
-}
-
-.notification-badge {
-  position: absolute;
-  top: -2px;
-  right: -2px;
-  min-width: 18px;
-  height: 18px;
-  background: #ef4444;
-  color: #fff;
-  font-size: 10px;
-  font-weight: 600;
-  border-radius: 9px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0 5px;
-  border: 2px solid #fff;
-  box-shadow: 0 2px 4px rgba(239, 68, 68, 0.3);
-}
-
-.user-btn {
-  padding: 0;
-  
-  :deep(.t-button__content) {
-    padding: 0;
-  }
-}
-
+/* ===== 用户下拉 ===== */
+.user-dropdown { position: relative; }
+.user-btn { padding: 0; }
 .user-info {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 8px 12px;
+  padding: 6px 12px;
   border-radius: 10px;
   cursor: pointer;
-  transition: background 0.3s;
-  
-  &:hover {
-    background: #f1f5f9;
-  }
+  transition: background 0.2s;
+  &:hover { background: #f5f5f5; }
 }
-
 .user-avatar {
-  width: 36px;
-  height: 36px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  
-  :deep(.t-icon) {
-    color: #fff;
-    font-size: 16px;
-  }
+  background: linear-gradient(135deg, #f5a623, #e8a317) !important;
+  :deep(.t-icon) { font-size: 16px; }
 }
-
 .user-name {
   font-size: 14px;
   font-weight: 500;
-  color: #334155;
+  color: #333;
 }
-
 .user-arrow {
+  font-size: 14px;
+  color: #999;
   transition: transform 0.3s;
-  
-  &.rotated {
-    transform: rotate(180deg);
-  }
+  &.rotated { transform: rotate(180deg); }
 }
 
+.dropdown-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 200px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+  padding: 6px;
+  z-index: 1000;
+  animation: menuSlide 0.15s ease-out;
+}
+@keyframes menuSlide {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.dropdown-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 10px 12px;
+}
+.dropdown-user-name { font-size: 14px; font-weight: 600; color: #1a1a1a; }
+.dropdown-user-role { font-size: 12px; color: #999; margin-top: 2px; }
+.dropdown-divider { height: 1px; background: #f0f0f0; margin: 4px 0; }
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  font-size: 14px;
+  color: #555;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: all 0.15s;
+  &:hover { background: #f9fafb; color: var(--td-brand-color, #E8A317); }
+}
+
+/* ===== 通知面板 ===== */
 .notification-panel {
   height: 100%;
   display: flex;
   flex-direction: column;
 }
-
 .notification-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px;
-  border-bottom: 1px solid #e2e8f0;
+  padding: 0 0 16px;
   font-weight: 600;
-  color: #1e293b;
+  font-size: 15px;
+  color: #1a1a1a;
 }
-
-.notification-list {
-  flex: 1;
-  overflow-y: auto;
-  padding: 12px;
-}
-
+.notification-list { flex: 1; overflow-y: auto; }
 .notification-item {
   display: flex;
   gap: 12px;
-  padding: 12px;
+  padding: 14px;
   border-radius: 10px;
   cursor: pointer;
   transition: background 0.2s;
-  
-  &:hover {
-    background: #f8fafc;
-  }
-  
-  &.unread {
-    background: #f0f9ff;
-  }
+  position: relative;
+  &:hover { background: #fafafa; }
+  &.unread { background: #fffdf5; }
 }
-
 .notification-icon {
   width: 40px;
   height: 40px;
@@ -485,93 +449,26 @@ function markAsRead(index: number) {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #f1f5f9;
-  
-  :deep(.t-icon) {
-    color: #667eea;
-  }
+  flex-shrink: 0;
+  :deep(.t-icon) { color: #fff; font-size: 18px; }
 }
-
 .notification-content {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 3px;
+  min-width: 0;
 }
-
-.notification-title {
-  font-size: 14px;
-  font-weight: 600;
-  color: #1e293b;
-  margin: 0;
-}
-
-.notification-desc {
-  font-size: 13px;
-  color: #64748b;
-  margin: 0;
-}
-
-.notification-time {
-  font-size: 12px;
-  color: #94a3b8;
-}
-
-.sidebar-toggle {
-  width: 40px;
-  height: 40px;
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  
-  &:hover {
-    background: #f1f5f9;
-  }
-  
-  :deep(.t-icon) {
-    font-size: 18px;
-  }
-}
-
-.user-dropdown {
-  position: relative;
-  
-  .dropdown-menu {
-    position: absolute;
-    top: calc(100% + 8px);
-    right: 0;
-    min-width: 160px;
-    background: #fff;
-    border-radius: 10px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
-    padding: 4px 0;
-    z-index: 1000;
-    
-    &::before {
-      content: '';
-      position: absolute;
-      top: -6px;
-      right: 16px;
-      width: 12px;
-      height: 12px;
-      background: #fff;
-      transform: rotate(45deg);
-      border-top: 1px solid #e2e8f0;
-      border-left: 1px solid #e2e8f0;
-    }
-  }
-  
-  .dropdown-item {
-    padding: 10px 16px;
-    font-size: 14px;
-    color: #334155;
-    cursor: pointer;
-    transition: background 0.2s;
-    
-    &:hover {
-      background: #f1f5f9;
-    }
-  }
+.notification-title { font-size: 14px; font-weight: 600; color: #1a1a1a; margin: 0; }
+.notification-desc { font-size: 13px; color: #777; margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.notification-time { font-size: 12px; color: #bbb; }
+.unread-dot {
+  position: absolute;
+  top: 18px;
+  right: 14px;
+  width: 8px;
+  height: 8px;
+  background: var(--td-brand-color, #E8A317);
+  border-radius: 50%;
 }
 </style>

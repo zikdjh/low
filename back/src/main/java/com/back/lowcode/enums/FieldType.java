@@ -18,7 +18,8 @@ public enum FieldType {
     DATETIME("DATETIME", "LocalDateTime", false, false, false),
     TEXT("TEXT", "String", false, false, false),
     JSON("JSON", "String", false, false, false),
-    DECIMAL("DECIMAL", "BigDecimal", false, true, true);
+    DECIMAL("DECIMAL", "BigDecimal", false, true, true),
+    REFERENCE("BIGINT", "Long", false, false, false);
 
     /** MySQL 列类型名 */
     private final String mysqlType;

@@ -19,8 +19,8 @@ import Content from './components/Content.vue';
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+  background: #f7f8fa;
 }
-
 .layout-body {
   display: flex;
   flex: 1;

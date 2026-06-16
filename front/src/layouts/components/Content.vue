@@ -1,6 +1,10 @@
 <template>
   <main class="layout-content">
-    <router-view />
+    <router-view v-slot="{ Component }">
+      <transition name="page-fade" mode="out-in">
+        <component :is="Component" />
+      </transition>
+    </router-view>
   </main>
 </template>
 
@@ -10,10 +14,31 @@
 <style scoped lang="less">
 .layout-content {
   flex: 1;
-  padding: 24px;
   overflow-y: auto;
-  background: #f8fafc;
-  min-height: calc(100vh - 70px);
+  background: #f7f8fa;
+  min-height: calc(100vh - 64px);
   transition: margin-left 0.3s;
+
+  &::-webkit-scrollbar { width: 6px; }
+  &::-webkit-scrollbar-track { background: transparent; }
+  &::-webkit-scrollbar-thumb {
+    background: #d0d5dd;
+    border-radius: 10px;
+    &:hover { background: #b0b5bd; }
+  }
+}
+
+/* 页面过渡动画 */
+.page-fade-enter-active,
+.page-fade-leave-active {
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+.page-fade-enter-from {
+  opacity: 0;
+  transform: translateY(8px);
+}
+.page-fade-leave-to {
+  opacity: 0;
+  transform: translateY(-4px);
 }
 </style>

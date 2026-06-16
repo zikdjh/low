@@ -9,7 +9,7 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://127.0.0.1:3306/low_end
     username: root
-    password: zc@qq.com0501
+    password: 1QAZ0PLM@
     hikari:
       maximum-pool-size: 30
       minimum-idle: 30

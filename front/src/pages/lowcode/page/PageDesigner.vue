@@ -366,10 +366,10 @@
                       </div>
                     </t-form-item>
                     <t-form-item label="对齐方式">
-                      <t-radio-group v-model="selectedElement.props.align" variant="default-filled">
-                        <t-radio-button value="left"><AlignTopIcon /></t-radio-button>
-                        <t-radio-button value="center"><AlignCenterIcon /></t-radio-button>
-                        <t-radio-button value="right"><AlignTopIcon /></t-radio-button>
+                      <t-radio-group v-model="selectedElement.props.align" variant="default-filled" size="small">
+                        <t-radio-button value="left">左对齐</t-radio-button>
+                        <t-radio-button value="center">居中</t-radio-button>
+                        <t-radio-button value="right">右对齐</t-radio-button>
                       </t-radio-group>
                     </t-form-item>
                   </template>
@@ -563,9 +563,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, markRaw, defineAsyncComponent } from 'vue';
-import { useRouter } from 'vue-router';
+import { ref, computed, markRaw, defineAsyncComponent, onMounted } from 'vue';
+import { useRouter, useRoute } from 'vue-router';
 import { MessagePlugin } from 'tdesign-vue-next';
+import { pageSchemaApi } from '../../../api/lowcode/pageSchema';
 import {
   ChevronLeftIcon, ChevronRightIcon, ChevronUpIcon, ChevronDownIcon,
   RollbackIcon, ForwardIcon, BrowseIcon, SaveIcon,
@@ -574,12 +575,16 @@ import {
   ChartBarIcon, LayoutIcon, MinusIcon, ExpandHorizontalIcon,
   VerticalIcon, CopyIcon, DeleteIcon,
   SettingIcon, DownloadIcon, RectangleIcon,
-  AlignTopIcon, InkIcon, TapeIcon, ConstraintIcon
+  InkIcon, TapeIcon, ConstraintIcon, CursorIcon, FormatVerticalAlignLeftIcon,
+  FormatVerticalAlignCenterIcon, FormatVerticalAlignRightIcon
 } from 'tdesign-icons-vue-next';
-const MousePointerIcon = { name: 'MousePointerIcon' };
-const AlignCenterIcon = { name: 'AlignCenterIcon' };
+// 使用实际存在的图标作为兼容别名
+const MousePointerIcon = CursorIcon;
+const AlignTopIcon = FormatVerticalAlignLeftIcon;
+const AlignCenterIcon = FormatVerticalAlignCenterIcon;
 
 const router = useRouter();
+const route = useRoute();
 
 // 视图切换
 const currentView = ref('design');
@@ -599,6 +604,35 @@ const isDraggingOver = ref(false);
 
 // 页面状态
 const pageName = ref('未命名页面');
+// 页面ID（编辑模式）
+const editingPageId = ref<number | null>(null);
+const pageStatus = ref('draft');
+const isSaving = ref(false);
+
+// 从路由参数加载页面
+onMounted(async () => {
+  const id = route.query.id;
+  if (id) {
+    try {
+      const res = await pageSchemaApi.getById(Number(id));
+      if (res.data.code === 1) {
+        const pageData = res.data.data;
+        editingPageId.value = pageData.id;
+        pageName.value = pageData.name || '未命名页面';
+        pageStatus.value = pageData.status || 'draft';
+        // 加载页面元素
+        try {
+          const layoutJson = typeof pageData.layoutJson === 'string'
+            ? JSON.parse(pageData.layoutJson)
+            : (pageData.layoutJson || []);
+          pageElements.value = Array.isArray(layoutJson) ? layoutJson : [];
+        } catch { /* 忽略解析错误 */ }
+      }
+    } catch (e) {
+      MessagePlugin.warning('无法加载页面数据，将以新建模式打开');
+    }
+  }
+});
 
 interface PageElement {
   id: string;
@@ -1036,19 +1070,37 @@ function handleSave() {
     MessagePlugin.warning('请输入页面名称');
     return;
   }
+  if (isSaving.value) return;
+  isSaving.value = true;
   
-  const pageData = {
-    name: pageName.value,
-    elements: pageElements.value,
-    updatedAt: new Date().toISOString(),
-  };
-  
-  localStorage.setItem('lowcode_page_' + Date.now(), JSON.stringify(pageData));
-  MessagePlugin.success('页面保存成功！');
+  try {
+    const payload = {
+      name: pageName.value,
+      code: pageName.value.replace(/[^\w\u4e00-\u9fa5]/g, '_').toLowerCase() || 'unnamed_page',
+      pageType: 'custom',
+      layoutJson: JSON.stringify(pageElements.value),
+      version: 1,
+      status: pageStatus.value,
+    };
+    
+    if (editingPageId.value) {
+      await pageSchemaApi.update(editingPageId.value, { ...payload, id: editingPageId.value } as any);
+    } else {
+      const res = await pageSchemaApi.create(payload as any);
+      if (res.data?.id || (res.data as any)?.data?.id) {
+        editingPageId.value = (res.data as any)?.data?.id || res.data?.id;
+      }
+    }
+    MessagePlugin.success('页面保存成功！');
+  } catch (e: any) {
+    MessagePlugin.error(e?.message || '保存失败');
+  } finally {
+    isSaving.value = false;
+  }
 }
 
 function goBack() {
-  router.push('/home');
+  router.push('/lowcode/page/list');
 }
 </script>
 
@@ -1104,7 +1156,7 @@ function goBack() {
 
         &:focus {
           background: rgba(255, 255, 255, 0.15);
-          box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.5);
+          box-shadow: 0 0 0 2px rgba(232, 163, 23, 0.5);
         }
 
         &::placeholder {
@@ -1150,7 +1202,7 @@ function goBack() {
         }
 
         &.active {
-          background: rgba(99, 102, 241, 0.9);
+          background: rgba(232, 163, 23, 0.85);
           color: #fff;
         }
       }
@@ -1170,14 +1222,15 @@ function goBack() {
     }
 
     .save-btn {
-      background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+      background: linear-gradient(135deg, #f5a623 0%, #e8a317 100%);
       border: none;
       padding: 0 24px;
       font-weight: 600;
+      color: #fff;
 
       &:hover {
-        background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
-        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+        background: linear-gradient(135deg, #d4920a 0%, #c7800a 100%);
+        box-shadow: 0 4px 12px rgba(232, 163, 23, 0.4);
       }
     }
   }
@@ -1305,10 +1358,10 @@ function goBack() {
         background: #f9fafb;
 
         &:hover {
-          background: #eff6ff;
-          border-color: #3b82f6;
+          background: #fffdf5;
+          border-color: #e8a317;
           transform: translateX(4px);
-          box-shadow: 0 2px 8px rgba(59, 130, 246, 0.15);
+          box-shadow: 0 2px 8px rgba(232, 163, 23, 0.15);
         }
 
         &:active {
@@ -1318,8 +1371,8 @@ function goBack() {
 
         &.dragging {
           opacity: 0.5;
-          background: #dbeafe;
-          border-color: #3b82f6;
+          background: #fef3c7;
+          border-color: #e8a317;
         }
 
         .component-icon-wrapper {
@@ -1328,7 +1381,7 @@ function goBack() {
           display: flex;
           align-items: center;
           justify-content: center;
-          background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+          background: linear-gradient(135deg, #f5a623 0%, #e8a317 100%);
           border-radius: 8px;
           color: #fff;
           flex-shrink: 0;
@@ -1610,7 +1663,7 @@ function goBack() {
         transform: translate(-50%, -50%);
         width: 140px;
         height: 140px;
-        background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+        background: linear-gradient(135deg, #f5a623 0%, #e8a317 100%);
         border-radius: 50%;
         opacity: 0.1;
         animation: expand 3s ease-in-out infinite;
@@ -1623,10 +1676,10 @@ function goBack() {
         display: flex;
         align-items: center;
         justify-content: center;
-        background: linear-gradient(135deg, #eff6ff 0%, #e0e7ff 100%);
+        background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
         border-radius: 24px;
-        color: #6366f1;
-        box-shadow: 0 8px 32px rgba(99, 102, 241, 0.15);
+        color: #e8a317;
+        box-shadow: 0 8px 32px rgba(232, 163, 23, 0.15);
       }
     }
 

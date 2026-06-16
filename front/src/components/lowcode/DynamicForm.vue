@@ -17,8 +17,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import type { FieldMeta } from '../../types/lowcode';
+import dynamicDataApi from '../../api/lowcode/dynamicData';
 
 const props = defineProps<{
   fields: FieldMeta[];
@@ -31,6 +32,7 @@ const emit = defineEmits<{
 }>();
 
 const formRef = ref();
+const refOptions = ref<Record<string, any[]>>({});
 
 const modelValue = computed({
   get: () => props.data,
@@ -105,6 +107,8 @@ function getInputComponent(field: FieldMeta): string {
       return 't-date-picker';
     case 'DATETIME':
       return 't-date-picker';
+    case 'REFERENCE':
+      return 't-select';
     default:
       return 't-input';
   }
@@ -139,6 +143,9 @@ function getInputProps(field: FieldMeta): Record<string, any> {
       props.valueType = 'YYYY-MM-DD HH:mm:ss';
       props.enableTimePicker = true;
       break;
+    case 'REFERENCE':
+      props.options = refOptions.value[field.code] || [];
+      break;
   }
   
   return props;
@@ -146,7 +153,29 @@ function getInputProps(field: FieldMeta): Record<string, any> {
 
 function getPlaceholder(field: FieldMeta): string {
   if (props.readonly) return '';
+  if (field.fieldType === 'REFERENCE') {
+    return `请选择${field.name}`;
+  }
   return `请输入${field.name}`;
+}
+
+async function loadRefOptions() {
+  const refFields = props.fields.filter(f => f.fieldType === 'REFERENCE' && f.refEntityCode);
+  for (const field of refFields) {
+    try {
+      const res = await dynamicDataApi.list(field.refEntityCode!, { page: 1, pageSize: 1000 });
+      if (res.data.code === 1) {
+        const records = res.data.data.content || res.data.data.records || [];
+        const displayField = field.refDisplayCode || 'id';
+        refOptions.value[field.code] = records.map((r: any) => ({
+          label: r[displayField] !== undefined ? String(r[displayField]) : String(r.id),
+          value: r.id,
+        }));
+      }
+    } catch (e) {
+      console.warn(`Failed to load ref options for ${field.code}`, e);
+    }
+  }
 }
 
 async function validate() {
@@ -156,6 +185,10 @@ async function validate() {
 function reset() {
   formRef.value?.reset();
 }
+
+onMounted(() => {
+  loadRefOptions();
+});
 
 defineExpose({ validate, reset });
 </script>

@@ -101,7 +101,7 @@ const router = useRouter();
 const route = useRoute();
 
 const entityId = computed(() => {
-  const id = route.params.id;
+  const id = Array.isArray(route.params.id) ? route.params.id[0] : route.params.id;
   return id && id !== 'new' ? Number(id) : null;
 });
 
@@ -138,6 +138,7 @@ const fieldTypeOptions = [
   { label: '长文本 (TEXT)', value: 'TEXT' },
   { label: 'JSON', value: 'JSON' },
   { label: '金额 (DECIMAL)', value: 'DECIMAL' },
+  { label: '实体引用 (REFERENCE)', value: 'REFERENCE' },
 ];
 
 const fieldColumns: PrimaryTableCol[] = [
@@ -227,12 +228,15 @@ function goHome() {
 
 onMounted(async () => {
   if (!isNew.value) {
-    // 加载已有实体
-    const res = await entityMetaApi.getById(entityId.value!);
-    if (res.data.code === 1) {
-      const { entity, fields: fieldList } = res.data.data;
-      Object.assign(entityForm, entity);
-      fields.value = fieldList || [];
+    try {
+      const res = await entityMetaApi.getById(entityId.value!);
+      if (res.data.code === 1) {
+        const { entity, fields: fieldList } = res.data.data;
+        Object.assign(entityForm, entity);
+        fields.value = fieldList || [];
+      }
+    } catch {
+      MessagePlugin.error('加载实体失败');
     }
   }
 });

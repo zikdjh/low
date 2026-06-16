@@ -4,34 +4,40 @@
     <div class="sidebar-header">
       <div class="logo-wrapper">
         <div class="logo-icon">
-          <CodeIcon />
+          <svg viewBox="0 0 40 40" fill="none" class="logo-svg">
+            <rect width="40" height="40" rx="10" fill="currentColor" fill-opacity="0.15"/>
+            <path d="M12 14l8-4 8 4-8 4-8-4z" fill="currentColor" fill-opacity="0.7"/>
+            <path d="M12 20l8 4 8-4M12 26l8 4 8-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-opacity="0.7"/>
+          </svg>
         </div>
-        <span class="logo-title" :class="{ hidden: settingStore.isSidebarCollapsed }">
-          <span class="title-text">低代码平台</span>
-          <span class="title-sub">Low-Code Platform</span>
+        <span v-show="!settingStore.isSidebarCollapsed" class="logo-title">
+          <span class="title-text">LowCode</span>
+          <span class="title-sub">低代码开发平台</span>
         </span>
       </div>
     </div>
-    
+
     <!-- 快捷操作 -->
-    <div class="quick-actions" :class="{ hidden: settingStore.isSidebarCollapsed }">
-      <div class="quick-title">快捷操作</div>
+    <div v-show="!settingStore.isSidebarCollapsed" class="quick-actions">
+      <div class="section-label">快捷操作</div>
       <div class="quick-list">
-        <t-button 
-          v-for="action in quickActions" 
+        <t-button
+          v-for="action in quickActions"
           :key="action.name"
-          variant="text" 
+          variant="outline"
+          size="small"
           class="quick-btn"
           @click="handleQuickAction(action.name)"
         >
           <template #icon><component :is="action.icon" /></template>
-          <span>{{ action.label }}</span>
+          {{ action.label }}
         </t-button>
       </div>
     </div>
-    
+
     <!-- 导航菜单 -->
     <nav class="sidebar-nav">
+      <div v-show="!settingStore.isSidebarCollapsed" class="section-label">导航菜单</div>
       <t-menu
         :items="menuItems"
         :active-name="activeMenu"
@@ -42,22 +48,22 @@
         class="main-menu"
       />
     </nav>
-    
+
     <!-- 底部信息 -->
     <div class="sidebar-footer">
       <div v-if="!settingStore.isSidebarCollapsed" class="footer-content">
         <div class="version-info">
-          <span class="version-label">版本</span>
-          <span class="version-number">v2.0.0</span>
+          <span class="version-dot"></span>
+          <span class="version-text">v2.0.0</span>
         </div>
         <div class="footer-links">
           <t-button variant="text" class="footer-link" @click="openDocs">
             <template #icon><FileTxtIcon /></template>
-            <span>文档</span>
+            文档
           </t-button>
           <t-button variant="text" class="footer-link" @click="openHelp">
             <template #icon><HelpCircleIcon /></template>
-            <span>帮助</span>
+            帮助
           </t-button>
         </div>
       </div>
@@ -74,15 +80,14 @@
         </t-tooltip>
       </div>
     </div>
-    
   </aside>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { 
-  CodeIcon, PlusIcon, UploadIcon, DownloadIcon, 
+import {
+  PlusIcon, UploadIcon, DownloadIcon,
   FileTxtIcon, HelpCircleIcon
 } from 'tdesign-icons-vue-next';
 import { useSettingStore } from '../../store';
@@ -102,7 +107,6 @@ const quickActions = [
 
 const menuItems = computed(() => {
   const items: any[] = [];
-  
   allRoutes.forEach(r => {
     if (!r.meta?.hidden && r.path !== '/') {
       const routePath = r.path;
@@ -112,302 +116,238 @@ const menuItems = computed(() => {
         path: `${routePath}/${c.path}`,
         icon: c.meta?.icon,
       })) || [];
-      
-      const hasChildren = children.length > 0;
-      
+
       items.push({
         label: (r.meta?.title as any)?.zh_CN || r.name,
-        name: hasChildren ? routePath : `${routePath}${r.children?.[0]?.path || ''}`,
+        name: children.length > 0 ? routePath : `${routePath}${r.children?.[0]?.path || ''}`,
         path: routePath,
         icon: r.meta?.icon,
-        children: hasChildren ? children : undefined,
+        children: children.length > 0 ? children : undefined,
       });
     }
   });
-  
   return items;
 });
 
-const activeMenu = computed(() => {
-  return route.path;
-});
+const activeMenu = computed(() => route.path);
 
-function handleMenuClick(name: string) {
-  router.push(name);
-}
-
+function handleMenuClick(name: string) { router.push(name); }
 function handleQuickAction(name: string) {
   switch (name) {
-    case 'new':
-      router.push('/lowcode/page');
-      break;
-    case 'import':
-      console.log('导入功能');
-      break;
-    case 'export':
-      console.log('导出功能');
-      break;
+    case 'new': router.push('/lowcode/page/list'); break;
+    case 'import': router.push('/lowcode/entity'); break;
+    case 'export': router.push('/lowcode/entity'); break;
   }
 }
-
-function openDocs() {
-  window.open('#', '_blank');
-}
-
-function openHelp() {
-  window.open('#', '_blank');
-}
+function openDocs() { window.open('#', '_blank'); }
+function openHelp() { window.open('#', '_blank'); }
 </script>
 
 <style scoped lang="less">
 .layout-aside {
-  width: 250px;
-  background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
-  color: #fff;
-  transition: width 0.3s, all 0.3s;
+  width: 260px;
+  background: #fff;
+  border-right: 1px solid #f0f0f0;
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
-  
+  overflow: hidden;
+
   &.collapsed {
     width: 72px;
   }
 }
 
+/* ===== Logo ===== */
 .sidebar-header {
-  padding: 24px 20px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 20px 20px 16px;
 }
-
 .logo-wrapper {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 12px;
 }
-
 .logo-icon {
-  width: 44px;
-  height: 44px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border-radius: 12px;
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  color: var(--td-brand-color, #E8A317);
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
-  
-  :deep(.t-icon) {
-    color: #fff;
-    font-size: 22px;
+  .logo-svg {
+    width: 40px;
+    height: 40px;
   }
 }
-
 .logo-title {
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  
-  &.hidden {
-    display: none;
-  }
+  gap: 1px;
+  overflow: hidden;
+  white-space: nowrap;
 }
-
 .title-text {
   font-size: 18px;
   font-weight: 700;
-  color: #fff;
+  color: #1a1a1a;
+  letter-spacing: -0.3px;
 }
-
 .title-sub {
   font-size: 11px;
-  color: rgba(255, 255, 255, 0.5);
+  color: #999;
   letter-spacing: 0.5px;
 }
 
-.quick-actions {
-  padding: 16px 12px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  
-  &.hidden {
-    display: none;
-  }
-}
-
-.quick-title {
+/* ===== 分组标签 ===== */
+.section-label {
   font-size: 11px;
-  color: rgba(255, 255, 255, 0.4);
+  font-weight: 600;
+  color: #999;
   text-transform: uppercase;
   letter-spacing: 1px;
-  margin-bottom: 10px;
-  padding-left: 8px;
+  padding: 0 20px;
+  margin-bottom: 8px;
 }
 
+/* ===== 快捷操作 ===== */
+.quick-actions {
+  padding: 8px 16px 16px;
+  border-bottom: 1px solid #f5f5f5;
+}
 .quick-list {
   display: flex;
-  gap: 8px;
+  flex-direction: column;
+  gap: 6px;
 }
-
 .quick-btn {
-  flex: 1;
-  padding: 10px 8px;
+  justify-content: flex-start;
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.05);
-  color: rgba(255, 255, 255, 0.8);
-  font-size: 12px;
-  
-  :deep(.t-icon) {
-    margin-right: 4px;
-    font-size: 14px;
-  }
-  
+  color: #555;
+  border-color: #eee;
+  font-size: 13px;
+  transition: all 0.2s;
   &:hover {
-    background: rgba(102, 126, 234, 0.2);
-    color: #fff;
+    color: var(--td-brand-color, #E8A317);
+    border-color: var(--td-brand-color-3, #fde68a);
+    background: var(--td-brand-color-1, #fffbeb);
   }
 }
 
+/* ===== 导航菜单 ===== */
 .sidebar-nav {
   flex: 1;
-  padding: 16px 0;
+  padding: 12px 12px;
   overflow-y: auto;
-  
-  &::-webkit-scrollbar {
-    width: 6px;
-  }
-  
-  &::-webkit-scrollbar-track {
-    background: transparent;
-  }
-  
+
+  &::-webkit-scrollbar { width: 4px; }
+  &::-webkit-scrollbar-track { background: transparent; }
   &::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 3px;
-    
-    &:hover {
-      background: rgba(255, 255, 255, 0.2);
-    }
+    background: #e0e0e0;
+    border-radius: 4px;
+    &:hover { background: #ccc; }
   }
 }
 
 .main-menu {
   background: transparent;
-  
-  :deep(.t-menu-group) {
-    margin-bottom: 8px;
-  }
-  
+  border: none;
+
+  :deep(.t-menu-group) { margin-bottom: 4px; }
   :deep(.t-menu-group-title) {
-    padding: 8px 20px !important;
+    padding: 8px 12px !important;
     font-size: 11px;
-    color: rgba(255, 255, 255, 0.4);
+    font-weight: 600;
+    color: #999;
     text-transform: uppercase;
-    letter-spacing: 1px;
+    letter-spacing: 0.5px;
   }
-  
   :deep(.t-menu-item) {
-    margin: 2px 8px;
+    margin: 2px 0;
     border-radius: 8px;
-    color: rgba(255, 255, 255, 0.75);
+    color: #555;
+    font-size: 14px;
     transition: all 0.2s;
-    
+
     &:hover {
-      background: rgba(255, 255, 255, 0.08);
-      color: #fff;
+      background: #f9fafb;
+      color: var(--td-brand-color, #E8A317);
     }
-    
     &.t-menu-item--active {
-      background: linear-gradient(135deg, rgba(102, 126, 234, 0.3) 0%, rgba(118, 75, 162, 0.3) 100%);
-      color: #fff;
-      box-shadow: 0 4px 15px rgba(102, 126, 234, 0.2);
+      background: var(--td-brand-color-1, #fffbeb);
+      color: var(--td-brand-color, #E8A317);
+      font-weight: 600;
     }
   }
-  
   :deep(.t-menu-item__icon) {
     color: inherit;
-    font-size: 16px;
+    font-size: 18px;
   }
-  
-  :deep(.t-menu-item__label) {
-    color: inherit;
-    font-size: 14px;
-  }
-  
-  :deep(.t-menu-item__arrow) {
-    color: rgba(255, 255, 255, 0.4);
-  }
-  
+  :deep(.t-menu-item__label) { color: inherit; }
+  :deep(.t-menu-item__arrow) { color: #bbb; }
   :deep(.t-menu-item--active .t-menu-item__arrow) {
-    color: #fff;
+    color: var(--td-brand-color, #E8A317);
+  }
+
+  // 折叠时菜单项居中
+  :deep(.t-menu--collapsed .t-menu-item) {
+    justify-content: center;
+    padding: 12px 0;
+    .t-menu-item__icon { margin-right: 0 !important; }
   }
 }
 
+/* ===== 底部 ===== */
 .sidebar-footer {
-  padding: 16px;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(0, 0, 0, 0.2);
+  padding: 12px 16px;
+  border-top: 1px solid #f5f5f5;
 }
-
 .footer-content {
-  &.hidden {
-    display: none;
-  }
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
-
 .version-info {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-bottom: 12px;
-  padding-left: 4px;
 }
-
-.version-label {
-  font-size: 11px;
-  color: rgba(255, 255, 255, 0.4);
+.version-dot {
+  width: 7px;
+  height: 7px;
+  background: #52c41a;
+  border-radius: 50%;
+  box-shadow: 0 0 0 3px rgba(82, 196, 26, 0.15);
 }
-
-.version-number {
+.version-text {
   font-size: 12px;
-  color: #667eea;
+  color: #999;
   font-weight: 500;
 }
-
 .footer-links {
   display: flex;
-  gap: 12px;
+  gap: 4px;
 }
-
 .footer-link {
-  padding: 8px 12px;
+  padding: 6px 10px;
   border-radius: 6px;
-  color: rgba(255, 255, 255, 0.6);
+  color: #999;
   font-size: 12px;
-  
-  :deep(.t-icon) {
-    margin-right: 6px;
-    font-size: 12px;
-  }
-  
-  &:hover {
-    background: rgba(255, 255, 255, 0.08);
-    color: #fff;
-  }
+  &:hover { color: #333; background: #f5f5f5; }
 }
 
 .footer-collapsed {
   display: flex;
-  justify-content: center;
-  gap: 12px;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
 }
-
 .footer-btn {
   width: 36px;
   height: 36px;
   border-radius: 8px;
-  color: rgba(255, 255, 255, 0.6);
-  
-  &:hover {
-    background: rgba(255, 255, 255, 0.1);
-    color: #fff;
-  }
+  color: #999;
+  &:hover { background: #f5f5f5; color: #333; }
 }
 </style>

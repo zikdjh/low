@@ -33,7 +33,8 @@ export type FieldType =
   | 'DATETIME'
   | 'TEXT'
   | 'JSON'
-  | 'DECIMAL';
+  | 'DECIMAL'
+  | 'REFERENCE';
 
 export type EntityStatus = 'draft' | 'published' | 'archived';
 export type PageType = 'list' | 'form' | 'detail' | 'custom' | 'dashboard';
@@ -72,6 +73,8 @@ export interface FieldMeta {
   showInForm: boolean;
   showInSearch: boolean;
   dictCode?: string;
+  refEntityCode?: string;
+  refDisplayCode?: string;
   validationRule?: string;
   sortable?: boolean;
 }

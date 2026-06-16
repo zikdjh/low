@@ -59,6 +59,12 @@
             <span class="version">v{{ page.version }}</span>
           </div>
           <div class="card-actions">
+            <button class="action-btn design" @click.stop="goDesign(page)" title="设计页面">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="18" height="18" rx="2" />
+                <path d="M3 9h18M9 3v18" />
+              </svg>
+            </button>
             <button class="action-btn edit" @click.stop="handleEdit(page)">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
@@ -150,7 +156,7 @@
           <div class="form-item">
             <label>关联实体</label>
             <select class="form-select" v-model="formData.entityId">
-              <option :value="undefined">不关联实体</option>
+              <option value="">不关联实体</option>
               <option v-for="entity in entities" :key="entity.id" :value="entity.id">
                 {{ entity.name }} ({{ entity.code }})
               </option>
@@ -168,10 +174,13 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
 import { pageSchemaApi } from '../../../api/lowcode/pageSchema';
 import entityMetaApi from '../../../api/lowcode/entityMeta';
 import type { PageSchema, EntityMeta, PageType } from '../../../types/lowcode';
 import { MessagePlugin } from 'tdesign-vue-next';
+
+const router = useRouter();
 
 const pages = ref<PageSchema[]>([]);
 const searchKeyword = ref('');
@@ -192,26 +201,40 @@ onMounted(() => {
 });
 
 async function loadPages() {
-  const res = await pageSchemaApi.getAllPages();
-  if (res.data.code === 0) {
-    let data = res.data.data;
-    if (searchKeyword.value) {
-      const keyword = searchKeyword.value.toLowerCase();
-      data = data.filter(
-        (page: PageSchema) =>
-          page.name.toLowerCase().includes(keyword) ||
-          page.code.toLowerCase().includes(keyword)
-      );
+  try {
+    const res = await pageSchemaApi.getAllPages();
+    if (res.data.code === 1) {
+      let data = res.data.data;
+      if (searchKeyword.value) {
+        const keyword = searchKeyword.value.toLowerCase();
+        data = data.filter(
+          (page: PageSchema) =>
+            page.name.toLowerCase().includes(keyword) ||
+            page.code.toLowerCase().includes(keyword)
+        );
+      }
+      pages.value = data;
+    } else {
+      // 尝试直接从data获取
+      const data = res.data as any;
+      pages.value = Array.isArray(data) ? data : (data?.data || (data?.records || []));
     }
-    pages.value = data;
+  } catch (e: any) {
+    MessagePlugin.error(e?.message || '加载页面列表失败');
   }
 }
 
 async function loadEntities() {
-  const res = await entityMetaApi.list({ page: 1, pageSize: 100 });
-  if (res.data.code === 0) {
-    entities.value = res.data.data.records || [];
-  }
+  try {
+    const res = await entityMetaApi.list({ page: 1, pageSize: 100 });
+    if (res.data.code === 1) {
+      entities.value = res.data.data.records || res.data.data?.content || [];
+    }
+  } catch { /* 静默处理 */ }
+}
+
+function goDesign(page: PageSchema) {
+  router.push({ path: '/lowcode/page/design', query: { id: String(page.id) } });
 }
 
 function handleCreate() {
@@ -266,7 +289,7 @@ async function handleSubmit() {
 }
 
 function handleView(page: PageSchema) {
-  window.open(`/lowcode/view/${page.code}`, '_blank');
+  router.push({ path: '/lowcode/page/view', query: { code: page.code } });
 }
 
 async function handlePublish(page: PageSchema) {
@@ -305,12 +328,291 @@ async function handleDelete(page: PageSchema) {
 
 <style scoped>
 .page-list {
-  min-height: 100vh;
-  background: #f5f5f5;
+  min-height: calc(100vh - 64px);
+  background: #f7f8fa;
+  padding: 24px;
 }
 
 .page-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 24px 3
+  margin-bottom: 24px;
+}
+.header-title h2 {
+  font-size: 24px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin: 0 0 6px;
+}
+.header-title p {
+  font-size: 14px;
+  color: #999;
+  margin: 0;
+}
+
+.create-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: linear-gradient(135deg, #f5a623, #e8a317);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s;
+  box-shadow: 0 2px 8px rgba(232, 163, 23, 0.3);
+}
+.create-btn:hover {
+  box-shadow: 0 4px 16px rgba(232, 163, 23, 0.4);
+  transform: translateY(-1px);
+}
+.create-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+.page-content {
+  background: #fff;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+}
+
+.search-bar {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+.search-input {
+  flex: 1;
+  padding: 10px 16px;
+  border: 1.5px solid #e5e5e5;
+  border-radius: 10px;
+  font-size: 14px;
+  outline: none;
+  transition: all 0.2s;
+}
+.search-input:focus {
+  border-color: #e8a317;
+  box-shadow: 0 0 0 3px rgba(232, 163, 23, 0.08);
+}
+.search-btn {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f5f5f5;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  color: #999;
+  transition: all 0.2s;
+}
+.search-btn:hover {
+  background: #e8a317;
+  color: #fff;
+}
+.search-btn svg { width: 18px; height: 18px; }
+
+.page-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px;
+}
+
+.page-card {
+  background: #fff;
+  border: 1.5px solid #f0f0f0;
+  border-radius: 14px;
+  padding: 20px;
+  cursor: pointer;
+  transition: all 0.25s;
+  position: relative;
+  overflow: hidden;
+}
+.page-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+  border-color: #e8a317;
+}
+.page-card.is-published {
+  border-color: #d4edda;
+}
+
+.card-icon {
+  width: 44px;
+  height: 44px;
+  background: linear-gradient(135deg, #f5a623, #e8a317);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  margin-bottom: 14px;
+}
+.card-icon svg { width: 20px; height: 20px; }
+.card-info { margin-bottom: 14px; }
+.card-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin: 0 0 4px;
+}
+.card-code {
+  font-size: 12px;
+  color: #999;
+  margin: 0;
+  font-family: 'JetBrains Mono', monospace;
+}
+.card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+}
+.status-tag {
+  font-size: 12px;
+  font-weight: 500;
+  padding: 3px 10px;
+  border-radius: 20px;
+}
+.status-tag.draft { background: #fef3c7; color: #b45309; }
+.status-tag.published { background: #dcfce7; color: #15803d; }
+.version { font-size: 12px; color: #ccc; }
+
+.card-actions {
+  display: flex;
+  gap: 6px;
+  border-top: 1px solid #f5f5f5;
+  padding-top: 14px;
+}
+.action-btn {
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  background: #fff;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: #888;
+}
+.action-btn svg { width: 15px; height: 15px; }
+.action-btn.edit:hover { background: #e8a317; color: #fff; border-color: #e8a317; }
+.action-btn.design:hover { background: #6366f1; color: #fff; border-color: #6366f1; }
+.action-btn.publish:hover { background: #10b981; color: #fff; border-color: #10b981; }
+.action-btn.unpublish:hover { background: #f59e0b; color: #fff; border-color: #f59e0b; }
+.action-btn.delete:hover { background: #ef4444; color: #fff; border-color: #ef4444; }
+
+.empty-state {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  color: #999;
+}
+.empty-state svg { width: 64px; height: 64px; margin-bottom: 16px; opacity: 0.3; }
+.empty-state p { font-size: 16px; margin: 0 0 20px; }
+
+/* Modal */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(4px);
+  animation: fadeIn 0.2s ease;
+}
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+.modal-content {
+  background: #fff;
+  border-radius: 16px;
+  width: 480px;
+  max-width: 90vw;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+  animation: slideUp 0.3s ease;
+}
+@keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  border-bottom: 1px solid #f0f0f0;
+}
+.modal-header h3 { font-size: 18px; font-weight: 600; color: #1a1a1a; margin: 0; }
+.close-btn {
+  width: 32px; height: 32px;
+  display: flex; align-items: center; justify-content: center;
+  border: none; border-radius: 8px; background: transparent;
+  cursor: pointer; color: #999; transition: all 0.2s;
+}
+.close-btn:hover { background: #f5f5f5; color: #333; }
+.close-btn svg { width: 18px; height: 18px; }
+.modal-body { padding: 24px; }
+.form-item { margin-bottom: 16px; }
+.form-item label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 6px;
+}
+.form-input, .form-select {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1.5px solid #e5e5e5;
+  border-radius: 10px;
+  font-size: 14px;
+  outline: none;
+  transition: all 0.2s;
+  box-sizing: border-box;
+  background: #fff;
+}
+.form-input:focus, .form-select:focus {
+  border-color: #e8a317;
+  box-shadow: 0 0 0 3px rgba(232, 163, 23, 0.08);
+}
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 16px 24px;
+  border-top: 1px solid #f0f0f0;
+}
+.cancel-btn {
+  padding: 8px 20px;
+  border: 1.5px solid #e5e5e5;
+  border-radius: 10px;
+  background: #fff;
+  color: #666;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+.cancel-btn:hover { background: #f5f5f5; }
+.confirm-btn {
+  padding: 8px 20px;
+  border: none;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #f5a623, #e8a317);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.confirm-btn:hover { box-shadow: 0 4px 12px rgba(232, 163, 23, 0.4); }
+</style>
