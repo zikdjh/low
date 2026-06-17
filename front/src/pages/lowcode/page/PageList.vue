@@ -6,6 +6,13 @@
         <p>管理和维护低代码页面</p>
       </div>
       <div class="header-actions">
+        <button class="home-btn" @click="goHome">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+            <polyline points="9 22 9 12 15 12 15 22" />
+          </svg>
+          返回主页
+        </button>
         <button class="create-btn" @click="handleCreate">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M12 4v16m8-8H4" />
@@ -50,7 +57,7 @@
           </div>
           <div class="card-info">
             <h3 class="card-name">{{ page.name }}</h3>
-            <p class="card-code">{{ page.code }}</p>
+            <p class="card-code">{{ page.pageCode }}</p>
           </div>
           <div class="card-footer">
             <span class="status-tag" :class="page.status">
@@ -140,7 +147,7 @@
             <input
               type="text"
               class="form-input"
-              v-model="formData.code"
+              v-model="formData.pageCode"
               placeholder="请输入页面编码（小写字母和连字符）"
             />
           </div>
@@ -155,9 +162,9 @@
           </div>
           <div class="form-item">
             <label>关联实体</label>
-            <select class="form-select" v-model="formData.entityId">
+            <select class="form-select" v-model="formData.entityCode">
               <option value="">不关联实体</option>
-              <option v-for="entity in entities" :key="entity.id" :value="entity.id">
+              <option v-for="entity in entities" :key="entity.id" :value="entity.code">
                 {{ entity.name }} ({{ entity.code }})
               </option>
             </select>
@@ -190,9 +197,9 @@ const entities = ref<EntityMeta[]>([]);
 
 const formData = ref({
   name: '',
-  code: '',
+  pageCode: '',
   pageType: 'custom' as PageType,
-  entityId: undefined as number | undefined,
+  entityCode: '' as string,
 });
 
 onMounted(() => {
@@ -210,7 +217,7 @@ async function loadPages() {
         data = data.filter(
           (page: PageSchema) =>
             page.name.toLowerCase().includes(keyword) ||
-            page.code.toLowerCase().includes(keyword)
+            page.pageCode.toLowerCase().includes(keyword)
         );
       }
       pages.value = data;
@@ -233,6 +240,10 @@ async function loadEntities() {
   } catch { /* 静默处理 */ }
 }
 
+function goHome() {
+  router.push('/home');
+}
+
 function goDesign(page: PageSchema) {
   router.push({ path: '/lowcode/page/design', query: { id: String(page.id) } });
 }
@@ -241,9 +252,9 @@ function handleCreate() {
   editingPage.value = null;
   formData.value = {
     name: '',
-    code: '',
+    pageCode: '',
     pageType: 'custom' as PageType,
-    entityId: undefined,
+    entityCode: '',
   };
   showCreateModal.value = true;
 }
@@ -252,15 +263,15 @@ function handleEdit(page: PageSchema) {
   editingPage.value = page;
   formData.value = {
     name: page.name || '',
-    code: page.code || '',
+    pageCode: page.pageCode || '',
     pageType: page.pageType || 'custom',
-    entityId: page.entityId,
+    entityCode: page.entityCode || '',
   };
   showCreateModal.value = true;
 }
 
 async function handleSubmit() {
-  if (!formData.value.name || !formData.value.code) {
+  if (!formData.value.name || !formData.value.pageCode) {
     MessagePlugin.warning('请填写页面名称和编码');
     return;
   }
@@ -289,7 +300,7 @@ async function handleSubmit() {
 }
 
 function handleView(page: PageSchema) {
-  router.push({ path: '/lowcode/page/view', query: { code: page.code } });
+  router.push({ path: '/lowcode/page/view', query: { code: page.pageCode } });
 }
 
 async function handlePublish(page: PageSchema) {
@@ -349,6 +360,37 @@ async function handleDelete(page: PageSchema) {
   font-size: 14px;
   color: #999;
   margin: 0;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.home-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: #f5f5f5;
+  color: #555;
+  border: 1.5px solid #e5e5e5;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.25s;
+}
+.home-btn:hover {
+  background: #eee;
+  color: #333;
+  border-color: #ccc;
+  transform: translateY(-1px);
+}
+.home-btn svg {
+  width: 18px;
+  height: 18px;
 }
 
 .create-btn {

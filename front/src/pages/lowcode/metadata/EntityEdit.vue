@@ -2,17 +2,10 @@
   <div class="entity-edit-page">
     <!-- 页面头部 -->
     <div class="page-header">
-      <t-space>
-        <t-button variant="text" @click="goHome">
-          <template #icon><HomeIcon /></template>
-          返回主页
-        </t-button>
-        <t-button variant="text" @click="goBack">
-          <template #icon><t-icon name="chevron-left" /></template>
-          返回列表
-        </t-button>
-      </t-space>
-      <h2>{{ isNew ? '新建实体' : '编辑实体' }}</h2>
+      <div class="header-left">
+        <BackButton to="/lowcode/entity" label="返回实体列表" />
+        <h2>{{ isNew ? '新建实体' : '编辑实体' }}</h2>
+      </div>
       <t-space>
         <t-button @click="goBack">取消</t-button>
         <t-button theme="primary" :loading="saving" @click="handleSave">保存</t-button>
@@ -93,7 +86,7 @@ import { ref, reactive, onMounted, computed } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { MessagePlugin } from 'tdesign-vue-next';
 import type { PrimaryTableCol } from 'tdesign-vue-next';
-import { HomeIcon } from 'tdesign-icons-vue-next';
+import BackButton from '../../../components/common/BackButton.vue';
 import entityMetaApi from '../../../api/lowcode/entityMeta';
 import type { EntityMeta, FieldMeta, FieldType } from '../../../types/lowcode';
 
@@ -222,10 +215,6 @@ function goBack() {
   router.push('/lowcode/entity');
 }
 
-function goHome() {
-  router.push('/home');
-}
-
 onMounted(async () => {
   if (!isNew.value) {
     try {
@@ -250,13 +239,19 @@ onMounted(async () => {
 .page-header {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 16px;
   margin-bottom: 24px;
 }
 
+.page-header .header-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
 .page-header h2 {
   margin: 0;
-  flex: 1;
   font-size: 20px;
   font-weight: 600;
 }

@@ -10,5 +10,6 @@ export * from "./modules/setting.ts";
 export * from "./modules/markdownEditor.ts";
 export * from "./modules/cropper.ts";
 export * from "./modules/user.ts";
+export * from "./modules/notification.ts";
 
 export default store

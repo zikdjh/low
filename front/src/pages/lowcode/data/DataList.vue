@@ -2,9 +2,7 @@
   <div class="data-list-page">
     <div class="page-header">
       <div class="header-left">
-        <t-button variant="text" @click="goBack" class="back-btn">
-          <template #icon><ChevronLeftIcon size="18" /></template>
-        </t-button>
+        <BackButton to="/lowcode/entity" label="返回实体列表" class="back-btn-wrapper" />
         <div class="title-group">
           <h2 class="page-title">{{ entityMeta?.name || '数据管理' }}</h2>
           <p class="page-subtitle">管理 {{ entityMeta?.name }} 的数据记录</p>
@@ -164,6 +162,7 @@ import { useRouter, useRoute } from 'vue-router';
 import { MessagePlugin } from 'tdesign-vue-next';
 import type { PrimaryTableCol } from 'tdesign-vue-next';
 import { ChevronLeftIcon, DownloadIcon, PlusIcon, FilterIcon, SearchIcon, DeleteIcon, EditIcon, KeyIcon } from 'tdesign-icons-vue-next';
+import BackButton from '../../../components/common/BackButton.vue';
 import entityMetaApi from '../../../api/lowcode/entityMeta';
 import dynamicDataApi from '../../../api/lowcode/dynamicData';
 import DynamicForm from '../../../components/lowcode/DynamicForm.vue';
@@ -538,11 +537,8 @@ onMounted(() => {
     gap: 12px;
   }
   
-  .back-btn {
-    width: 36px;
-    height: 36px;
-    border-radius: 8px;
-    &:hover { background: #f5f5f5; color: var(--td-brand-color, #E8A317); }
+  .back-btn-wrapper {
+    margin-right: 4px;
   }
 }
 

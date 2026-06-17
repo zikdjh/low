@@ -1,5 +1,6 @@
 <template>
   <header class="layout-header">
+    <!-- 左侧：折叠按钮 + 工作区选择器 -->
     <div class="header-left">
       <t-button
         variant="text"
@@ -9,62 +10,100 @@
       >
         <MenuIcon />
       </t-button>
-      <div class="header-brand">
-        <svg viewBox="0 0 32 32" fill="none" class="brand-logo">
-          <rect width="32" height="32" rx="8" fill="url(#hgrad)"/>
-          <path d="M10 11.5l6-3 6 3-6 3-6-3z" fill="#fff" opacity="0.9"/>
-          <path d="M10 16l6 3 6-3M10 20.5l6 3 6-3" stroke="#fff" stroke-width="1.8" stroke-linecap="round" opacity="0.8"/>
-          <defs>
-            <linearGradient id="hgrad" x1="0" y1="0" x2="32" y2="32">
-              <stop offset="0%" stop-color="#F5A623"/>
-              <stop offset="100%" stop-color="#E8A317"/>
-            </linearGradient>
-          </defs>
-        </svg>
-        <span class="brand-text">LowCode</span>
+
+      <!-- 工作区/应用选择器 -->
+      <div class="workspace-switcher" @click="showWorkspaceMenu = !showWorkspaceMenu">
+        <div class="workspace-icon">
+          <LayoutIcon size="18" />
+        </div>
+        <div class="workspace-info">
+          <span class="workspace-name">我的应用</span>
+          <span class="workspace-badge">PRO</span>
+        </div>
+        <ChevronDownIcon class="workspace-arrow" :class="{ rotated: showWorkspaceMenu }" />
+      </div>
+
+      <!-- 工作区下拉 -->
+      <div v-show="showWorkspaceMenu" class="workspace-dropdown" @click.stop>
+        <div class="ws-dropdown-header">切换工作区</div>
+        <div class="ws-dropdown-list">
+          <div
+            v-for="ws in workspaces"
+            :key="ws.id"
+            class="ws-dropdown-item"
+            :class="{ active: ws.active }"
+            @click="switchWorkspace(ws)"
+          >
+            <div class="ws-item-icon" :style="{ background: ws.color }">
+              <component :is="ws.icon" size="14" />
+            </div>
+            <div class="ws-item-info">
+              <span class="ws-item-name">{{ ws.name }}</span>
+              <span class="ws-item-desc">{{ ws.desc }}</span>
+            </div>
+            <CheckIcon v-if="ws.active" size="16" class="ws-check" />
+          </div>
+        </div>
+        <div class="ws-dropdown-footer">
+          <t-button variant="text" size="small" block @click="showWorkspaceMenu = false">
+            <template #icon><AddIcon /></template>
+            新建工作区
+          </t-button>
+        </div>
       </div>
     </div>
 
+    <!-- 中间：全局搜索 / 命令面板 -->
     <div class="header-center">
-      <div class="search-box">
+      <div class="search-box" @click="openCommandPalette">
         <SearchIcon class="search-icon" />
-        <input
-          type="text"
-          class="search-input"
-          placeholder="搜索页面、组件、实体..."
-          v-model="searchText"
-          @keyup.enter="handleSearch"
-        />
-        <t-button
-          v-if="searchText"
-          variant="text"
-          size="small"
-          class="clear-btn"
-          @click="searchText = ''"
-        >
-          <CloseIcon size="14" />
-        </t-button>
-        <kbd class="search-shortcut">⌘K</kbd>
+        <span class="search-placeholder">搜索页面、实体、组件、命令...</span>
+        <kbd class="search-shortcut">Ctrl+K</kbd>
       </div>
     </div>
 
+    <!-- 右侧：操作按钮 + 通知 + 主题 + 用户 -->
     <div class="header-right">
+      <!-- 在线协作状态 -->
+      <div class="collab-indicator" v-if="onlineCount > 0">
+        <div class="collab-dot"></div>
+        <span class="collab-count">{{ onlineCount }}</span>
+      </div>
+
+      <!-- 预览 -->
+      <t-tooltip content="预览应用">
+        <t-button variant="text" class="header-action-btn" @click="handlePreview">
+          <BrowseIcon size="18" />
+          <span class="btn-label">预览</span>
+        </t-button>
+      </t-tooltip>
+
+      <!-- 发布 -->
+      <t-tooltip content="发布到生产环境">
+        <t-button variant="text" class="header-action-btn header-action-publish" @click="handlePublish">
+          <RocketIcon size="18" />
+          <span class="btn-label">发布</span>
+        </t-button>
+      </t-tooltip>
+
+      <div class="header-divider"></div>
+
       <!-- 主题切换 -->
-      <t-tooltip :content="isDarkTheme ? '切换亮色模式' : '切换暗色模式'">
+      <t-tooltip :content="isDark ? '切换亮色模式' : '切换暗色模式'">
         <t-button variant="text" class="icon-btn" @click="toggleTheme">
-          <component :is="isDarkTheme ? SunnyIcon : MoonIcon" />
+          <component :is="isDark ? SunnyIcon : MoonIcon" />
         </t-button>
       </t-tooltip>
 
       <!-- 通知 -->
-      <t-badge :count="unreadCount" :offset="[-2, 4]">
+      <t-badge :count="notifStore.unreadCount" :offset="[-2, 4]" :dot="false">
         <t-button variant="text" class="icon-btn" @click="showNotifications = true">
           <NotificationIcon />
         </t-button>
       </t-badge>
 
       <!-- 设置 -->
-      <t-tooltip content="设置">
+      <t-tooltip content="系统设置">
         <t-button variant="text" class="icon-btn" @click="goToSettings">
           <SettingIcon />
         </t-button>
@@ -105,28 +144,87 @@
       </div>
     </div>
 
-    <!-- 通知面板 -->
-    <t-drawer
-      v-model="showNotifications"
-      title="通知中心"
-      :width="420"
-      placement="right"
-    >
+    <!-- ========== 命令面板弹窗 ========== -->
+    <teleport to="body">
+      <div v-if="showCommandPalette" class="cmd-overlay" @click="showCommandPalette = false">
+        <div class="cmd-palette" @click.stop>
+          <div class="cmd-search-bar">
+            <SearchIcon size="18" class="cmd-search-icon" />
+            <input
+              ref="cmdInput"
+              v-model="cmdQuery"
+              type="text"
+              class="cmd-input"
+              placeholder="输入关键词搜索..."
+              @keydown.esc="showCommandPalette = false"
+              @keydown.enter="executeCmdAction"
+              @keydown.up.prevent="navigateCmd(-1)"
+              @keydown.down.prevent="navigateCmd(1)"
+            />
+            <kbd class="cmd-key">ESC</kbd>
+          </div>
+          <div class="cmd-groups" v-if="filteredCmdItems.length > 0">
+            <div
+              v-for="group in groupedCmdItems"
+              :key="group.label"
+              class="cmd-group"
+            >
+              <div class="cmd-group-label">{{ group.label }}</div>
+              <div
+                v-for="(item, idx) in group.items"
+                :key="item.id"
+                class="cmd-item"
+                :class="{ active: cmdActiveIndex === getGlobalCmdIndex(group, idx) }"
+                @click="runCmdAction(item)"
+                @mouseenter="cmdActiveIndex = getGlobalCmdIndex(group, idx)"
+              >
+                <div class="cmd-item-icon">
+                  <component :is="item.icon" size="16" />
+                </div>
+                <div class="cmd-item-content">
+                  <span class="cmd-item-label">{{ item.label }}</span>
+                  <span class="cmd-item-desc">{{ item.description }}</span>
+                </div>
+                <span class="cmd-item-shortcut" v-if="item.shortcut">{{ item.shortcut }}</span>
+              </div>
+            </div>
+          </div>
+          <div v-else class="cmd-empty">
+            <SearchIcon size="32" class="cmd-empty-icon" />
+            <p>未找到匹配结果</p>
+          </div>
+        </div>
+      </div>
+    </teleport>
+
+  </header>
+
+  <!-- ========== 通知面板（attach="body" 确保不被 Header 的 backdrop-filter 层叠上下文裁剪） ========== -->
+  <t-drawer
+    v-model:visible="showNotifications"
+    title="通知中心"
+    :size="420"
+    placement="right"
+    attach="body"
+  >
       <div class="notification-panel">
         <div class="notification-header">
           <span>全部通知</span>
-          <t-button variant="text" size="small" @click="markAllRead">全部已读</t-button>
+          <div class="notification-actions">
+            <t-button variant="text" size="small" @click="notifStore.markAllAsRead()">全部已读</t-button>
+            <t-button variant="text" size="small" @click="goToNotifications">查看全部 →</t-button>
+          </div>
         </div>
         <div class="notification-list">
           <div
-            v-for="(item, index) in notifications"
-            :key="index"
+            v-for="item in notifStore.notifications.slice(0, 10)"
+            :key="item.id"
             class="notification-item"
             :class="{ unread: !item.read }"
-            @click="markAsRead(index)"
+            @click="notifStore.markAsRead(item.id)"
           >
-            <div class="notification-icon" :style="{ background: item.bgColor }">
-              <component :is="item.icon" />
+            <div class="notification-icon" :style="{ background: getNotifBg(item.type) }">
+              <component :is="getNotifIcon(item.type)" />
             </div>
             <div class="notification-content">
               <p class="notification-title">{{ item.title }}</p>
@@ -138,104 +236,232 @@
         </div>
       </div>
     </t-drawer>
-  </header>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import {
-  MenuIcon, SettingIcon, SearchIcon, CloseIcon,
-  MoonIcon, UserIcon, ChevronDownIcon,
-  CheckCircleIcon, TipsIcon, FileIcon,
-  NotificationIcon, SunnyIcon, UserCircleIcon, LogoutIcon
+  MenuIcon, SettingIcon, SearchIcon, CloseIcon, AddIcon,
+  MoonIcon, UserIcon, ChevronDownIcon, CheckIcon,
+  CheckCircleIcon, TipsIcon, ErrorCircleFilledIcon,
+  InfoCircleFilledIcon, NotificationIcon, SunnyIcon,
+  UserCircleIcon, LogoutIcon, HelpCircleIcon,
+  LayoutIcon, AppIcon, DataBaseIcon, CodeIcon,
+  BrowseIcon, RocketIcon, EditIcon, HomeIcon
 } from 'tdesign-icons-vue-next';
-import { useSettingStore, useUserStore } from '../../store';
+import { useSettingStore, useUserStore, useNotificationStore } from '../../store';
+import { smoothThemeTransition } from '../../utils/theme';
 
 const router = useRouter();
 const route = useRoute();
 const settingStore = useSettingStore();
 const userStore = useUserStore();
+const notifStore = useNotificationStore();
 
-const searchText = ref('');
-const isDarkTheme = ref(false);
 const showUserMenu = ref(false);
 const showNotifications = ref(false);
+const showWorkspaceMenu = ref(false);
+const showCommandPalette = ref(false);
+const cmdQuery = ref('');
+const cmdActiveIndex = ref(0);
+const cmdInput = ref<HTMLInputElement | null>(null);
+const onlineCount = ref(1); // 模拟在线协作人数
+
 const userName = computed(() => userStore.displayName);
-const unreadCount = ref(3);
+const isDark = computed(() => settingStore.displayMode === 'dark');
+
+// 工作区模拟数据
+const workspaces = ref([
+  { id: 1, name: '我的应用', desc: '主工作区', icon: AppIcon, color: 'linear-gradient(135deg, #f5a623, #e8a317)', active: true },
+  { id: 2, name: '后台管理', desc: '内部管理系统', icon: LayoutIcon, color: 'linear-gradient(135deg, #1677ff, #69b1ff)', active: false },
+  { id: 3, name: '数据中台', desc: '数据分析平台', icon: DataBaseIcon, color: 'linear-gradient(135deg, #52c41a, #73d13d)', active: false },
+]);
+
+function switchWorkspace(ws: any) {
+  workspaces.value.forEach(w => (w.active = w.id === ws.id));
+  showWorkspaceMenu.value = false;
+}
+
+// 命令面板数据
+interface CmdItem {
+  id: string;
+  label: string;
+  description: string;
+  icon: any;
+  action: () => void;
+  shortcut?: string;
+  group: string;
+}
+
+const cmdItems: CmdItem[] = [
+  // 页面
+  { id: 'new-page', label: '新建页面', description: '创建新的低代码页面', icon: AddIcon, action: () => router.push('/lowcode/page/list'), shortcut: 'Ctrl+N', group: '页面' },
+  { id: 'list-pages', label: '页面列表', description: '查看所有页面', icon: LayoutIcon, action: () => router.push('/lowcode/page/list'), group: '页面' },
+  { id: 'design-page', label: '页面设计器', description: '进入可视化设计器', icon: EditIcon, action: () => router.push('/lowcode/page/design'), group: '页面' },
+  // 数据模型
+  { id: 'new-entity', label: '新建实体', description: '创建数据实体模型', icon: AddIcon, action: () => router.push('/lowcode/entity'), group: '数据模型' },
+  { id: 'list-entities', label: '实体管理', description: '管理所有数据实体', icon: DataBaseIcon, action: () => router.push('/lowcode/entity'), group: '数据模型' },
+  // 导航
+  { id: 'go-home', label: '返回首页', description: '前往仪表盘', icon: HomeIcon, action: () => router.push('/home'), group: '导航' },
+  { id: 'go-notifications', label: '通知中心', description: '查看系统通知', icon: NotificationIcon, action: () => router.push('/lowcode/notification'), group: '导航' },
+  { id: 'go-settings', label: '系统设置', description: '平台配置', icon: SettingIcon, action: () => router.push('/lowcode/settings'), shortcut: 'Ctrl+,', group: '导航' },
+  // 主题
+  { id: 'toggle-theme', label: '切换主题', description: '切换暗色/亮色模式', icon: MoonIcon, action: () => toggleTheme(), shortcut: 'Ctrl+T', group: '系统' },
+];
+
+const filteredCmdItems = computed(() => {
+  const q = cmdQuery.value.toLowerCase().trim();
+  if (!q) return cmdItems;
+  return cmdItems.filter(item =>
+    item.label.toLowerCase().includes(q) ||
+    item.description.toLowerCase().includes(q) ||
+    item.group.toLowerCase().includes(q)
+  );
+});
+
+const groupedCmdItems = computed(() => {
+  const groups: Record<string, CmdItem[]> = {};
+  filteredCmdItems.value.forEach(item => {
+    if (!groups[item.group]) groups[item.group] = [];
+    groups[item.group].push(item);
+  });
+  return Object.entries(groups).map(([label, items]) => ({ label, items }));
+});
+
+function getGlobalCmdIndex(group: { label: string; items: CmdItem[] }, localIdx: number): number {
+  let offset = 0;
+  for (const g of groupedCmdItems.value) {
+    if (g.label === group.label) return offset + localIdx;
+    offset += g.items.length;
+  }
+  return 0;
+}
+
+function getTotalCmdCount(): number {
+  return filteredCmdItems.value.length;
+}
+
+function navigateCmd(dir: number) {
+  const total = getTotalCmdCount();
+  if (total === 0) return;
+  cmdActiveIndex.value = (cmdActiveIndex.value + dir + total) % total;
+}
+
+function executeCmdAction() {
+  const total = getTotalCmdCount();
+  if (total === 0) return;
+  let idx = 0;
+  for (const group of groupedCmdItems.value) {
+    for (const item of group.items) {
+      if (idx === cmdActiveIndex.value) {
+        runCmdAction(item);
+        return;
+      }
+      idx++;
+    }
+  }
+  // fallback
+  runCmdAction(filteredCmdItems.value[cmdActiveIndex.value] || filteredCmdItems.value[0]);
+}
+
+function runCmdAction(item: CmdItem) {
+  showCommandPalette.value = false;
+  cmdQuery.value = '';
+  item.action();
+}
+
+function openCommandPalette() {
+  showCommandPalette.value = true;
+  cmdQuery.value = '';
+  cmdActiveIndex.value = 0;
+  nextTick(() => cmdInput.value?.focus());
+}
+
+watch(showCommandPalette, (v) => {
+  if (v) {
+    cmdQuery.value = '';
+    cmdActiveIndex.value = 0;
+  }
+});
+watch(cmdQuery, () => { cmdActiveIndex.value = 0; });
+
+// 键盘快捷键
+function onKeydown(e: KeyboardEvent) {
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+    e.preventDefault();
+    openCommandPalette();
+  }
+}
 
 onMounted(() => {
   userStore.restoreSession();
+  document.addEventListener('keydown', onKeydown);
+});
+onUnmounted(() => {
+  document.removeEventListener('keydown', onKeydown);
 });
 
-const notifications = ref([
-  {
-    title: '系统更新',
-    description: '低代码平台已更新至 v2.0.0，全新黄色主题上线',
-    time: '5分钟前',
-    read: false,
-    icon: TipsIcon,
-    bgColor: 'linear-gradient(135deg, #f5a623, #e8a317)'
-  },
-  {
-    title: '任务完成',
-    description: '您创建的页面"首页"已成功发布',
-    time: '15分钟前',
-    read: false,
-    icon: CheckCircleIcon,
-    bgColor: 'linear-gradient(135deg, #52c41a, #73d13d)'
-  },
-  {
-    title: '新消息',
-    description: '团队成员邀请您协作编辑页面',
-    time: '1小时前',
-    read: true,
-    icon: FileIcon,
-    bgColor: 'linear-gradient(135deg, #1677ff, #69b1ff)'
-  }
-]);
-
 const userMenuItems = [
-  { label: '个人信息', value: 'profile', icon: UserCircleIcon },
-  { label: '退出登录', value: 'logout', icon: LogoutIcon }
+  { label: '个人设置', value: 'profile', icon: UserCircleIcon },
+  { label: '帮助中心', value: 'help', icon: HelpCircleIcon },
+  { label: '退出登录', value: 'logout', icon: LogoutIcon },
 ];
 
 function toggleSidebar() { settingStore.toggleSidebar(); }
+
 function toggleTheme() {
-  isDarkTheme.value = !isDarkTheme.value;
-  document.body.classList.toggle('dark-theme', isDarkTheme.value);
+  smoothThemeTransition(() => {
+    const newMode = isDark.value ? 'light' : 'dark';
+    settingStore.updateConfig({ mode: newMode });
+  });
 }
-function handleSearch() {
-  const keyword = searchText.value.trim().toLowerCase();
-  if (!keyword) return;
-  // 智能搜索：根据关键词跳转到对应模块
-  if (keyword.includes('实体') || keyword.includes('entity') || keyword.includes('数据模型')) {
-    router.push('/lowcode/entity');
-  } else if (keyword.includes('页面') || keyword.includes('设计') || keyword.includes('page')) {
-    router.push('/lowcode/page/list');
-  } else if (keyword.includes('数据') || keyword.includes('data')) {
-    router.push('/lowcode/entity');
-  } else {
-    router.push('/lowcode/page/list');
-  }
-  searchText.value = '';
+
+function handlePreview() {
+  router.push('/lowcode/page/view');
 }
-function goToSettings() { router.push('/lowcode/entity'); }
+function handlePublish() {
+  // 简单模拟发布
+  const msg = '应用发布成功！生产环境已更新。';
+  notifStore.addNotification({
+    title: '发布成功',
+    description: msg,
+    type: 'success',
+    category: 'system',
+  });
+}
+function goToSettings() { router.push('/lowcode/settings'); }
+function goToNotifications() {
+  showNotifications.value = false;
+  router.push('/lowcode/notification');
+}
 function toggleUserMenu() { showUserMenu.value = !showUserMenu.value; }
 function handleUserMenuClick(value: string) {
   if (value === 'logout') {
     userStore.logout();
+  } else if (value === 'profile') {
+    router.push('/lowcode/settings');
   }
   showUserMenu.value = false;
 }
-function markAllRead() {
-  notifications.value.forEach(n => n.read = true);
-  unreadCount.value = 0;
+
+// 通知图标映射
+function getNotifIcon(type: string) {
+  switch (type) {
+    case 'success': return CheckCircleIcon;
+    case 'warning': return ErrorCircleFilledIcon;
+    case 'error': return ErrorCircleFilledIcon;
+    case 'system': return TipsIcon;
+    default: return InfoCircleFilledIcon;
+  }
 }
-function markAsRead(index: number) {
-  if (!notifications.value[index].read) {
-    notifications.value[index].read = true;
-    unreadCount.value--;
+function getNotifBg(type: string) {
+  switch (type) {
+    case 'success': return 'linear-gradient(135deg, #52c41a, #73d13d)';
+    case 'warning': return 'linear-gradient(135deg, #fa8c16, #ffa940)';
+    case 'error': return 'linear-gradient(135deg, #ff4d4f, #ff7875)';
+    case 'system': return 'linear-gradient(135deg, #f5a623, #e8a317)';
+    default: return 'linear-gradient(135deg, #1677ff, #69b1ff)';
   }
 }
 </script>
@@ -245,41 +471,155 @@ function markAsRead(index: number) {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 64px;
-  padding: 0 24px;
+  height: 56px;
+  padding: 0 16px;
   background: #fff;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid #eee;
   position: sticky;
   top: 0;
   z-index: 100;
   backdrop-filter: blur(8px);
+  gap: 12px;
 }
 
 /* ===== 左侧 ===== */
 .header-left {
   display: flex;
   align-items: center;
-  gap: 12px;
-  min-width: 260px;
+  gap: 6px;
+  flex-shrink: 0;
 }
-.header-brand {
+
+.sidebar-toggle {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  color: #666;
+  flex-shrink: 0;
+  &:hover { background: #f3f4f6; color: #333; }
+}
+
+/* 工作区选择器 */
+.workspace-switcher {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: 1px solid transparent;
+  user-select: none;
+
+  &:hover {
+    background: #f3f4f6;
+    border-color: #e5e7eb;
+  }
+}
+.workspace-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: var(--td-brand-color, #E8A317);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.workspace-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  min-width: 0;
+}
+.workspace-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1a1a1a;
+  line-height: 1.3;
+}
+.workspace-badge {
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--td-brand-color, #E8A317);
+  background: rgba(232, 163, 23, 0.1);
+  padding: 0 5px;
+  border-radius: 3px;
+  line-height: 1.4;
+  width: fit-content;
+}
+.workspace-arrow {
+  font-size: 14px;
+  color: #999;
+  transition: transform 0.3s;
+  &.rotated { transform: rotate(180deg); }
+}
+
+/* 工作区下拉 */
+.workspace-dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 48px;
+  min-width: 260px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.06);
+  padding: 6px;
+  z-index: 1000;
+  animation: menuSlide 0.15s ease-out;
+}
+.ws-dropdown-header {
+  padding: 10px 12px 6px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #999;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.ws-dropdown-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.ws-dropdown-item {
   display: flex;
   align-items: center;
   gap: 10px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s;
+  &:hover { background: #f9fafb; }
+  &.active { background: rgba(232, 163, 23, 0.06); }
 }
-.brand-logo { width: 32px; height: 32px; flex-shrink: 0; }
-.brand-text {
-  font-size: 17px;
-  font-weight: 700;
-  color: #1a1a1a;
-  letter-spacing: -0.3px;
+.ws-item-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  flex-shrink: 0;
 }
-.sidebar-toggle {
-  width: 40px;
-  height: 40px;
-  border-radius: 10px;
-  color: #666;
-  &:hover { background: #f5f5f5; color: #333; }
+.ws-item-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+.ws-item-name { font-size: 13px; font-weight: 600; color: #1a1a1a; }
+.ws-item-desc { font-size: 11px; color: #999; }
+.ws-check { color: var(--td-brand-color, #E8A317); }
+.ws-dropdown-footer {
+  padding: 6px 4px 4px;
+  border-top: 1px solid #f3f4f6;
+  margin-top: 6px;
+}
+
+@keyframes menuSlide {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 /* ===== 中间搜索 ===== */
@@ -287,64 +627,113 @@ function markAsRead(index: number) {
   flex: 1;
   display: flex;
   align-items: center;
-  max-width: 480px;
-  margin: 0 24px;
+  max-width: 420px;
+  justify-content: center;
 }
 .search-box {
-  position: relative;
   display: flex;
   align-items: center;
-  background: #f5f5f5;
-  border-radius: 10px;
-  padding: 8px 14px;
-  transition: all 0.25s;
+  background: #f3f4f6;
+  border-radius: 8px;
+  padding: 7px 12px;
+  transition: all 0.2s;
   width: 100%;
   border: 1.5px solid transparent;
+  cursor: pointer;
+  user-select: none;
 
+  &:hover {
+    background: #eef0f2;
+    border-color: #e0e0e0;
+  }
   &:focus-within {
     background: #fff;
     border-color: var(--td-brand-color, #E8A317);
-    box-shadow: 0 0 0 3px rgba(232, 163, 23, 0.08);
+    box-shadow: 0 0 0 3px rgba(232, 163, 23, 0.06);
   }
 }
 .search-icon { color: #999; margin-right: 8px; font-size: 16px; flex-shrink: 0; }
-.search-input {
-  flex: 1;
-  border: none;
-  background: transparent;
-  outline: none;
-  font-size: 14px;
-  color: #333;
-  &::placeholder { color: #bbb; }
-}
-.clear-btn { padding: 2px; color: #bbb; flex-shrink: 0; }
+.search-placeholder { color: #aaa; font-size: 13px; flex: 1; }
 .search-shortcut {
-  margin-left: 8px;
+  margin-left: 6px;
   padding: 2px 7px;
   font-size: 11px;
   color: #999;
-  background: #fff;
-  border: 1px solid #e5e5e5;
-  border-radius: 5px;
+  background: #e8e8e8;
+  border-radius: 4px;
   font-family: inherit;
   flex-shrink: 0;
+  line-height: 1.5;
 }
 
 /* ===== 右侧 ===== */
 .header-right {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 2px;
+  flex-shrink: 0;
 }
-.icon-btn {
-  width: 40px;
-  height: 40px;
+
+.collab-indicator {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  background: #f0fdf4;
   border-radius: 10px;
+  margin-right: 4px;
+}
+.collab-dot {
+  width: 7px; height: 7px;
+  background: #52c41a;
+  border-radius: 50%;
+  animation: pulse-dot 1.5s ease infinite;
+}
+@keyframes pulse-dot {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(82, 196, 26, 0.4); }
+  50% { box-shadow: 0 0 0 4px rgba(82, 196, 26, 0); }
+}
+.collab-count { font-size: 12px; font-weight: 600; color: #52c41a; }
+
+.header-action-btn {
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 6px;
+  color: #555;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  .btn-label { font-size: 12px; font-weight: 500; }
+  &:hover { background: #f3f4f6; color: #333; }
+}
+.header-action-publish {
+  color: #fff;
+  background: var(--td-brand-color, #E8A317);
+  border-radius: 6px;
+  margin-left: 2px;
+  &:hover {
+    background: var(--td-brand-color-7, #d4920a) !important;
+    color: #fff !important;
+  }
+}
+
+.header-divider {
+  width: 1px;
+  height: 24px;
+  background: #e5e7eb;
+  margin: 0 6px;
+}
+
+.icon-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
   color: #666;
   display: flex;
   align-items: center;
   justify-content: center;
-  &:hover { background: #f5f5f5; color: var(--td-brand-color, #E8A317); }
+  &:hover { background: #f3f4f6; color: var(--td-brand-color, #E8A317); }
   :deep(.t-icon) { font-size: 20px; }
 }
 
@@ -355,18 +744,18 @@ function markAsRead(index: number) {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 6px 12px;
-  border-radius: 10px;
+  padding: 4px 10px;
+  border-radius: 8px;
   cursor: pointer;
   transition: background 0.2s;
-  &:hover { background: #f5f5f5; }
+  &:hover { background: #f3f4f6; }
 }
 .user-avatar {
   background: linear-gradient(135deg, #f5a623, #e8a317) !important;
   :deep(.t-icon) { font-size: 16px; }
 }
 .user-name {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
   color: #333;
 }
@@ -376,7 +765,6 @@ function markAsRead(index: number) {
   transition: transform 0.3s;
   &.rotated { transform: rotate(180deg); }
 }
-
 .dropdown-menu {
   position: absolute;
   top: calc(100% + 8px);
@@ -388,10 +776,6 @@ function markAsRead(index: number) {
   padding: 6px;
   z-index: 1000;
   animation: menuSlide 0.15s ease-out;
-}
-@keyframes menuSlide {
-  from { opacity: 0; transform: translateY(-8px); }
-  to { opacity: 1; transform: translateY(0); }
 }
 .dropdown-header {
   display: flex;
@@ -407,12 +791,139 @@ function markAsRead(index: number) {
   align-items: center;
   gap: 10px;
   padding: 10px 12px;
-  font-size: 14px;
+  font-size: 13px;
   color: #555;
   cursor: pointer;
   border-radius: 8px;
   transition: all 0.15s;
   &:hover { background: #f9fafb; color: var(--td-brand-color, #E8A317); }
+}
+
+/* ===== 命令面板 ===== */
+.cmd-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(2px);
+  z-index: 9999;
+  display: flex;
+  justify-content: center;
+  padding-top: 15vh;
+  animation: fadeIn 0.15s ease;
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.cmd-palette {
+  width: 560px;
+  max-width: 90vw;
+  max-height: 460px;
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: slideUp 0.2s ease;
+}
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(12px) scale(0.97); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.cmd-search-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 16px;
+  border-bottom: 1px solid #f0f0f0;
+}
+.cmd-search-icon { color: #999; flex-shrink: 0; }
+.cmd-input {
+  flex: 1;
+  border: none;
+  outline: none;
+  font-size: 15px;
+  color: #1a1a1a;
+  background: transparent;
+  &::placeholder { color: #bbb; }
+}
+.cmd-key {
+  padding: 3px 8px;
+  font-size: 11px;
+  color: #999;
+  background: #f3f4f6;
+  border-radius: 4px;
+  font-family: inherit;
+}
+
+.cmd-groups {
+  overflow-y: auto;
+  padding: 6px;
+  flex: 1;
+  &::-webkit-scrollbar { width: 4px; }
+  &::-webkit-scrollbar-thumb { background: #d0d5dd; border-radius: 4px; }
+}
+.cmd-group { margin-bottom: 4px; }
+.cmd-group-label {
+  padding: 6px 12px 4px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #999;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.cmd-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.12s;
+  &.active,
+  &:hover { background: #f5f5f5; }
+}
+.cmd-item-icon {
+  width: 32px; height: 32px;
+  border-radius: 8px;
+  background: #f3f4f6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #666;
+  flex-shrink: 0;
+}
+.cmd-item.active .cmd-item-icon,
+.cmd-item:hover .cmd-item-icon {
+  background: rgba(232, 163, 23, 0.1);
+  color: var(--td-brand-color, #E8A317);
+}
+.cmd-item-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.cmd-item-label { font-size: 13px; font-weight: 500; color: #1a1a1a; }
+.cmd-item-desc { font-size: 11px; color: #999; }
+.cmd-item-shortcut {
+  font-size: 11px;
+  color: #bbb;
+  background: #f3f4f6;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+.cmd-empty {
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  color: #ccc;
+  .cmd-empty-icon { opacity: 0.5; }
+  p { font-size: 13px; color: #999; margin: 0; }
 }
 
 /* ===== 通知面板 ===== */
@@ -430,6 +941,7 @@ function markAsRead(index: number) {
   font-size: 15px;
   color: #1a1a1a;
 }
+.notification-actions { display: flex; gap: 4px; }
 .notification-list { flex: 1; overflow-y: auto; }
 .notification-item {
   display: flex;
@@ -443,8 +955,7 @@ function markAsRead(index: number) {
   &.unread { background: #fffdf5; }
 }
 .notification-icon {
-  width: 40px;
-  height: 40px;
+  width: 40px; height: 40px;
   border-radius: 10px;
   display: flex;
   align-items: center;
@@ -464,10 +975,8 @@ function markAsRead(index: number) {
 .notification-time { font-size: 12px; color: #bbb; }
 .unread-dot {
   position: absolute;
-  top: 18px;
-  right: 14px;
-  width: 8px;
-  height: 8px;
+  top: 18px; right: 14px;
+  width: 8px; height: 8px;
   background: var(--td-brand-color, #E8A317);
   border-radius: 50%;
 }

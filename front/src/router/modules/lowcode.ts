@@ -50,6 +50,18 @@ export default [
         component: () => import('../../pages/lowcode/page/PageViewer.vue'),
         meta: { title: { zh_CN: '页面预览' }, hidden: true },
       },
+      {
+        path: 'notification',
+        name: 'NotificationCenter',
+        component: () => import('../../pages/notification/index.vue'),
+        meta: { title: { zh_CN: '通知中心' }, hidden: true },
+      },
+      {
+        path: 'settings',
+        name: 'SettingsPage',
+        component: () => import('../../pages/settings/index.vue'),
+        meta: { title: { zh_CN: '系统设置' }, hidden: true },
+      },
     ],
   },
 ];

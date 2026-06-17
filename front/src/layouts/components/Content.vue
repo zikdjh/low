@@ -16,7 +16,6 @@
   flex: 1;
   overflow-y: auto;
   background: #f7f8fa;
-  min-height: calc(100vh - 64px);
   transition: margin-left 0.3s;
 
   &::-webkit-scrollbar { width: 6px; }

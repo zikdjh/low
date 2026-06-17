@@ -3,10 +3,7 @@
     <!-- 顶部工具栏 -->
     <div class="designer-header">
       <div class="header-left">
-        <t-button variant="text" @click="goBack" class="back-btn">
-          <template #icon><ChevronLeftIcon /></template>
-          返回主页
-        </t-button>
+        <BackButton to="/lowcode/page/list" label="返回页面列表" class="designer-back-btn" />
         <div class="page-info">
           <input 
             v-model="pageName" 
@@ -212,17 +209,23 @@
               <h3>开始设计您的页面</h3>
               <p>从左侧拖拽组件到此处，或者点击下方按钮快速添加</p>
               <div class="quick-add-buttons">
-                <t-button size="small" variant="outline" @click="quickAdd('text')" class="quick-btn">
-                  <EditIcon /> 添加文本
+                <t-button size="small" variant="outline" @click="quickAdd('container')" class="quick-btn">
+                  <FolderIcon /> 添加容器
                 </t-button>
                 <t-button size="small" variant="outline" @click="quickAdd('card')" class="quick-btn">
                   <RectangleIcon /> 添加卡片
                 </t-button>
-                <t-button size="small" variant="outline" @click="quickAdd('button')" class="quick-btn">
-                  <ButtonIcon /> 添加按钮
+                <t-button size="small" variant="outline" @click="quickAdd('tabs')" class="quick-btn">
+                  <FrameIcon /> 标签页
+                </t-button>
+                <t-button size="small" variant="outline" @click="quickAdd('text')" class="quick-btn">
+                  <EditIcon /> 添加文本
                 </t-button>
                 <t-button size="small" variant="outline" @click="quickAdd('table')" class="quick-btn">
-                  <TableIcon /> 添加表格
+                  <TableIcon /> 数据表格
+                </t-button>
+                <t-button size="small" variant="outline" @click="quickAdd('button')" class="quick-btn">
+                  <ButtonIcon /> 添加按钮
                 </t-button>
               </div>
             </div>
@@ -344,9 +347,7 @@
                       <div class="slider-control">
                         <t-slider 
                           v-model.number="selectedElement.props.fontSize" 
-                          :min="12" 
-                          :max="72" 
-                          :show-tooltip="true"
+                          :min="12" :max="72" :show-tooltip="true"
                           :marks="{ 12: '12px', 24: '24px', 36: '36px', 48: '48px', 72: '72px' }"
                         />
                         <span class="slider-value">{{ selectedElement.props.fontSize }}px</span>
@@ -354,15 +355,8 @@
                     </t-form-item>
                     <t-form-item label="字体颜色">
                       <div class="color-picker-wrapper">
-                        <t-color-picker 
-                          v-model="selectedElement.props.color" 
-                          format="HEX" 
-                        />
-                        <t-input 
-                          v-model="selectedElement.props.color" 
-                          size="small" 
-                          class="color-input"
-                        />
+                        <t-color-picker v-model="selectedElement.props.color" format="HEX" />
+                        <t-input v-model="selectedElement.props.color" size="small" class="color-input" />
                       </div>
                     </t-form-item>
                     <t-form-item label="对齐方式">
@@ -371,6 +365,60 @@
                         <t-radio-button value="center">居中</t-radio-button>
                         <t-radio-button value="right">右对齐</t-radio-button>
                       </t-radio-group>
+                    </t-form-item>
+                  </template>
+
+                  <!-- 链接组件属性 -->
+                  <template v-else-if="selectedElement.type === 'link'">
+                    <t-form-item label="链接文字">
+                      <t-input v-model="selectedElement.props.text" placeholder="链接文字" />
+                    </t-form-item>
+                    <t-form-item label="链接地址">
+                      <t-input v-model="selectedElement.props.href" placeholder="https://" />
+                    </t-form-item>
+                    <t-form-item label="链接主题">
+                      <t-select v-model="selectedElement.props.theme">
+                        <t-option value="default" label="默认" />
+                        <t-option value="primary" label="主色" />
+                        <t-option value="success" label="成功" />
+                        <t-option value="warning" label="警告" />
+                        <t-option value="danger" label="危险" />
+                      </t-select>
+                    </t-form-item>
+                    <t-form-item label="下划线">
+                      <t-switch v-model="selectedElement.props.underline" />
+                    </t-form-item>
+                    <t-form-item label="打开方式">
+                      <t-select v-model="selectedElement.props.target">
+                        <t-option value="_self" label="当前窗口" />
+                        <t-option value="_blank" label="新窗口" />
+                      </t-select>
+                    </t-form-item>
+                  </template>
+
+                  <!-- 图片组件属性 -->
+                  <template v-else-if="selectedElement.type === 'image'">
+                    <t-form-item label="图片地址">
+                      <t-input v-model="selectedElement.props.src" placeholder="输入图片URL" />
+                    </t-form-item>
+                    <t-form-item label="替代文本">
+                      <t-input v-model="selectedElement.props.alt" placeholder="图片描述" />
+                    </t-form-item>
+                    <t-form-item label="图片宽度">
+                      <t-input v-model="selectedElement.props.width" placeholder="如 100%/200px" />
+                    </t-form-item>
+                    <t-form-item label="图片高度">
+                      <t-input v-model="selectedElement.props.height" placeholder="如 auto/150px" />
+                    </t-form-item>
+                    <t-form-item label="圆角">
+                      <t-input-number v-model.number="selectedElement.props.radius" :min="0" :max="50" />
+                    </t-form-item>
+                    <t-form-item label="对齐">
+                      <t-select v-model="selectedElement.props.align">
+                        <t-option value="left" label="左对齐" />
+                        <t-option value="center" label="居中" />
+                        <t-option value="right" label="右对齐" />
+                      </t-select>
                     </t-form-item>
                   </template>
 
@@ -391,6 +439,50 @@
                         <t-option value="password" label="密码" />
                         <t-option value="email" label="邮箱" />
                         <t-option value="number" label="数字" />
+                      </t-select>
+                    </t-form-item>
+                  </template>
+
+                  <!-- 文本域属性 -->
+                  <template v-else-if="selectedElement.type === 'textarea'">
+                    <t-form-item label="占位文本">
+                      <t-input v-model="selectedElement.props.placeholder" placeholder="输入占位文本" />
+                    </t-form-item>
+                    <t-form-item label="最小行数">
+                      <t-input-number v-model.number="selectedElement.props.minRows" :min="1" :max="20" />
+                    </t-form-item>
+                    <t-form-item label="最大行数">
+                      <t-input-number v-model.number="selectedElement.props.maxRows" :min="1" :max="50" />
+                    </t-form-item>
+                    <t-form-item label="最大长度">
+                      <t-input-number v-model="selectedElement.props.maxlength" :min="0" :max="5000" />
+                    </t-form-item>
+                    <t-form-item label="自适应高度">
+                      <t-switch v-model="selectedElement.props.autosize" />
+                    </t-form-item>
+                  </template>
+
+                  <!-- 数字输入属性 -->
+                  <template v-else-if="selectedElement.type === 'inputNumber'">
+                    <t-form-item label="默认值">
+                      <t-input-number v-model.number="selectedElement.props.value" />
+                    </t-form-item>
+                    <t-form-item label="最小值">
+                      <t-input-number v-model="selectedElement.props.min" />
+                    </t-form-item>
+                    <t-form-item label="最大值">
+                      <t-input-number v-model="selectedElement.props.max" />
+                    </t-form-item>
+                    <t-form-item label="步长">
+                      <t-input-number v-model.number="selectedElement.props.step" :min="0.1" />
+                    </t-form-item>
+                    <t-form-item label="占位文本">
+                      <t-input v-model="selectedElement.props.placeholder" />
+                    </t-form-item>
+                    <t-form-item label="主题">
+                      <t-select v-model="selectedElement.props.theme">
+                        <t-option value="normal" label="普通" />
+                        <t-option value="column" label="竖排" />
                       </t-select>
                     </t-form-item>
                   </template>
@@ -527,6 +619,278 @@
                     </t-form-item>
                   </template>
 
+                  <!-- 时间选择属性 -->
+                  <template v-else-if="selectedElement.type === 'time'">
+                    <t-form-item label="占位文本">
+                      <t-input v-model="selectedElement.props.placeholder" placeholder="选择时间" />
+                    </t-form-item>
+                    <t-form-item label="时间格式">
+                      <t-select v-model="selectedElement.props.format">
+                        <t-option value="HH:mm:ss" label="HH:mm:ss" />
+                        <t-option value="HH:mm" label="HH:mm" />
+                        <t-option value="hh:mm:ss" label="hh:mm:ss" />
+                      </t-select>
+                    </t-form-item>
+                    <t-form-item label="可清除">
+                      <t-switch v-model="selectedElement.props.clearable" />
+                    </t-form-item>
+                  </template>
+
+                  <!-- 开关属性 -->
+                  <template v-else-if="selectedElement.type === 'switch'">
+                    <t-form-item label="前置标签">
+                      <t-input v-model="selectedElement.props.labelBefore" placeholder="开关前的文字" />
+                    </t-form-item>
+                    <t-form-item label="后置标签">
+                      <t-input v-model="selectedElement.props.labelAfter" placeholder="开关后的文字" />
+                    </t-form-item>
+                    <t-form-item label="默认开启">
+                      <t-switch v-model="selectedElement.props.checked" />
+                    </t-form-item>
+                    <t-form-item label="尺寸">
+                      <t-select v-model="selectedElement.props.size">
+                        <t-option value="small" label="小" />
+                        <t-option value="medium" label="中" />
+                        <t-option value="large" label="大" />
+                      </t-select>
+                    </t-form-item>
+                  </template>
+
+                  <!-- 滑块属性 -->
+                  <template v-else-if="selectedElement.type === 'slider'">
+                    <t-form-item label="标签">
+                      <t-input v-model="selectedElement.props.label" placeholder="滑块标签" />
+                    </t-form-item>
+                    <t-form-item label="默认值">
+                      <t-input-number v-model.number="selectedElement.props.value" :min="0" :max="100" />
+                    </t-form-item>
+                    <t-form-item label="最小值">
+                      <t-input-number v-model.number="selectedElement.props.min" />
+                    </t-form-item>
+                    <t-form-item label="最大值">
+                      <t-input-number v-model.number="selectedElement.props.max" />
+                    </t-form-item>
+                    <t-form-item label="步长">
+                      <t-input-number v-model.number="selectedElement.props.step" :min="0.1" />
+                    </t-form-item>
+                    <t-form-item label="显示标签">
+                      <t-switch v-model="selectedElement.props.showLabel" />
+                    </t-form-item>
+                    <t-form-item label="显示提示">
+                      <t-switch v-model="selectedElement.props.showTooltip" />
+                    </t-form-item>
+                  </template>
+
+                  <!-- 评分属性 -->
+                  <template v-else-if="selectedElement.type === 'rate'">
+                    <t-form-item label="标签">
+                      <t-input v-model="selectedElement.props.label" placeholder="评分标签" />
+                    </t-form-item>
+                    <t-form-item label="默认值">
+                      <t-input-number v-model.number="selectedElement.props.value" :min="1" :max="10" />
+                    </t-form-item>
+                    <t-form-item label="星星数量">
+                      <t-input-number v-model.number="selectedElement.props.count" :min="3" :max="10" />
+                    </t-form-item>
+                    <t-form-item label="允许半星">
+                      <t-switch v-model="selectedElement.props.allowHalf" />
+                    </t-form-item>
+                    <t-form-item label="只读">
+                      <t-switch v-model="selectedElement.props.readonly" />
+                    </t-form-item>
+                  </template>
+
+                  <!-- 上传属性 -->
+                  <template v-else-if="selectedElement.type === 'upload'">
+                    <t-form-item label="提示文字">
+                      <t-input v-model="selectedElement.props.hint" placeholder="上传提示" />
+                    </t-form-item>
+                    <t-form-item label="最大数量">
+                      <t-input-number v-model.number="selectedElement.props.max" :min="1" :max="100" />
+                    </t-form-item>
+                    <t-form-item label="文件大小(MB)">
+                      <t-input-number v-model.number="selectedElement.props.maxSize" :min="1" :max="500" />
+                    </t-form-item>
+                    <t-form-item label="多文件上传">
+                      <t-switch v-model="selectedElement.props.multiple" />
+                    </t-form-item>
+                    <t-form-item label="可拖拽">
+                      <t-switch v-model="selectedElement.props.draggable" />
+                    </t-form-item>
+                  </template>
+
+                  <!-- 标签属性 -->
+                  <template v-else-if="selectedElement.type === 'tag'">
+                    <t-form-item label="标签内容">
+                      <t-textarea 
+                        v-model="selectedElement.props.tags" 
+                        placeholder="用逗号分隔多个标签"
+                        :autosize="{ minRows: 2, maxRows: 4 }"
+                      />
+                    </t-form-item>
+                    <t-form-item label="标签主题">
+                      <t-select v-model="selectedElement.props.theme">
+                        <t-option value="primary" label="主色" />
+                        <t-option value="success" label="成功" />
+                        <t-option value="warning" label="警告" />
+                        <t-option value="danger" label="危险" />
+                      </t-select>
+                    </t-form-item>
+                    <t-form-item label="标签变体">
+                      <t-select v-model="selectedElement.props.variant">
+                        <t-option value="light" label="浅色" />
+                        <t-option value="dark" label="深色" />
+                        <t-option value="outline" label="描边" />
+                      </t-select>
+                    </t-form-item>
+                    <t-form-item label="尺寸">
+                      <t-select v-model="selectedElement.props.size">
+                        <t-option value="small" label="小" />
+                        <t-option value="medium" label="中" />
+                        <t-option value="large" label="大" />
+                      </t-select>
+                    </t-form-item>
+                  </template>
+
+                  <!-- 进度条属性 -->
+                  <template v-else-if="selectedElement.type === 'progress'">
+                    <t-form-item label="标题">
+                      <t-input v-model="selectedElement.props.label" placeholder="进度标题" />
+                    </t-form-item>
+                    <t-form-item label="百分比">
+                      <t-input-number v-model.number="selectedElement.props.percent" :min="0" :max="100" />
+                    </t-form-item>
+                    <t-form-item label="线条宽度">
+                      <t-input-number v-model.number="selectedElement.props.strokeWidth" :min="2" :max="50" />
+                    </t-form-item>
+                    <t-form-item label="显示标题">
+                      <t-switch v-model="selectedElement.props.showLabel" />
+                    </t-form-item>
+                    <t-form-item label="显示百分比">
+                      <t-switch v-model="selectedElement.props.showPercent" />
+                    </t-form-item>
+                  </template>
+
+                  <!-- 步骤条属性 -->
+                  <template v-else-if="selectedElement.type === 'steps'">
+                    <t-form-item label="当前步骤">
+                      <t-input-number v-model.number="selectedElement.props.current" :min="0" :max="10" />
+                    </t-form-item>
+                    <t-form-item label="布局方向">
+                      <t-select v-model="selectedElement.props.layout">
+                        <t-option value="horizontal" label="水平" />
+                        <t-option value="vertical" label="垂直" />
+                      </t-select>
+                    </t-form-item>
+                    <t-form-item label="主题">
+                      <t-select v-model="selectedElement.props.theme">
+                        <t-option value="default" label="默认" />
+                        <t-option value="dot" label="圆点" />
+                      </t-select>
+                    </t-form-item>
+                  </template>
+
+                  <!-- 提示属性 -->
+                  <template v-else-if="selectedElement.type === 'alert'">
+                    <t-form-item label="标题">
+                      <t-input v-model="selectedElement.props.title" placeholder="提示标题" />
+                    </t-form-item>
+                    <t-form-item label="内容">
+                      <t-textarea v-model="selectedElement.props.message" placeholder="提示内容" :autosize="{ minRows: 2, maxRows: 4 }" />
+                    </t-form-item>
+                    <t-form-item label="主题">
+                      <t-select v-model="selectedElement.props.theme">
+                        <t-option value="info" label="信息" />
+                        <t-option value="success" label="成功" />
+                        <t-option value="warning" label="警告" />
+                        <t-option value="error" label="错误" />
+                      </t-select>
+                    </t-form-item>
+                    <t-form-item label="可关闭">
+                      <t-switch v-model="selectedElement.props.closable" />
+                    </t-form-item>
+                  </template>
+
+                  <!-- 容器属性 -->
+                  <template v-else-if="selectedElement.type === 'container'">
+                    <t-form-item label="容器标题">
+                      <t-input v-model="selectedElement.props.title" placeholder="容器标题" />
+                    </t-form-item>
+                    <t-form-item label="内边距">
+                      <t-input-number v-model.number="selectedElement.props.padding" :min="0" :max="60" />
+                    </t-form-item>
+                    <t-form-item label="圆角">
+                      <t-input-number v-model.number="selectedElement.props.borderRadius" :min="0" :max="30" />
+                    </t-form-item>
+                    <t-form-item label="背景色">
+                      <div class="color-picker-wrapper">
+                        <t-color-picker v-model="selectedElement.props.bgColor" format="HEX" />
+                        <t-input v-model="selectedElement.props.bgColor" size="small" class="color-input" />
+                      </div>
+                    </t-form-item>
+                    <t-form-item label="阴影">
+                      <t-switch v-model="selectedElement.props.shadow" />
+                    </t-form-item>
+                    <t-form-item label="显示页脚">
+                      <t-switch v-model="selectedElement.props.showFooter" />
+                    </t-form-item>
+                    <t-form-item v-if="selectedElement.props.showFooter" label="页脚文字">
+                      <t-input v-model="selectedElement.props.footerText" />
+                    </t-form-item>
+                  </template>
+
+                  <!-- 标签页属性 -->
+                  <template v-else-if="selectedElement.type === 'tabs'">
+                    <t-form-item label="标签内容">
+                      <t-textarea 
+                        v-model="selectedElement.props.tabs" 
+                        placeholder="用逗号分隔，如：标签1,标签2,标签3"
+                        :autosize="{ minRows: 2, maxRows: 4 }"
+                      />
+                    </t-form-item>
+                    <t-form-item label="尺寸">
+                      <t-select v-model="selectedElement.props.size">
+                        <t-option value="small" label="小" />
+                        <t-option value="medium" label="中" />
+                        <t-option value="large" label="大" />
+                      </t-select>
+                    </t-form-item>
+                    <t-form-item label="主题">
+                      <t-select v-model="selectedElement.props.theme">
+                        <t-option value="normal" label="普通" />
+                        <t-option value="card" label="卡片" />
+                      </t-select>
+                    </t-form-item>
+                    <t-form-item label="位置">
+                      <t-select v-model="selectedElement.props.placement">
+                        <t-option value="top" label="上" />
+                        <t-option value="bottom" label="下" />
+                        <t-option value="left" label="左" />
+                        <t-option value="right" label="右" />
+                      </t-select>
+                    </t-form-item>
+                  </template>
+
+                  <!-- 折叠面板属性 -->
+                  <template v-else-if="selectedElement.type === 'collapse'">
+                    <t-form-item label="手风琴模式">
+                      <t-switch v-model="selectedElement.props.accordion" />
+                    </t-form-item>
+                    <t-form-item label="无边框">
+                      <t-switch v-model="selectedElement.props.borderless" />
+                    </t-form-item>
+                    <t-form-item label="全部展开">
+                      <t-switch v-model="selectedElement.props.expandAll" />
+                    </t-form-item>
+                  </template>
+
+                  <!-- 面包屑属性 -->
+                  <template v-else-if="selectedElement.type === 'breadcrumb'">
+                    <t-form-item label="最大项数">
+                      <t-input-number v-model.number="selectedElement.props.maxItems" :min="0" :max="10" />
+                    </t-form-item>
+                  </template>
+
                   <!-- 其他组件的通用属性 -->
                   <template v-else>
                     <div class="no-properties-tip">
@@ -567,16 +931,20 @@ import { ref, computed, markRaw, defineAsyncComponent, onMounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { MessagePlugin } from 'tdesign-vue-next';
 import { pageSchemaApi } from '../../../api/lowcode/pageSchema';
+import BackButton from '../../../components/common/BackButton.vue';
 import {
   ChevronLeftIcon, ChevronRightIcon, ChevronUpIcon, ChevronDownIcon,
   RollbackIcon, ForwardIcon, BrowseIcon, SaveIcon,
   AppIcon, EditIcon, ButtonIcon, CalendarIcon,
   CheckCircleFilledIcon, CircleIcon, TableIcon, FormIcon, ViewListIcon,
   ChartBarIcon, LayoutIcon, MinusIcon, ExpandHorizontalIcon,
-  VerticalIcon, CopyIcon, DeleteIcon,
+  VerticalIcon, CopyIcon, DeleteIcon, LinkIcon,
   SettingIcon, DownloadIcon, RectangleIcon,
   InkIcon, TapeIcon, ConstraintIcon, CursorIcon, FormatVerticalAlignLeftIcon,
-  FormatVerticalAlignCenterIcon, FormatVerticalAlignRightIcon
+  FormatVerticalAlignCenterIcon, FormatVerticalAlignRightIcon,
+  ImageIcon, TimeIcon, AddCircleIcon, SwapIcon, TextboxIcon,
+  LayersIcon, CodeIcon, FrameIcon, FolderIcon, ControlPlatformIcon,
+  UploadIcon, StarFilledIcon, TipsIcon, RootListIcon,
 } from 'tdesign-icons-vue-next';
 // 使用实际存在的图标作为兼容别名
 const MousePointerIcon = CursorIcon;
@@ -596,7 +964,7 @@ const viewTabs = [
 // 面板折叠状态
 const panelCollapsed = ref(false);
 const propertyPanelCollapsed = ref(false);
-const expandedGroups = ref(['basic']);
+const expandedGroups = ref(['basic', 'layout']);
 
 // 拖拽状态
 const draggingComponent = ref<any>(null);
@@ -686,12 +1054,28 @@ const componentGroups = [
     icon: TapeIcon,
     components: [
       { type: 'text', label: '文本', iconComponent: markRaw(EditIcon) },
-      { type: 'input', label: '输入框', iconComponent: markRaw(TapeIcon) },
       { type: 'button', label: '按钮', iconComponent: markRaw(ButtonIcon) },
+      { type: 'link', label: '链接', iconComponent: markRaw(LinkIcon) },
+      { type: 'image', label: '图片', iconComponent: markRaw(ImageIcon) },
+    ]
+  },
+  {
+    name: 'form',
+    label: '表单组件',
+    icon: FormIcon,
+    components: [
+      { type: 'input', label: '输入框', iconComponent: markRaw(TapeIcon) },
+      { type: 'textarea', label: '文本域', iconComponent: markRaw(TextboxIcon) },
+      { type: 'inputNumber', label: '数字输入', iconComponent: markRaw(SwapIcon) },
       { type: 'select', label: '下拉框', iconComponent: markRaw(ChevronDownIcon) },
       { type: 'date', label: '日期选择', iconComponent: markRaw(CalendarIcon) },
+      { type: 'time', label: '时间选择', iconComponent: markRaw(TimeIcon) },
+      { type: 'switch', label: '开关', iconComponent: markRaw(ControlPlatformIcon) },
       { type: 'checkbox', label: '复选框', iconComponent: markRaw(CheckCircleFilledIcon) },
       { type: 'radio', label: '单选框', iconComponent: markRaw(CircleIcon) },
+      { type: 'slider', label: '滑块', iconComponent: markRaw(AddCircleIcon) },
+      { type: 'rate', label: '评分', iconComponent: markRaw(StarFilledIcon) },
+      { type: 'upload', label: '上传', iconComponent: markRaw(UploadIcon) },
     ]
   },
   {
@@ -700,9 +1084,22 @@ const componentGroups = [
     icon: TableIcon,
     components: [
       { type: 'table', label: '数据表格', iconComponent: markRaw(TableIcon) },
-      { type: 'form', label: '表单', iconComponent: markRaw(FormIcon) },
+      { type: 'form', label: '表单容器', iconComponent: markRaw(FormIcon) },
       { type: 'list', label: '列表', iconComponent: markRaw(ViewListIcon) },
       { type: 'chart', label: '图表', iconComponent: markRaw(ChartBarIcon) },
+    ]
+  },
+  {
+    name: 'display',
+    label: '展示组件',
+    icon: LayoutIcon,
+    components: [
+      { type: 'card', label: '卡片', iconComponent: markRaw(LayoutIcon) },
+      { type: 'tag', label: '标签', iconComponent: markRaw(CodeIcon) },
+      { type: 'progress', label: '进度条', iconComponent: markRaw(SwapIcon) },
+      { type: 'steps', label: '步骤条', iconComponent: markRaw(RootListIcon) },
+      { type: 'alert', label: '提示信息', iconComponent: markRaw(TipsIcon) },
+      { type: 'divider', label: '分割线', iconComponent: markRaw(MinusIcon) },
     ]
   },
   {
@@ -710,10 +1107,12 @@ const componentGroups = [
     label: '布局组件',
     icon: ConstraintIcon,
     components: [
-      { type: 'card', label: '卡片', iconComponent: markRaw(LayoutIcon) },
-      { type: 'grid', label: '栅格', iconComponent: markRaw(LayoutIcon) },
-      { type: 'divider', label: '分割线', iconComponent: markRaw(MinusIcon) },
+      { type: 'container', label: '容器', iconComponent: markRaw(FolderIcon) },
+      { type: 'grid', label: '栅格', iconComponent: markRaw(LayersIcon) },
+      { type: 'tabs', label: '标签页', iconComponent: markRaw(FrameIcon) },
+      { type: 'collapse', label: '折叠面板', iconComponent: markRaw(ExpandHorizontalIcon) },
       { type: 'space', label: '间距', iconComponent: markRaw(ExpandHorizontalIcon) },
+      { type: 'breadcrumb', label: '面包屑', iconComponent: markRaw(ChevronRightIcon) },
     ]
   },
 ];
@@ -753,21 +1152,43 @@ function getElementIcon(type: string) {
 
 function getElementComponent(type: string) {
   const componentMap: Record<string, any> = {
+    // 基础组件
     text: defineAsyncComponent(() => import('./components/TextElement.vue')),
-    input: defineAsyncComponent(() => import('./components/InputElement.vue')),
     button: defineAsyncComponent(() => import('./components/ButtonElement.vue')),
+    link: defineAsyncComponent(() => import('./components/LinkElement.vue')),
+    image: defineAsyncComponent(() => import('./components/ImageElement.vue')),
+    // 表单组件
+    input: defineAsyncComponent(() => import('./components/InputElement.vue')),
+    textarea: defineAsyncComponent(() => import('./components/TextareaElement.vue')),
+    inputNumber: defineAsyncComponent(() => import('./components/InputNumberElement.vue')),
     select: defineAsyncComponent(() => import('./components/SelectElement.vue')),
     date: defineAsyncComponent(() => import('./components/DateElement.vue')),
+    time: defineAsyncComponent(() => import('./components/TimePickerElement.vue')),
+    switch: defineAsyncComponent(() => import('./components/SwitchElement.vue')),
     checkbox: defineAsyncComponent(() => import('./components/CheckboxElement.vue')),
     radio: defineAsyncComponent(() => import('./components/RadioElement.vue')),
+    slider: defineAsyncComponent(() => import('./components/SliderElement.vue')),
+    rate: defineAsyncComponent(() => import('./components/RateElement.vue')),
+    upload: defineAsyncComponent(() => import('./components/UploadElement.vue')),
+    // 数据组件
     table: defineAsyncComponent(() => import('./components/TableElement.vue')),
     form: defineAsyncComponent(() => import('./components/FormElement.vue')),
     list: defineAsyncComponent(() => import('./components/ListElement.vue')),
     chart: defineAsyncComponent(() => import('./components/ChartElement.vue')),
+    // 展示组件
     card: defineAsyncComponent(() => import('./components/CardElement.vue')),
-    grid: defineAsyncComponent(() => import('./components/GridElement.vue')),
+    tag: defineAsyncComponent(() => import('./components/TagElement.vue')),
+    progress: defineAsyncComponent(() => import('./components/ProgressElement.vue')),
+    steps: defineAsyncComponent(() => import('./components/StepsElement.vue')),
+    alert: defineAsyncComponent(() => import('./components/AlertElement.vue')),
     divider: defineAsyncComponent(() => import('./components/DividerElement.vue')),
+    // 布局组件
+    container: defineAsyncComponent(() => import('./components/ContainerElement.vue')),
+    grid: defineAsyncComponent(() => import('./components/GridElement.vue')),
+    tabs: defineAsyncComponent(() => import('./components/TabsElement.vue')),
+    collapse: defineAsyncComponent(() => import('./components/CollapseElement.vue')),
     space: defineAsyncComponent(() => import('./components/SpaceElement.vue')),
+    breadcrumb: defineAsyncComponent(() => import('./components/BreadcrumbElement.vue')),
   };
   return componentMap[type] || componentMap.text;
 }
@@ -828,6 +1249,7 @@ function onDrop(event: DragEvent) {
     y = Math.max(0, event.clientY - rect.top - 50);
   }
 
+  const size = getDefaultSize(draggingComponent.value.type);
   const newElement: PageElement = {
     id: `el_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
     type: draggingComponent.value.type,
@@ -835,8 +1257,8 @@ function onDrop(event: DragEvent) {
     props: getDefaultProps(draggingComponent.value.type),
     x: Math.round(x),
     y: Math.round(y),
-    width: 280,
-    height: 80,
+    width: size.width,
+    height: size.height,
   };
 
   pageElements.value.push(newElement);
@@ -848,15 +1270,16 @@ function onDrop(event: DragEvent) {
 }
 
 function quickAdd(type: string) {
+  const size = getDefaultSize(type);
   const newElement: PageElement = {
     id: `el_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
     type: type,
     name: `${getComponentLabel(type)}_${pageElements.value.length + 1}`,
     props: getDefaultProps(type),
-    x: 20 + (pageElements.value.length % 3) * 100,
-    y: 20 + Math.floor(pageElements.value.length / 3) * 100,
-    width: 280,
-    height: 80,
+    x: 20 + (pageElements.value.length % 2) * 340,
+    y: 20 + Math.floor(pageElements.value.length / 2) * 220,
+    width: size.width,
+    height: size.height,
   };
 
   pageElements.value.push(newElement);
@@ -866,23 +1289,88 @@ function quickAdd(type: string) {
   MessagePlugin.success(`已添加 ${getComponentLabel(type)}`);
 }
 
+function getDefaultSize(type: string): { width: number; height: number } {
+  const sizes: Record<string, { width: number; height: number }> = {
+    // 布局组件需要大空间
+    container: { width: 360, height: 200 },
+    tabs: { width: 360, height: 140 },
+    collapse: { width: 320, height: 120 },
+    grid: { width: 360, height: 100 },
+    // 数据组件
+    table: { width: 420, height: 180 },
+    form: { width: 320, height: 160 },
+    chart: { width: 360, height: 200 },
+    steps: { width: 380, height: 90 },
+    // 展示组件
+    card: { width: 300, height: 120 },
+    progress: { width: 240, height: 70 },
+    alert: { width: 320, height: 70 },
+    // 表单组件
+    textarea: { width: 280, height: 110 },
+    upload: { width: 280, height: 130 },
+    image: { width: 240, height: 160 },
+    slider: { width: 240, height: 70 },
+    rate: { width: 200, height: 60 },
+    // 默认
+    text: { width: 200, height: 50 },
+    button: { width: 120, height: 44 },
+    switch: { width: 140, height: 44 },
+    tag: { width: 280, height: 44 },
+    link: { width: 120, height: 44 },
+    breadcrumb: { width: 320, height: 44 },
+    divider: { width: 360, height: 30 },
+    space: { width: 200, height: 40 },
+    select: { width: 220, height: 44 },
+    date: { width: 220, height: 44 },
+    time: { width: 180, height: 44 },
+    checkbox: { width: 140, height: 40 },
+    radio: { width: 140, height: 40 },
+    input: { width: 280, height: 44 },
+    inputNumber: { width: 180, height: 44 },
+    list: { width: 320, height: 120 },
+  };
+  return sizes[type] || { width: 280, height: 80 };
+}
+
 function getDefaultProps(type: string): Record<string, any> {
   const defaults: Record<string, Record<string, any>> = {
+    // 基础组件
     text: { text: '双击编辑文本内容', fontSize: 16, color: '#1f2329', align: 'left' },
-    input: { placeholder: '请输入内容', required: false, maxLength: 255, type: 'text' },
     button: { text: '点击按钮', theme: 'primary', size: 'medium', variant: 'base' },
+    link: { text: '链接文字', href: 'https://', theme: 'primary', underline: false, target: '_self' },
+    image: { src: '', alt: '图片', width: '100%', height: 'auto', fit: 'cover', radius: 8, align: 'center' },
+    // 表单组件
+    input: { placeholder: '请输入内容', required: false, maxLength: 255, type: 'text' },
+    textarea: { text: '', placeholder: '请输入多行文本', minRows: 3, maxRows: 6, maxlength: 500, autosize: true },
+    inputNumber: { value: 0, min: undefined, max: undefined, step: 1, placeholder: '请输入数字', theme: 'normal', size: 'medium' },
     select: { placeholder: '请选择', options: [], multiple: false },
     date: { placeholder: '选择日期', range: false },
+    time: { placeholder: '选择时间', format: 'HH:mm:ss', clearable: true, size: 'medium' },
+    switch: { checked: false, labelBefore: '', labelAfter: '', size: 'medium' },
     checkbox: { label: '复选选项', checked: false },
     radio: { label: '单选选项', checked: false },
+    slider: { value: 50, min: 0, max: 100, step: 1, showLabel: true, showTooltip: true, label: '滑块' },
+    rate: { value: 3, count: 5, size: 20, allowHalf: false, readonly: false, color: '#f5a623', showLabel: true, label: '评分' },
+    upload: { disabled: false, multiple: false, max: 5, draggable: true, hint: '点击或拖拽上传文件', maxSize: 10 },
+    // 数据组件
     table: { dataSource: '', border: true, showIndex: true, stripe: false, pagination: true },
     form: { labelWidth: 100 },
     list: { data: [] },
     chart: { type: 'bar', data: [] },
+    // 展示组件
     card: { title: '卡片标题', border: true, hoverShadow: true, collapsible: false },
-    grid: { columns: 2, gutter: 16 },
+    tag: { tags: ['默认', '成功', '警告', '危险', '信息'], theme: 'primary', variant: 'light', size: 'medium', gap: 8 },
+    progress: { percent: 60, strokeWidth: 8, showLabel: true, showPercent: true, label: '进度', theme: 'default' },
+    steps: { current: 0, layout: 'horizontal', theme: 'default' },
+    alert: { theme: 'info', title: '提示信息', message: '这是一条提示消息', closable: false },
     divider: { dashed: false, content: '' },
+    // 布局组件
+    container: { title: '容器标题', padding: 16, borderRadius: 8, bgColor: '#ffffff', shadow: true, showFooter: false, showExtra: false, footerText: '页脚' },
+    grid: { columns: 2, gutter: 16 },
+    tabs: { tabs: '标签1,标签2,标签3', size: 'medium', theme: 'normal', placement: 'top' },
+    collapse: { accordion: true, borderless: false, expandAll: false },
     space: { direction: 'horizontal', size: 16 },
+    breadcrumb: { maxItems: 0 },
   };
   return defaults[type] || {};
 }
@@ -1065,7 +1553,7 @@ function handlePreview() {
   MessagePlugin.info('预览模式已开启');
 }
 
-function handleSave() {
+async function handleSave() {
   if (!pageName.value.trim()) {
     MessagePlugin.warning('请输入页面名称');
     return;
@@ -1076,7 +1564,7 @@ function handleSave() {
   try {
     const payload = {
       name: pageName.value,
-      code: pageName.value.replace(/[^\w\u4e00-\u9fa5]/g, '_').toLowerCase() || 'unnamed_page',
+      pageCode: pageName.value.replace(/[^\w\u4e00-\u9fa5]/g, '_').toLowerCase() || 'unnamed_page',
       pageType: 'custom',
       layoutJson: JSON.stringify(pageElements.value),
       version: 1,
@@ -1134,6 +1622,14 @@ function goBack() {
       &:hover {
         color: #fff;
         background: rgba(255, 255, 255, 0.1);
+      }
+    }
+
+    .designer-back-btn {
+      color: rgba(255, 255, 255, 0.85) !important;
+      &:hover {
+        color: #fff !important;
+        background: rgba(255, 255, 255, 0.12) !important;
       }
     }
 

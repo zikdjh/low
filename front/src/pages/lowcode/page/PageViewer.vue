@@ -3,9 +3,7 @@
     <!-- 顶部工具栏 -->
     <div class="viewer-header">
       <div class="viewer-header-left">
-        <t-button variant="text" @click="goBack">
-          <template #icon><ChevronLeftIcon /></template>
-        </t-button>
+        <BackButton to="/lowcode/page/list" label="返回页面列表" />
         <span class="viewer-title">{{ pageData?.name || '页面预览' }}</span>
         <t-tag v-if="pageData?.status === 'published'" theme="success" variant="light">已发布</t-tag>
         <t-tag v-else theme="warning" variant="light">草稿</t-tag>
@@ -94,9 +92,10 @@ import { ref, onMounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { MessagePlugin } from 'tdesign-vue-next';
 import {
-  ChevronLeftIcon, BrowseIcon, FullscreenIcon, FullscreenExitIcon,
+  BrowseIcon, FullscreenIcon, FullscreenExitIcon,
   ImageIcon, LayoutIcon
 } from 'tdesign-icons-vue-next';
+import BackButton from '../../../components/common/BackButton.vue';
 import { pageSchemaApi } from '../../../api/lowcode/pageSchema';
 
 const router = useRouter();

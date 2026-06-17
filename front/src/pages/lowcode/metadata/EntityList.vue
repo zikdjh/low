@@ -6,7 +6,11 @@
         <p class="page-subtitle">管理业务实体和数据模型</p>
       </div>
       <div class="header-right">
-        <t-button theme="primary" @click="handleCreate">
+        <t-button variant="outline" @click="goHome">
+          <template #icon><HomeIcon /></template>
+          返回主页
+        </t-button>
+        <t-button theme="primary" @click="handleCreate" style="margin-left: 12px;">
           <template #icon><PlusIcon /></template>
           新建实体
         </t-button>
@@ -193,7 +197,7 @@ import { MessagePlugin } from 'tdesign-vue-next';
 import type { PrimaryTableCol } from 'tdesign-vue-next';
 import { 
   PlusIcon, SearchIcon, DeleteIcon, DataBaseIcon, CheckCircleIcon, 
-  FolderIcon, FileEditIcon, EditIcon 
+  FolderIcon, FileEditIcon, EditIcon, HomeIcon
 } from 'tdesign-icons-vue-next';
 import entityMetaApi from '../../../api/lowcode/entityMeta';
 
@@ -350,6 +354,10 @@ function onSortChange(sortInfo: { field: string; order: 'asc' | 'desc' }) {
 
 function onSelectChange(rows: any[]) {
   selectedRows.value = rows;
+}
+
+function goHome() {
+  router.push('/home');
 }
 
 function handleCreate() {
@@ -590,4 +598,18 @@ onMounted(() => {
     }
   }
 }
+
+/* 深色模式适配 - 图标容器背景色 */
+html[theme-mode="dark"] .stat-icon.draft {
+  background: linear-gradient(135deg, #2d2b55 0%, #3c3770 100%) !important;
+}
+html[theme-mode="dark"] .stat-icon.draft .t-icon { color: #a5b4fc !important; }
+html[theme-mode="dark"] .stat-icon.published {
+  background: linear-gradient(135deg, #1a3a2a 0%, #1e4a30 100%) !important;
+}
+html[theme-mode="dark"] .stat-icon.published .t-icon { color: #4ade80 !important; }
+html[theme-mode="dark"] .stat-icon.archived {
+  background: linear-gradient(135deg, #3d2e0e 0%, #4a3815 100%) !important;
+}
+html[theme-mode="dark"] .stat-icon.archived .t-icon { color: #fbbf24 !important; }
 </style>
