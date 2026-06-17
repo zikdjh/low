@@ -438,7 +438,7 @@ function goToNotifications() {
 function toggleUserMenu() { showUserMenu.value = !showUserMenu.value; }
 function handleUserMenuClick(value: string) {
   if (value === 'logout') {
-    userStore.logout();
+    void userStore.logout();
   } else if (value === 'profile') {
     router.push('/lowcode/settings');
   }

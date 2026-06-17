@@ -56,11 +56,11 @@ router.beforeEach((to) => {
         document.title = (to.meta.title as any).zh_CN || '低代码开发平台';
     }
     
-    // 检查是否需要登录（当前后端无 token，使用 userInfo 判定登录态）
-    const userInfo = localStorage.getItem('userInfo');
-    const token = localStorage.getItem('token');
+    // 登录态：以 sessionStorage.access (JWT access token) 为权威锚点；
+    // userInfo 只用于显示用，刷新页签后 access 自动失效，userInfo 也不再被信任。
     const access = sessionStorage.getItem('access');
-    const isLoggedIn = userInfo || token || access;
+    const userInfo = localStorage.getItem('userInfo');
+    const isLoggedIn = !!access && !!userInfo;
     const publicPages = ['/login'];
     
     if (!isLoggedIn && !publicPages.includes(to.path)) {

@@ -257,7 +257,7 @@ function handleCustomColor() {
 }
 
 function handleLogout() {
-  userStore.logout();
+  void userStore.logout();
 }
 </script>
 
