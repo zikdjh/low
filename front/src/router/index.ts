@@ -56,10 +56,11 @@ router.beforeEach((to) => {
         document.title = (to.meta.title as any).zh_CN || '低代码开发平台';
     }
     
-    // 检查是否需要登录
+    // 检查是否需要登录（当前后端无 token，使用 userInfo 判定登录态）
+    const userInfo = localStorage.getItem('userInfo');
     const token = localStorage.getItem('token');
     const access = sessionStorage.getItem('access');
-    const isLoggedIn = token || access;
+    const isLoggedIn = userInfo || token || access;
     const publicPages = ['/login'];
     
     if (!isLoggedIn && !publicPages.includes(to.path)) {

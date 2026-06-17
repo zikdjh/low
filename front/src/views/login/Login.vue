@@ -55,14 +55,14 @@
             label-width="0"
             class="login-form"
           >
-            <t-form-item v-if="!isLogin" name="username">
-              <t-input v-model="formData.username" placeholder="请输入用户名" size="large" clearable>
+            <t-form-item v-if="!isLogin" name="nickname">
+              <t-input v-model="formData.nickname" placeholder="请输入昵称（可选）" size="large" clearable>
                 <template #prefix-icon><UserIcon /></template>
               </t-input>
             </t-form-item>
 
-            <t-form-item name="account">
-              <t-input v-model="formData.account" :placeholder="isLogin ? '请输入账号/邮箱/手机号' : '请输入邮箱或手机号'" size="large" clearable>
+            <t-form-item name="username">
+              <t-input v-model="formData.username" placeholder="请输入用户名" size="large" clearable>
                 <template #prefix-icon><UserIcon /></template>
               </t-input>
             </t-form-item>
@@ -122,9 +122,11 @@ import {
   CheckCircleFilledIcon, UserIcon, LockOnIcon,
   LogoWechatpayIcon, LogoGithubIcon, LogoWecomIcon
 } from 'tdesign-icons-vue-next';
+import { useUserStore } from '../../store';
 
 const router = useRouter();
 const route = useRoute();
+const userStore = useUserStore();
 
 const loading = ref(false);
 const isLogin = ref(true);
@@ -132,23 +134,22 @@ const rememberMe = ref(false);
 
 const formData = reactive({
   username: '',
-  account: '',
   password: '',
   confirmPassword: '',
+  nickname: '',
 });
 
 const rules = {
-  account: [
-    { required: true, message: '请输入账号', trigger: 'blur' },
-    { min: 3, max: 50, message: '账号长度在 3 到 50 个字符', trigger: 'blur' },
+  username: [
+    { required: true, message: '请输入用户名', trigger: 'blur' },
+    { min: 3, max: 64, message: '用户名长度在 3 到 64 个字符', trigger: 'blur' },
   ],
   password: [
     { required: true, message: '请输入密码', trigger: 'blur' },
-    { min: 6, max: 30, message: '密码长度在 6 到 30 个字符', trigger: 'blur' },
+    { min: 6, max: 64, message: '密码长度在 6 到 64 个字符', trigger: 'blur' },
   ],
-  username: [
-    { required: true, message: '请输入用户名', trigger: 'blur' },
-    { min: 2, max: 20, message: '用户名长度在 2 到 20 个字符', trigger: 'blur' },
+  nickname: [
+    { max: 64, message: '昵称长度不能超过 64 个字符', trigger: 'blur' },
   ],
   confirmPassword: [
     { required: true, message: '请再次输入密码', trigger: 'blur' },
@@ -159,36 +160,47 @@ const rules = {
 function toggleMode() {
   isLogin.value = !isLogin.value;
   formData.username = '';
-  formData.account = '';
   formData.password = '';
   formData.confirmPassword = '';
+  formData.nickname = '';
 }
 
 async function handleSubmit({ validateResult }: any) {
-  if (validateResult === true) {
-    loading.value = true;
-    try {
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      if (isLogin.value) {
-        const token = 'mock_token_' + Date.now();
-        localStorage.setItem('token', token);
-        localStorage.setItem('user', JSON.stringify({ username: formData.account || 'admin', role: 'admin', avatar: '' }));
-        const accessPayload = { token, expiresAt: Date.now() + 45 * 60 * 1000 };
-        sessionStorage.setItem('access', JSON.stringify(accessPayload));
+  if (validateResult !== true) return;
+
+  loading.value = true;
+  try {
+    if (isLogin.value) {
+      const result = await userStore.loginByPassword({
+        username: formData.username,
+        password: formData.password,
+      });
+      if (result.ok) {
         MessagePlugin.success('登录成功');
         const redirect = route.query.redirect as string;
-        setTimeout(() => router.push(redirect || '/home'), 500);
+        await router.push(redirect || '/home');
       } else {
-        MessagePlugin.success('注册成功，请登录');
-        isLogin.value = true;
-        formData.password = '';
-        formData.confirmPassword = '';
+        MessagePlugin.error(result.msg || '登录失败');
       }
-    } catch {
-      MessagePlugin.error(isLogin.value ? '登录失败，请重试' : '注册失败，请重试');
-    } finally {
-      loading.value = false;
+    } else {
+      const result = await userStore.register({
+        username: formData.username,
+        password: formData.password,
+        nickname: formData.nickname || undefined,
+      });
+      if (result.ok) {
+        MessagePlugin.success('注册成功，已自动登录');
+        const redirect = route.query.redirect as string;
+        await router.push(redirect || '/home');
+      } else {
+        MessagePlugin.error(result.msg || '注册失败');
+      }
     }
+  } catch (e) {
+    console.error(e);
+    MessagePlugin.error(isLogin.value ? '登录失败，请重试' : '注册失败，请重试');
+  } finally {
+    loading.value = false;
   }
 }
 </script>
