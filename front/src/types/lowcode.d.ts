@@ -33,7 +33,8 @@ export type FieldType =
   | 'DATETIME'
   | 'TEXT'
   | 'JSON'
-  | 'DECIMAL';
+  | 'DECIMAL'
+  | 'REFERENCE';
 
 export type EntityStatus = 'draft' | 'published' | 'archived';
 export type PageType = 'list' | 'form' | 'detail' | 'custom' | 'dashboard';
@@ -72,8 +73,28 @@ export interface FieldMeta {
   showInForm: boolean;
   showInSearch: boolean;
   dictCode?: string;
+  referenceEntityCode?: string;
+  referenceDisplayFieldCode?: string;
   validationRule?: string;
   sortable?: boolean;
+}
+
+// ---- 实体关系 ----
+
+export type RelationType = 'ONE_TO_ONE' | 'ONE_TO_MANY' | 'MANY_TO_ONE' | 'MANY_TO_MANY';
+
+export interface EntityRelation {
+  id?: number;
+  sourceEntityCode: string;
+  sourceFieldCode: string;
+  targetEntityCode: string;
+  targetDisplayFieldCode?: string;
+  relationType: RelationType;
+  description?: string;
+  cascadeDelete?: boolean;
+  enabled?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 // ---- 组件定义 ----

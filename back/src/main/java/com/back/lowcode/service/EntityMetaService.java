@@ -118,6 +118,9 @@ public class EntityMetaService {
             throw new IllegalStateException("请至少添加一个字段");
         }
 
+        // 校验 REFERENCE 类型字段的关联实体
+        validateReferenceFields(fields);
+
         ddlService.generateCreateTable(entity, fields);
 
         entity.setStatus("published");
@@ -127,6 +130,35 @@ public class EntityMetaService {
         cacheFieldMeta(entity.getCode(), fields);
 
         return entity;
+    }
+
+    /**
+     * 校验 REFERENCE 类型字段的关联实体是否存在且已发布
+     */
+    private void validateReferenceFields(List<FieldMeta> fields) {
+        for (FieldMeta field : fields) {
+            if ("REFERENCE".equals(field.getFieldType())) {
+                if (field.getReferenceEntityCode() == null || field.getReferenceEntityCode().isEmpty()) {
+                    throw new IllegalArgumentException(
+                            "REFERENCE 类型字段 '" + field.getName() + "' 必须指定关联实体编码");
+                }
+                
+                EntityMeta refEntity = entityMetaRepository.findByCode(field.getReferenceEntityCode())
+                        .orElse(null);
+                
+                if (refEntity == null) {
+                    throw new IllegalArgumentException(
+                            "REFERENCE 字段 '" + field.getName() + "' 关联的实体 '" + 
+                            field.getReferenceEntityCode() + "' 不存在");
+                }
+                
+                if (!"published".equals(refEntity.getStatus())) {
+                    throw new IllegalArgumentException(
+                            "REFERENCE 字段 '" + field.getName() + "' 关联的实体 '" + 
+                            field.getReferenceEntityCode() + "' 尚未发布，请先发布该实体");
+                }
+            }
+        }
     }
 
     @Transactional

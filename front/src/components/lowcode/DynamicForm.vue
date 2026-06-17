@@ -3,7 +3,20 @@
     <t-row :gutter="24">
       <t-col v-for="field in fields" :key="field.code" :span="getFieldSpan(field)">
         <t-form-item :label="field.name" :name="field.code">
+          <!-- REFERENCE 字段使用下拉选择 -->
+          <t-select
+            v-if="field.fieldType === 'REFERENCE'"
+            v-model="modelValue[field.code]"
+            :options="getReferenceOptions(field)"
+            :loading="referenceLoading[field.referenceEntityCode || '']"
+            :disabled="readonly"
+            :placeholder="getPlaceholder(field)"
+            clearable
+            filterable
+          />
+          <!-- 其他字段类型 -->
           <component
+            v-else
             :is="getInputComponent(field)"
             v-model="modelValue[field.code]"
             v-bind="getInputProps(field)"
@@ -17,8 +30,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import type { FieldMeta } from '../../types/lowcode';
+import dynamicDataApi from '../../api/lowcode/dynamicData';
 
 const props = defineProps<{
   fields: FieldMeta[];
@@ -36,6 +50,10 @@ const modelValue = computed({
   get: () => props.data,
   set: (val) => emit('update:data', val),
 });
+
+// 关联实体数据缓存
+const referenceData = ref<Record<string, any[]>>({});
+const referenceLoading = ref<Record<string, boolean>>({});
 
 const rules = computed(() => {
   const r: Record<string, any[]> = {};
@@ -105,10 +123,55 @@ function getInputComponent(field: FieldMeta): string {
       return 't-date-picker';
     case 'DATETIME':
       return 't-date-picker';
+    case 'REFERENCE':
+      return 't-select';
     default:
       return 't-input';
   }
 }
+
+// 加载关联实体数据
+async function loadReferenceData(entityCode: string) {
+  if (!entityCode || referenceData.value[entityCode]) return;
+  
+  referenceLoading.value[entityCode] = true;
+  try {
+    const res = await dynamicDataApi.list(entityCode, { pageSize: 1000 });
+    if (res.data.code === 1) {
+      referenceData.value[entityCode] = res.data.data.content || res.data.data.records || [];
+    }
+  } catch (e) {
+    console.error('加载关联实体数据失败:', e);
+  } finally {
+    referenceLoading.value[entityCode] = false;
+  }
+}
+
+// 获取 REFERENCE 字段的下拉选项
+function getReferenceOptions(field: FieldMeta): { label: string; value: any }[] {
+  const entityCode = field.referenceEntityCode;
+  if (!entityCode || !referenceData.value[entityCode]) return [];
+  
+  const displayField = field.referenceDisplayFieldCode || 'name';
+  const data = referenceData.value[entityCode];
+  
+  return data.map(item => ({
+    label: item[displayField] || item.name || `ID: ${item.id}`,
+    value: item.id,
+  }));
+}
+
+// 组件挂载时加载所有 REFERENCE 字段的关联数据
+onMounted(() => {
+  const referenceFields = props.fields.filter(f => f.fieldType === 'REFERENCE' && f.referenceEntityCode);
+  referenceFields.forEach(f => loadReferenceData(f.referenceEntityCode!));
+});
+
+// 监听 fields 变化，加载新的关联数据
+watch(() => props.fields, (newFields) => {
+  const referenceFields = newFields.filter(f => f.fieldType === 'REFERENCE' && f.referenceEntityCode);
+  referenceFields.forEach(f => loadReferenceData(f.referenceEntityCode!));
+}, { deep: true });
 
 function getInputProps(field: FieldMeta): Record<string, any> {
   const props: Record<string, any> = {};
