@@ -2,6 +2,7 @@ package com.back.lowcode.repository;
 
 import com.back.lowcode.entity.EntityMeta;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -10,7 +11,8 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface EntityMetaRepository extends JpaRepository<EntityMeta, Long> {
+public interface EntityMetaRepository extends JpaRepository<EntityMeta, Long>,
+        JpaSpecificationExecutor<EntityMeta> {
 
     Optional<EntityMeta> findByCode(String code);
 

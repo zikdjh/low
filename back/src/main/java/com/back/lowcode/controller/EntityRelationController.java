@@ -1,4 +1,4 @@
-﻿package com.back.lowcode.controller;
+package com.back.lowcode.controller;
 
 import com.back.common.Result;
 import com.back.lowcode.entity.EntityRelation;

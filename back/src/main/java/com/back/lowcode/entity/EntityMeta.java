@@ -49,6 +49,10 @@ public class EntityMeta {
     @Builder.Default
     private String status = "draft";
 
+    /** 字段数量（非持久化，查询时动态填充） */
+    @Transient
+    private Long fieldCount;
+
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 

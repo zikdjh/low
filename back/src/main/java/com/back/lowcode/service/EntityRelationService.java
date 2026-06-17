@@ -1,4 +1,4 @@
-﻿package com.back.lowcode.service;
+package com.back.lowcode.service;
 
 import com.back.lowcode.entity.EntityRelation;
 import com.back.lowcode.repository.EntityRelationRepository;

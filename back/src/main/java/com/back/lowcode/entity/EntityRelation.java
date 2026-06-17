@@ -1,4 +1,4 @@
-﻿package com.back.lowcode.entity;
+package com.back.lowcode.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;

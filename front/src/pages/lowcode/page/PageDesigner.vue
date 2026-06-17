@@ -1031,20 +1031,49 @@ function handlePreview() {
   MessagePlugin.info('预览模式已开启');
 }
 
-function handleSave() {
+async function handleSave() {
   if (!pageName.value.trim()) {
     MessagePlugin.warning('请输入页面名称');
     return;
   }
-  
-  const pageData = {
-    name: pageName.value,
-    elements: pageElements.value,
-    updatedAt: new Date().toISOString(),
-  };
-  
-  localStorage.setItem('lowcode_page_' + Date.now(), JSON.stringify(pageData));
-  MessagePlugin.success('页面保存成功！');
+
+  try {
+    const { pageSchemaApi } = await import('../../../api/lowcode/pageSchema');
+    const pageCode = 'page_' + Date.now();
+    const layoutJson = JSON.stringify({
+      name: pageName.value,
+      elements: pageElements.value,
+    });
+
+    const res = await pageSchemaApi.create({
+      name: pageName.value,
+      code: pageCode,
+      pageType: 'custom',
+      layoutJson,
+      version: 1,
+      status: 'draft',
+    });
+
+    if (res.code === 1 || res.data?.code === 1) {
+      // Also save to localStorage as backup
+      localStorage.setItem('lowcode_page_' + Date.now(), JSON.stringify({
+        name: pageName.value,
+        elements: pageElements.value,
+        updatedAt: new Date().toISOString(),
+      }));
+      MessagePlugin.success('页面已保存到服务器！');
+    } else {
+      MessagePlugin.error((res as any).msg || '保存失败');
+    }
+  } catch (e: any) {
+    console.error('保存页面失败，已保存到本地:', e);
+    localStorage.setItem('lowcode_page_' + Date.now(), JSON.stringify({
+      name: pageName.value,
+      elements: pageElements.value,
+      updatedAt: new Date().toISOString(),
+    }));
+    MessagePlugin.warning('服务器保存失败，已保存到本地');
+  }
 }
 
 function goBack() {

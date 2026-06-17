@@ -9,11 +9,11 @@
         </div>
         <p class="welcome-desc">快速构建企业级应用，让开发更简单高效</p>
         <div class="welcome-actions">
-          <t-button theme="primary" size="large" @click="goTo('/entity/list')">
+          <t-button theme="primary" size="large" @click="goTo('/lowcode/entity')">
             <template #icon><AddCircleIcon :size="'18'" /></template>
             开始创建
           </t-button>
-          <t-button size="large" @click="goTo('/page/list')">
+          <t-button size="large" @click="goTo('/lowcode/page')">
             <template #icon><LayoutIcon :size="'18'" /></template>
             页面设计
           </t-button>
@@ -147,8 +147,8 @@ const stats = ref([
 ]);
 
 const quickActions = [
-  { icon: AddCircleIcon, label: '创建实体', path: '/entity/create' },
-  { icon: LayoutIcon, label: '设计页面', path: '/page/list' },
+  { icon: AddCircleIcon, label: '创建实体', path: '/lowcode/entity/new' },
+  { icon: LayoutIcon, label: '设计页面', path: '/lowcode/page' },
   { icon: LightbulbIcon, label: '使用指南', path: '' },
   { icon: BookIcon, label: '帮助文档', path: '' }
 ];

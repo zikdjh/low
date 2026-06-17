@@ -1,5 +1,5 @@
-﻿import request from '@/utils/request';
-import type { EntityRelation } from '@/types/lowcode';
+import request from '../index';
+import type { EntityRelation } from '../../types/lowcode';
 
 const entityRelationApi = {
   listAll() {

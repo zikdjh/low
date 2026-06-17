@@ -60,6 +60,48 @@
         <template #drag>
           <t-icon name="move" style="cursor: grab;" />
         </template>
+        <template #code="{ row }">
+          <t-input v-model="row.code" size="small" style="width: 130px" placeholder="字段编码" />
+        </template>
+        <template #name="{ row }">
+          <t-input v-model="row.name" size="small" style="width: 130px" placeholder="字段名称" />
+        </template>
+        <template #length="{ row }">
+          <t-input-number
+            v-if="row.fieldType === 'VARCHAR'"
+            v-model="row.length"
+            size="small"
+            style="width: 70px"
+            :min="1"
+            :max="4000"
+            placeholder="长度"
+          />
+          <span v-else>-</span>
+        </template>
+        <template #precision="{ row }">
+          <t-input-number
+            v-if="row.fieldType === 'DECIMAL'"
+            v-model="row.precision"
+            size="small"
+            style="width: 60px"
+            :min="1"
+            :max="65"
+            placeholder="精度"
+          />
+          <span v-else>-</span>
+        </template>
+        <template #scale="{ row }">
+          <t-input-number
+            v-if="row.fieldType === 'DECIMAL'"
+            v-model="row.scale"
+            size="small"
+            style="width: 60px"
+            :min="0"
+            :max="30"
+            placeholder="小数"
+          />
+          <span v-else>-</span>
+        </template>
         <template #fieldType="{ row }">
           <t-select
             v-model="row.fieldType"
@@ -173,6 +215,8 @@ const fieldColumns: PrimaryTableCol[] = [
   { colKey: 'referenceEntityCode', title: '关联实体', width: 150 },
   { colKey: 'referenceDisplayFieldCode', title: '显示字段', width: 120 },
   { colKey: 'length', title: '长度', width: 80 },
+  { colKey: 'precision', title: '精度', width: 70 },
+  { colKey: 'scale', title: '小数位', width: 70 },
   { colKey: 'nullable', title: '可为空', width: 80 },
   { colKey: 'showInList', title: '列表显示', width: 90 },
   { colKey: 'showInForm', title: '表单显示', width: 90 },
@@ -231,6 +275,8 @@ function addField() {
     columnName: `field_${idx}`,
     fieldType: 'VARCHAR' as FieldType,
     length: 255,
+    precision: 10,
+    scale: 2,
     nullable: true,
     isPrimaryKey: false,
     isAutoIncrement: false,

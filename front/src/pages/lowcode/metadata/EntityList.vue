@@ -6,6 +6,10 @@
         <p class="page-subtitle">管理业务实体和数据模型</p>
       </div>
       <div class="header-right">
+        <t-button variant="outline" @click="goRelations">
+          <template #icon><t-icon name="link" /></template>
+          关系管理
+        </t-button>
         <t-button theme="primary" @click="handleCreate">
           <template #icon><PlusIcon /></template>
           新建实体
@@ -315,7 +319,7 @@ async function fetchData() {
 }
 
 function updateStats() {
-  stats.total = tableData.value.length;
+  stats.total = pagination.total;
   stats.draft = tableData.value.filter(r => r.status === 'draft').length;
   stats.published = tableData.value.filter(r => r.status === 'published').length;
   stats.archived = tableData.value.filter(r => r.status === 'archived').length;
@@ -344,6 +348,10 @@ function onSelectChange(rows: any[]) {
 
 function handleCreate() {
   router.push('/lowcode/entity/new');
+}
+
+function goRelations() {
+  router.push('/lowcode/entity/relations');
 }
 
 function handleEdit(row: any) {
