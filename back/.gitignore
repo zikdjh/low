@@ -31,3 +31,7 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Spring datasource config (local credentials) ###
+src/main/resources/application-datasource.yaml
+
