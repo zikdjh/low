@@ -1,0 +1,12 @@
+{
+  "enabled": true,
+  "model": "auto",
+  "autoCommit": true,
+  "autoPush": false,
+  "autoPull": true,
+  "suggestCommit": true,
+  "reviewPR": true,
+  "generateDoc": true,
+  "codeAssist": true,
+  "securityScan": true
+}
