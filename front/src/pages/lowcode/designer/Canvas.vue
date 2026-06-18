@@ -128,7 +128,7 @@ function handleDelete() {
 
 async function handleSave() {
   const name = (pageSchema.value?.name || '未命名页面').trim() || '未命名页面';
-  const code = (pageSchema.value?.code || name.toLowerCase().replace(/\s+/g, '-')).trim();
+  const code = (pageSchema.value?.pageCode || name.toLowerCase().replace(/\s+/g, '-')).trim();
   
   const saved = savePage(name, code);
   

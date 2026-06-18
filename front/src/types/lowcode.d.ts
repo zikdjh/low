@@ -115,8 +115,8 @@ export interface ComponentDef {
 export interface PageSchema {
   id?: number;
   name: string;
-  code: string;
-  entityId?: number;
+  pageCode: string;
+  entityCode?: string;
   pageType: PageType;
   layoutJson: string;
   version: number;

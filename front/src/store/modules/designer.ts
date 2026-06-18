@@ -181,7 +181,7 @@ export const useDesignerStore = defineStore('designer', () => {
       };
     } else {
       pageSchema.value.name = name;
-      pageSchema.value.code = code;
+      pageSchema.value.pageCode = code;
       pageSchema.value.layoutJson = getLayoutJson();
     }
     return pageSchema.value;

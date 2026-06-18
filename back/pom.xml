@@ -61,6 +61,12 @@
             <artifactId>java-jwt</artifactId>
             <version>4.5.1</version>
         </dependency>
+
+        <!-- Spring Security 完整 starter（包含 spring-security-crypto / web / config） -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+        </dependency>
     </dependencies>
 
     <build>

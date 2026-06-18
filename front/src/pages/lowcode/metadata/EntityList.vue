@@ -197,7 +197,7 @@ import { MessagePlugin } from 'tdesign-vue-next';
 import type { PrimaryTableCol } from 'tdesign-vue-next';
 import { 
   PlusIcon, SearchIcon, DeleteIcon, DataBaseIcon, CheckCircleIcon, 
-  FolderIcon, FileEditIcon, EditIcon 
+  FolderIcon, FileEditIcon, EditIcon, HomeIcon
 } from 'tdesign-icons-vue-next';
 import entityMetaApi from '../../../api/lowcode/entityMeta';
 
@@ -319,10 +319,20 @@ async function fetchData() {
 }
 
 function updateStats() {
-  stats.total = pagination.total;
+  stats.total = pagination.total || tableData.value.length;
   stats.draft = tableData.value.filter(r => r.status === 'draft').length;
   stats.published = tableData.value.filter(r => r.status === 'published').length;
   stats.archived = tableData.value.filter(r => r.status === 'archived').length;
+}
+
+// 在 onMounted 中额外加载全量统计
+async function loadGlobalStats() {
+  try {
+    const res = await entityMetaApi.list({ page: 1, pageSize: 1 });
+    if (res.data.code === 1) {
+      stats.total = res.data.data.totalElements || res.data.data.total || 0;
+    }
+  } catch { /* 忽略 */ }
 }
 
 function handleSearch() {
@@ -344,6 +354,10 @@ function onSortChange(sortInfo: { field: string; order: 'asc' | 'desc' }) {
 
 function onSelectChange(rows: any[]) {
   selectedRows.value = rows;
+}
+
+function goHome() {
+  router.push('/home');
 }
 
 function handleCreate() {
@@ -444,14 +458,15 @@ async function handleBatchDelete() {
 
 onMounted(() => {
   fetchData();
+  loadGlobalStats();
 });
 </script>
 
 <style scoped lang="less">
 .entity-list-page {
   padding: 0;
-  background: #f8fafc;
-  min-height: calc(100vh - 70px);
+  background: #f7f8fa;
+  min-height: calc(100vh - 64px);
 }
 
 .page-header {
@@ -459,24 +474,19 @@ onMounted(() => {
   justify-content: space-between;
   align-items: flex-start;
   padding: 24px;
-  background: #ffffff;
-  border-bottom: 1px solid #e2e8f0;
+  background: #fff;
+  border-bottom: 1px solid #f0f0f0;
   
   .header-left {
     .page-title {
-      font-size: 26px;
+      font-size: 24px;
       font-weight: 700;
-      color: #1e293b;
+      color: #1a1a1a;
       margin: 0 0 8px 0;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
     }
-    
     .page-subtitle {
       font-size: 14px;
-      color: #64748b;
+      color: #999;
       margin: 0;
     }
   }
@@ -532,35 +542,20 @@ onMounted(() => {
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
       
       &.total {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        
-        :deep(.t-icon) {
-          color: #fff;
-        }
+        background: linear-gradient(135deg, #f5a623 0%, #e8a317 100%);
+        :deep(.t-icon) { color: #fff; }
       }
-      
       &.draft {
-        background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
-        
-        :deep(.t-icon) {
-          color: #3b82f6;
-        }
+        background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%);
+        :deep(.t-icon) { color: #4f46e5; }
       }
-      
       &.published {
         background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
-        
-        :deep(.t-icon) {
-          color: #22c55e;
-        }
+        :deep(.t-icon) { color: #22c55e; }
       }
-      
       &.archived {
         background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
-        
-        :deep(.t-icon) {
-          color: #f59e0b;
-        }
+        :deep(.t-icon) { color: #e8a317; }
       }
     }
     
@@ -591,8 +586,8 @@ onMounted(() => {
     .table-name {
       font-family: 'JetBrains Mono', 'Consolas', monospace;
       font-size: 12px;
-      color: #3b82f6;
-      background: #dbeafe;
+      color: var(--td-brand-color, #E8A317);
+      background: var(--td-brand-color-1, #fffbeb);
       padding: 3px 10px;
       border-radius: 6px;
     }
@@ -607,4 +602,18 @@ onMounted(() => {
     }
   }
 }
+
+/* 深色模式适配 - 图标容器背景色 */
+html[theme-mode="dark"] .stat-icon.draft {
+  background: linear-gradient(135deg, #2d2b55 0%, #3c3770 100%) !important;
+}
+html[theme-mode="dark"] .stat-icon.draft .t-icon { color: #a5b4fc !important; }
+html[theme-mode="dark"] .stat-icon.published {
+  background: linear-gradient(135deg, #1a3a2a 0%, #1e4a30 100%) !important;
+}
+html[theme-mode="dark"] .stat-icon.published .t-icon { color: #4ade80 !important; }
+html[theme-mode="dark"] .stat-icon.archived {
+  background: linear-gradient(135deg, #3d2e0e 0%, #4a3815 100%) !important;
+}
+html[theme-mode="dark"] .stat-icon.archived .t-icon { color: #fbbf24 !important; }
 </style>

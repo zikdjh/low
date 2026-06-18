@@ -2,9 +2,7 @@
   <div class="data-list-page">
     <div class="page-header">
       <div class="header-left">
-        <t-button variant="text" @click="goBack" class="back-btn">
-          <template #icon><ChevronLeftIcon size="18" /></template>
-        </t-button>
+        <BackButton to="/lowcode/entity" label="返回实体列表" class="back-btn-wrapper" />
         <div class="title-group">
           <h2 class="page-title">{{ entityMeta?.name || '数据管理' }}</h2>
           <p class="page-subtitle">管理 {{ entityMeta?.name }} 的数据记录</p>
@@ -164,6 +162,7 @@ import { useRouter, useRoute } from 'vue-router';
 import { MessagePlugin } from 'tdesign-vue-next';
 import type { PrimaryTableCol } from 'tdesign-vue-next';
 import { ChevronLeftIcon, DownloadIcon, PlusIcon, FilterIcon, SearchIcon, DeleteIcon, EditIcon, KeyIcon } from 'tdesign-icons-vue-next';
+import BackButton from '../../../components/common/BackButton.vue';
 import entityMetaApi from '../../../api/lowcode/entityMeta';
 import dynamicDataApi from '../../../api/lowcode/dynamicData';
 import DynamicForm from '../../../components/lowcode/DynamicForm.vue';
@@ -244,16 +243,28 @@ function getFieldWidth(field: FieldMeta): number {
 }
 
 function getSearchComponent(field: FieldMeta) {
+  // 延迟加载组件缓存，避免返回 Promise 导致渲染失败
   switch (field.fieldType) {
     case 'DATE':
     case 'DATETIME':
-      return markRaw((() => import('tdesign-vue-next').then(m => m.DatePicker))());
+      return searchComponents.value.date;
     case 'BOOLEAN':
-      return markRaw((() => import('tdesign-vue-next').then(m => m.Select))());
+      return searchComponents.value.bool;
     default:
-      return markRaw((() => import('tdesign-vue-next').then(m => m.Input))());
+      return searchComponents.value.text;
   }
 }
+
+// 缓存动态加载的搜索组件
+const searchComponents = ref({ text: null as any, date: null as any, bool: null as any });
+
+import('tdesign-vue-next').then(m => {
+  searchComponents.value = {
+    text: markRaw(m.Input),
+    date: markRaw(m.DatePicker),
+    bool: markRaw(m.Select),
+  };
+});
 
 function formatFieldValue(value: any, field: FieldMeta): string {
   if (value === null || value === undefined) return '-';
@@ -496,8 +507,8 @@ onMounted(() => {
 <style scoped lang="less">
 .data-list-page {
   padding: 0;
-  background: #f8fafc;
-  min-height: calc(100vh - 70px);
+  background: #f7f8fa;
+  min-height: calc(100vh - 64px);
 }
 
 .page-header {
@@ -505,8 +516,8 @@ onMounted(() => {
   justify-content: space-between;
   align-items: center;
   padding: 24px;
-  background: #ffffff;
-  border-bottom: 1px solid #e2e8f0;
+  background: #fff;
+  border-bottom: 1px solid #f0f0f0;
   
   .header-left {
     display: flex;
@@ -515,19 +526,14 @@ onMounted(() => {
     
     .title-group {
       .page-title {
-        font-size: 26px;
+        font-size: 24px;
         font-weight: 700;
-        color: #1e293b;
+        color: #1a1a1a;
         margin: 0 0 8px 0;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
       }
-      
       .page-subtitle {
         font-size: 14px;
-        color: #64748b;
+        color: #999;
         margin: 0;
       }
     }
@@ -538,23 +544,16 @@ onMounted(() => {
     gap: 12px;
   }
   
-  .back-btn {
-    width: 36px;
-    height: 36px;
-    border-radius: 8px;
-    
-    &:hover {
-      background: #f1f5f9;
-    }
+  .back-btn-wrapper {
+    margin-right: 4px;
   }
 }
 
 .filter-card {
   margin: 24px;
-  background: #ffffff;
+  background: #fff;
   border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
-  border: 1px solid #f1f5f9;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
   
   .filter-header {
     display: flex;
@@ -562,14 +561,11 @@ onMounted(() => {
     gap: 8px;
     font-size: 14px;
     font-weight: 600;
-    color: #1e293b;
+    color: #1a1a1a;
     padding-bottom: 16px;
-    border-bottom: 1px solid #e2e8f0;
+    border-bottom: 1px solid #f0f0f0;
     margin-bottom: 16px;
-    
-    :deep(.t-icon) {
-      color: #667eea;
-    }
+    :deep(.t-icon) { color: var(--td-brand-color, #E8A317); }
   }
   
   .filter-content {
@@ -579,7 +575,7 @@ onMounted(() => {
       gap: 12px;
       margin-top: 16px;
       padding-top: 16px;
-      border-top: 1px solid #e2e8f0;
+      border-top: 1px solid #f0f0f0;
     }
   }
 }
@@ -592,31 +588,20 @@ onMounted(() => {
   
   .stats-text {
     font-size: 14px;
-    color: #64748b;
-    
-    strong {
-      color: #1e293b;
-      font-weight: 600;
-    }
+    color: #777;
+    strong { color: #1a1a1a; font-weight: 600; }
   }
-  
-  .stats-actions {
-    display: flex;
-    gap: 12px;
-  }
+  .stats-actions { display: flex; gap: 12px; }
 }
 
 .table-card {
   margin: 0 24px 24px;
-  background: #ffffff;
+  background: #fff;
   border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
-  border: 1px solid #f1f5f9;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
 }
 
 .detail-content {
-  .empty-value {
-    color: #94a3b8;
-  }
+  .empty-value { color: #bbb; }
 }
 </style>

@@ -1,46 +1,17 @@
 <template>
   <div class="schema-renderer" v-if="!component">
-    <div v-for="comp in componentTree" :key="comp.id">
-      <div class="render-component">
-        <component
-          :is="getRenderComponent(comp.compKey)"
-          v-bind="getMergedProps(comp.props)"
-          class="inner-component"
-        >
-          <template v-if="comp.children.length > 0">
-            <div v-for="child in comp.children" :key="child.id">
-              <div class="render-component">
-                <component
-                  :is="getRenderComponent(child.compKey)"
-                  v-bind="getMergedProps(child.props)"
-                  class="inner-component"
-                >
-                  <template v-if="child.children.length > 0">
-                    <div v-for="grandchild in child.children" :key="grandchild.id">
-                      <div class="render-component">
-                        <component
-                          :is="getRenderComponent(grandchild.compKey)"
-                          v-bind="getMergedProps(grandchild.props)"
-                          class="inner-component"
-                        />
-                      </div>
-                    </div>
-                  </template>
-                </component>
-              </div>
-            </div>
-          </template>
-        </component>
-      </div>
-    </div>
+    <template v-for="comp in componentTree" :key="comp.id">
+      <RecursiveRenderer :component="comp" />
+    </template>
     <div v-if="componentTree.length === 0" class="empty-tip">
       <p>暂无内容</p>
     </div>
   </div>
+  <RecursiveRenderer v-else :component="component" />
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, defineComponent, h } from 'vue';
 import type { ComponentInstance } from '../../types/lowcode';
 import ButtonElement from './page/components/ButtonElement.vue';
 import CardElement from './page/components/CardElement.vue';
@@ -103,6 +74,31 @@ function getMergedProps(propsData: Record<string, any>) {
     modelValue: propsData.value,
   };
 }
+
+const RecursiveRenderer = defineComponent({
+  name: 'RecursiveRenderer',
+  props: {
+    component: {
+      type: Object as () => ComponentInstance,
+      required: true,
+    },
+  },
+  render() {
+    const comp = this.component;
+    const RenderComponent = getRenderComponent(comp.compKey);
+    const mergedProps = getMergedProps(comp.props);
+    
+    const children = comp.children && comp.children.length > 0
+      ? comp.children.map((child: ComponentInstance) => 
+          h(RecursiveRenderer, { component: child, key: child.id })
+        )
+      : [];
+    
+    return h('div', { class: 'render-component' }, [
+      h(RenderComponent, mergedProps, children),
+    ]);
+  },
+});
 </script>
 
 <style scoped>
@@ -126,9 +122,5 @@ function getMergedProps(propsData: Record<string, any>) {
 
 .render-component {
   margin: 8px 0;
-}
-
-.inner-component {
-  width: 100%;
 }
 </style>

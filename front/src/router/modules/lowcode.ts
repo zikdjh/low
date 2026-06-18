@@ -39,10 +39,34 @@ export default [
         meta: { title: { zh_CN: '数据管理' }, hidden: true },
       },
       {
-        path: 'page',
+        path: 'page/list',
+        name: 'PageList',
+        component: () => import('../../pages/lowcode/page/PageList.vue'),
+        meta: { title: { zh_CN: '页面管理' }, icon: shallowRef(LayoutIcon) },
+      },
+      {
+        path: 'page/design',
         name: 'PageDesigner',
         component: () => import('../../pages/lowcode/page/PageDesigner.vue'),
-        meta: { title: { zh_CN: '页面设计' }, icon: shallowRef(LayoutIcon) },
+        meta: { title: { zh_CN: '页面设计' }, hidden: true },
+      },
+      {
+        path: 'page/view',
+        name: 'PageViewer',
+        component: () => import('../../pages/lowcode/page/PageViewer.vue'),
+        meta: { title: { zh_CN: '页面预览' }, hidden: true },
+      },
+      {
+        path: 'notification',
+        name: 'NotificationCenter',
+        component: () => import('../../pages/notification/index.vue'),
+        meta: { title: { zh_CN: '通知中心' }, hidden: true },
+      },
+      {
+        path: 'settings',
+        name: 'SettingsPage',
+        component: () => import('../../pages/settings/index.vue'),
+        meta: { title: { zh_CN: '系统设置' }, hidden: true },
       },
       {
         path: 'page/preview/:pageCode',
