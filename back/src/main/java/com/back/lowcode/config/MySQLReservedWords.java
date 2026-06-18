@@ -15,7 +15,7 @@ public final class MySQLReservedWords {
      * MySQL 8.0 保留字关键字集合（常用）
      * 完整列表参考: https://dev.mysql.com/doc/refman/8.0/en/keywords.html
      */
-    public static final Set<String> RESERVED_WORDS = Set.of(
+    public static final Set<String> RESERVED_WORDS = new java.util.HashSet<>(Set.of(
             // 最常用/最容易误用的保留字
             "ACCESSIBLE", "ADD", "ALL", "ALTER", "ANALYZE", "AND", "AS",
             "ASC", "ASENSITIVE", "BEFORE", "BETWEEN", "BIGINT", "BINARY",
@@ -65,12 +65,11 @@ public final class MySQLReservedWords {
             "VIRTUAL", "WHEN", "WHERE", "WHILE", "WINDOW", "WITH",
             "WRITE", "XOR", "YEAR_MONTH", "ZEROFILL",
 
-            // 低代码场景中极易误用的保留字
-            "ORDER", "GROUP", "STATUS", "TYPE", "NAME", "KEY", "VALUE",
-            "DATE", "DESC", "USER", "PASSWORD", "TABLE", "INDEX", "LOCK",
+            // 低代码场景中极易误用的保留字（去重后）
+            "STATUS", "TYPE", "NAME", "VALUE", "DATE", "USER", "PASSWORD",
             "LEVEL", "COUNT", "SUM", "AVG", "MIN", "MAX", "SIZE", "COMMENT",
-            "OPTION", "SESSION", "TRANSACTION", "VIEW", "FIELD", "DEFAULT"
-    );
+            "SESSION", "TRANSACTION", "VIEW", "FIELD"
+    ));
 
     /**
      * 判断给定名称是否为 MySQL 保留字（不区分大小写）

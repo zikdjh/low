@@ -3,8 +3,14 @@ import type { EntityMeta, FieldMeta } from '../../types/lowcode';
 
 const entityMetaApi = {
   /** 分页查询实体列表 */
-  list: (params: { page: number; pageSize: number; keyword?: string; status?: string; sortBy?: string; sortOrder?: string }) =>
-    service.get('/lowcode/entity/list', { params }),
+  list: (params: {
+    page: number;
+    pageSize: number;
+    keyword?: string;
+    status?: string;
+    sortBy?: string;
+    sortOrder?: string;
+  }) => service.get('/lowcode/entity/list', { params }),
 
   /** 获取实体详情（含字段） */
   getById: (id: number) => service.get(`/lowcode/entity/${id}`),

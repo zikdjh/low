@@ -12,19 +12,22 @@ import com.back.lowcode.repository.FieldMetaRepository;
 import com.back.utils.RedisUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * 实体元数据管理服务
@@ -45,8 +48,73 @@ public class EntityMetaService {
     // ---- 实体 CRUD ----
 
     public Page<EntityMeta> listEntities(EntityListRequest request) {
-        return entityMetaRepository.findAll(
-                PageRequest.of(request.getPage() - 1, request.getPageSize()));
+        Specification<EntityMeta> spec = buildSpecification(request.getKeyword(), request.getStatus());
+
+        Sort sort = buildSort(request.getSortBy(), request.getSortOrder());
+        PageRequest pageRequest = PageRequest.of(request.getPage() - 1, request.getPageSize(), sort);
+
+        Page<EntityMeta> page = entityMetaRepository.findAll(spec, pageRequest);
+
+        // 批量填充 fieldCount
+        if (page.hasContent()) {
+            List<Long> entityIds = page.getContent().stream()
+                    .map(EntityMeta::getId)
+                    .collect(Collectors.toList());
+            Map<Long, Long> countMap = fieldMetaRepository.countByEntityIdIn(entityIds)
+                    .stream()
+                    .collect(Collectors.toMap(
+                            row -> (Long) row[0],
+                            row -> (Long) row[1]
+                    ));
+            page.getContent().forEach(e ->
+                    e.setFieldCount(countMap.getOrDefault(e.getId(), 0L)));
+        }
+
+        return page;
+    }
+
+    /**
+     * 构建动态查询条件
+     */
+    private Specification<EntityMeta> buildSpecification(String keyword, String status) {
+        return (root, query, cb) -> {
+            List<Predicate> predicates = new ArrayList<>();
+
+            if (StringUtils.hasText(keyword)) {
+                String pattern = "%" + keyword + "%";
+                predicates.add(cb.or(
+                        cb.like(root.get("name"), pattern),
+                        cb.like(root.get("code"), pattern)
+                ));
+            }
+
+            if (StringUtils.hasText(status)) {
+                predicates.add(cb.equal(root.get("status"), status));
+            }
+
+            Predicate[] arr = new Predicate[predicates.size()];
+            return cb.and(predicates.toArray(arr));
+        };
+    }
+
+    /**
+     * 构建排序
+     */
+    private Sort buildSort(String sortBy, String sortOrder) {
+        if (!StringUtils.hasText(sortBy)) {
+            return Sort.by(Sort.Direction.DESC, "updatedAt");
+        }
+
+        Sort.Direction direction = "asc".equalsIgnoreCase(sortOrder)
+                ? Sort.Direction.ASC : Sort.Direction.DESC;
+
+        // 允许排序的字段白名单
+        Set<String> allowedFields = Set.of("name", "code", "status", "updatedAt");
+        if (!allowedFields.contains(sortBy)) {
+            return Sort.by(Sort.Direction.DESC, "updatedAt");
+        }
+
+        return Sort.by(direction, sortBy);
     }
 
     public Optional<EntityMeta> getEntityById(Long id) {
@@ -118,6 +186,9 @@ public class EntityMetaService {
             throw new IllegalStateException("请至少添加一个字段");
         }
 
+        // 校验 REFERENCE 类型字段的关联实体
+        validateReferenceFields(fields);
+
         ddlService.generateCreateTable(entity, fields);
 
         entity.setStatus("published");
@@ -127,6 +198,35 @@ public class EntityMetaService {
         cacheFieldMeta(entity.getCode(), fields);
 
         return entity;
+    }
+
+    /**
+     * 校验 REFERENCE 类型字段的关联实体是否存在且已发布
+     */
+    private void validateReferenceFields(List<FieldMeta> fields) {
+        for (FieldMeta field : fields) {
+            if ("REFERENCE".equals(field.getFieldType())) {
+                if (field.getReferenceEntityCode() == null || field.getReferenceEntityCode().isEmpty()) {
+                    throw new IllegalArgumentException(
+                            "REFERENCE 类型字段 '" + field.getName() + "' 必须指定关联实体编码");
+                }
+                
+                EntityMeta refEntity = entityMetaRepository.findByCode(field.getReferenceEntityCode())
+                        .orElse(null);
+                
+                if (refEntity == null) {
+                    throw new IllegalArgumentException(
+                            "REFERENCE 字段 '" + field.getName() + "' 关联的实体 '" + 
+                            field.getReferenceEntityCode() + "' 不存在");
+                }
+                
+                if (!"published".equals(refEntity.getStatus())) {
+                    throw new IllegalArgumentException(
+                            "REFERENCE 字段 '" + field.getName() + "' 关联的实体 '" + 
+                            field.getReferenceEntityCode() + "' 尚未发布，请先发布该实体");
+                }
+            }
+        }
     }
 
     @Transactional
@@ -220,7 +320,7 @@ public class EntityMetaService {
         try {
             String json = objectMapper.writeValueAsString(fields);
             stringRedisTemplate.opsForValue().set(redisKey, json, 30, TimeUnit.DAYS);
-        } catch (JsonProcessingException e) {
+        } catch (Exception e) {
             log.warn("Failed to cache field metadata for entity {}: {}", entityCode, e.getMessage());
         }
     }
@@ -244,7 +344,7 @@ public class EntityMetaService {
         try {
             return objectMapper.readValue(json,
                     objectMapper.getTypeFactory().constructCollectionType(List.class, FieldMeta.class));
-        } catch (JsonProcessingException e) {
+        } catch (Exception e) {
             log.warn("Failed to deserialize cached fields for {}: {}", entityCode, e.getMessage());
             return List.of();
         }

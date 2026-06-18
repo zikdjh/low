@@ -27,6 +27,12 @@ export default [
         meta: { title: { zh_CN: '实体编辑' }, hidden: true },
       },
       {
+        path: 'entity/relations',
+        name: 'EntityRelationList',
+        component: () => import('../../pages/lowcode/metadata/EntityRelationList.vue'),
+        meta: { title: { zh_CN: '实体关系' }, hidden: true },
+      },
+      {
         path: 'data/:entityCode',
         name: 'DataList',
         component: () => import('../../pages/lowcode/data/DataList.vue'),
@@ -61,6 +67,18 @@ export default [
         name: 'SettingsPage',
         component: () => import('../../pages/settings/index.vue'),
         meta: { title: { zh_CN: '系统设置' }, hidden: true },
+      },
+      {
+        path: 'page/preview/:pageCode',
+        name: 'SchemaRenderer',
+        component: () => import('../../pages/lowcode/SchemaRenderer.vue'),
+        meta: { title: { zh_CN: '页面预览' }, hidden: true },
+      },
+      {
+        path: 'dict',
+        name: 'DictList',
+        component: () => import('../../pages/lowcode/metadata/DictList.vue'),
+        meta: { title: { zh_CN: '字典管理' }, icon: shallowRef(CodeIcon) },
       },
     ],
   },

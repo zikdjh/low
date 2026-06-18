@@ -6,11 +6,11 @@
         <p class="page-subtitle">管理业务实体和数据模型</p>
       </div>
       <div class="header-right">
-        <t-button variant="outline" @click="goHome">
-          <template #icon><HomeIcon /></template>
-          返回主页
+        <t-button variant="outline" @click="goRelations">
+          <template #icon><t-icon name="link" /></template>
+          关系管理
         </t-button>
-        <t-button theme="primary" @click="handleCreate" style="margin-left: 12px;">
+        <t-button theme="primary" @click="handleCreate">
           <template #icon><PlusIcon /></template>
           新建实体
         </t-button>
@@ -362,6 +362,10 @@ function goHome() {
 
 function handleCreate() {
   router.push('/lowcode/entity/new');
+}
+
+function goRelations() {
+  router.push('/lowcode/entity/relations');
 }
 
 function handleEdit(row: any) {

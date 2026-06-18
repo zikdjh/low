@@ -53,6 +53,48 @@
         <template #drag>
           <t-icon name="move" style="cursor: grab;" />
         </template>
+        <template #code="{ row }">
+          <t-input v-model="row.code" size="small" style="width: 130px" placeholder="字段编码" />
+        </template>
+        <template #name="{ row }">
+          <t-input v-model="row.name" size="small" style="width: 130px" placeholder="字段名称" />
+        </template>
+        <template #length="{ row }">
+          <t-input-number
+            v-if="row.fieldType === 'VARCHAR'"
+            v-model="row.length"
+            size="small"
+            style="width: 70px"
+            :min="1"
+            :max="4000"
+            placeholder="长度"
+          />
+          <span v-else>-</span>
+        </template>
+        <template #precision="{ row }">
+          <t-input-number
+            v-if="row.fieldType === 'DECIMAL'"
+            v-model="row.precision"
+            size="small"
+            style="width: 60px"
+            :min="1"
+            :max="65"
+            placeholder="精度"
+          />
+          <span v-else>-</span>
+        </template>
+        <template #scale="{ row }">
+          <t-input-number
+            v-if="row.fieldType === 'DECIMAL'"
+            v-model="row.scale"
+            size="small"
+            style="width: 60px"
+            :min="0"
+            :max="30"
+            placeholder="小数"
+          />
+          <span v-else>-</span>
+        </template>
         <template #fieldType="{ row }">
           <t-select
             v-model="row.fieldType"
@@ -60,6 +102,30 @@
             size="small"
             style="width: 130px"
           />
+        </template>
+        <template #referenceEntityCode="{ row }">
+          <t-select
+            v-if="row.fieldType === 'REFERENCE'"
+            v-model="row.referenceEntityCode"
+            :options="publishedEntities"
+            size="small"
+            style="width: 130px"
+            placeholder="选择关联实体"
+            clearable
+          />
+          <span v-else>-</span>
+        </template>
+        <template #referenceDisplayFieldCode="{ row }">
+          <t-select
+            v-if="row.fieldType === 'REFERENCE' && row.referenceEntityCode"
+            v-model="row.referenceDisplayFieldCode"
+            :options="entityFieldsCache[row.referenceEntityCode] || []"
+            size="small"
+            style="width: 100px"
+            placeholder="显示字段"
+            clearable
+          />
+          <span v-else>-</span>
         </template>
         <template #nullable="{ row }">
           <t-switch v-model="row.nullable" size="small" />
@@ -82,7 +148,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted, computed } from 'vue';
+import { ref, reactive, onMounted, computed, watch } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { MessagePlugin } from 'tdesign-vue-next';
 import type { PrimaryTableCol } from 'tdesign-vue-next';
@@ -131,7 +197,7 @@ const fieldTypeOptions = [
   { label: '长文本 (TEXT)', value: 'TEXT' },
   { label: 'JSON', value: 'JSON' },
   { label: '金额 (DECIMAL)', value: 'DECIMAL' },
-  { label: '实体引用 (REFERENCE)', value: 'REFERENCE' },
+  { label: '关联字段 (REFERENCE)', value: 'REFERENCE' },
 ];
 
 const fieldColumns: PrimaryTableCol[] = [
@@ -139,13 +205,60 @@ const fieldColumns: PrimaryTableCol[] = [
   { colKey: 'code', title: '字段编码', width: 150 },
   { colKey: 'name', title: '字段名称', width: 150 },
   { colKey: 'fieldType', title: '字段类型', width: 160 },
+  { colKey: 'referenceEntityCode', title: '关联实体', width: 150 },
+  { colKey: 'referenceDisplayFieldCode', title: '显示字段', width: 120 },
   { colKey: 'length', title: '长度', width: 80 },
+  { colKey: 'precision', title: '精度', width: 70 },
+  { colKey: 'scale', title: '小数位', width: 70 },
   { colKey: 'nullable', title: '可为空', width: 80 },
   { colKey: 'showInList', title: '列表显示', width: 90 },
   { colKey: 'showInForm', title: '表单显示', width: 90 },
   { colKey: 'showInSearch', title: '可搜索', width: 80 },
   { colKey: 'operation', title: '操作', width: 80, fixed: 'right' },
 ];
+
+// 已发布的实体列表（用于 REFERENCE 字段选择）
+const publishedEntities = ref<{ label: string; value: string }[]>([]);
+
+// 加载已发布的实体列表
+async function loadPublishedEntities() {
+  try {
+    const res = await entityMetaApi.list({ page: 1, pageSize: 1000 });
+    if (res.data.code === 1) {
+      publishedEntities.value = res.data.data.content
+        .filter((e: EntityMeta) => e.status === 'published')
+        .map((e: EntityMeta) => ({ label: e.name, value: e.code }));
+    }
+  } catch (e) {
+    console.error('加载实体列表失败:', e);
+  }
+}
+
+// 获取实体的字段列表（用于选择显示字段）
+const entityFieldsCache = ref<Record<string, { label: string; value: string }[]>>({});
+
+async function loadEntityFields(entityCode: string) {
+  if (!entityCode || entityFieldsCache.value[entityCode]) return;
+  try {
+    const res = await entityMetaApi.getByCode(entityCode);
+    if (res.data.code === 1) {
+      entityFieldsCache.value[entityCode] = res.data.data.fields
+        .filter((f: FieldMeta) => f.showInList)
+        .map((f: FieldMeta) => ({ label: f.name, value: f.code }));
+    }
+  } catch (e) {
+    console.error('加载实体字段失败:', e);
+  }
+}
+
+// 监听 REFERENCE 字段的关联实体变化
+watch(fields, (newFields) => {
+  newFields.forEach(f => {
+    if (f.fieldType === 'REFERENCE' && f.referenceEntityCode) {
+      loadEntityFields(f.referenceEntityCode);
+    }
+  });
+}, { deep: true });
 
 function addField() {
   const idx = fields.value.length + 1;
@@ -155,6 +268,8 @@ function addField() {
     columnName: `field_${idx}`,
     fieldType: 'VARCHAR' as FieldType,
     length: 255,
+    precision: 10,
+    scale: 2,
     nullable: true,
     isPrimaryKey: false,
     isAutoIncrement: false,
@@ -216,13 +331,22 @@ function goBack() {
 }
 
 onMounted(async () => {
+  // 加载已发布的实体列表
+  loadPublishedEntities();
+  
   if (!isNew.value) {
-    try {
+try {
       const res = await entityMetaApi.getById(entityId.value!);
       if (res.data.code === 1) {
         const { entity, fields: fieldList } = res.data.data;
         Object.assign(entityForm, entity);
         fields.value = fieldList || [];
+        // 加载 REFERENCE 字段的关联实体字段
+        fields.value.forEach(f => {
+          if (f.fieldType === 'REFERENCE' && f.referenceEntityCode) {
+            loadEntityFields(f.referenceEntityCode);
+          }
+        });
       }
     } catch {
       MessagePlugin.error('加载实体失败');

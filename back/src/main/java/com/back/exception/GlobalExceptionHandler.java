@@ -18,7 +18,22 @@ import java.util.concurrent.RejectedExecutionException;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    // 统一异常处理
+    // 业务逻辑异常 — 返回真实错误消息
+    @ExceptionHandler(IllegalArgumentException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Result handleIllegalArgumentException(IllegalArgumentException e) {
+        log.warn("业务校验失败: {}", e.getMessage());
+        return Result.error(e.getMessage());
+    }
+
+    @ExceptionHandler(IllegalStateException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Result handleIllegalStateException(IllegalStateException e) {
+        log.warn("状态校验失败: {}", e.getMessage());
+        return Result.error(e.getMessage());
+    }
+
+    // 统一异常处理（兜底）
     @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public Result handleException(Exception e) {

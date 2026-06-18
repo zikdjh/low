@@ -472,23 +472,30 @@ async function handleBatchDelete() {
 
 async function handleExport() {
   try {
-    const res = await dynamicDataApi.exportData(entityCode.value);
-    if (res.data.code === 1) {
-      const blob = new Blob([res.data], { type: 'text/csv;charset=utf-8;' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `${entityCode.value}_export_${Date.now()}.csv`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-      MessagePlugin.success('导出成功');
-    } else {
-      MessagePlugin.error(res.data.msg || '导出失败');
-    }
+    // Client-side CSV export from current table data
+    const visibleFields = allFields.value.filter(f => f.showInList);
+    const headers = visibleFields.map(f => f.name).join(',');
+    const rows = tableData.value.map((row: any) =>
+      visibleFields.map(f => {
+        const val = row[f.code];
+        if (val === null || val === undefined) return '';
+        const str = String(val);
+        return str.includes(',') ? `"${str}"` : str;
+      }).join(',')
+    );
+    const csv = [headers, ...rows].join('\n');
+    const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${entityCode.value}_export_${Date.now()}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    MessagePlugin.success('导出成功');
   } catch (e: any) {
-    MessagePlugin.error(e?.response?.data?.msg || '导出失败');
+    MessagePlugin.error('导出失败');
   }
 }
 
