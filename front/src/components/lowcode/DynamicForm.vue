@@ -31,7 +31,6 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue';
-import { ref, computed, onMounted } from 'vue';
 import type { FieldMeta } from '../../types/lowcode';
 import dynamicDataApi from '../../api/lowcode/dynamicData';
 
@@ -221,13 +220,13 @@ function getPlaceholder(field: FieldMeta): string {
 }
 
 async function loadRefOptions() {
-  const refFields = props.fields.filter(f => f.fieldType === 'REFERENCE' && f.refEntityCode);
+  const refFields = props.fields.filter(f => f.fieldType === 'REFERENCE' && f.referenceEntityCode);
   for (const field of refFields) {
     try {
-      const res = await dynamicDataApi.list(field.refEntityCode!, { page: 1, pageSize: 1000 });
+      const res = await dynamicDataApi.list(field.referenceEntityCode!, { page: 1, pageSize: 1000 });
       if (res.data.code === 1) {
         const records = res.data.data.content || res.data.data.records || [];
-        const displayField = field.refDisplayCode || 'id';
+        const displayField = field.referenceDisplayFieldCode || 'id';
         refOptions.value[field.code] = records.map((r: any) => ({
           label: r[displayField] !== undefined ? String(r[displayField]) : String(r.id),
           value: r.id,

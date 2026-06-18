@@ -127,7 +127,7 @@
 import { ref, reactive, computed, onMounted } from 'vue';
 import { MessagePlugin } from 'tdesign-vue-next';
 import type { PrimaryTableCol } from 'tdesign-vue-next';
-import dictApi from '../../../api/lowcode/dict';
+import { dictApi } from '../../../api/lowcode/dict';
 import type { DictType, DictItem } from '../../../types/lowcode';
 
 const dictTypes = ref<DictType[]>([]);
@@ -170,7 +170,7 @@ const itemColumns: PrimaryTableCol[] = [
 
 async function loadDictTypes() {
   try {
-    const res = await dictApi.getAllDictTypes();
+    const res: any = await dictApi.getAllDictTypes();
     if (res.data.code === 1) {
       dictTypes.value = res.data.data || [];
     }
@@ -188,7 +188,7 @@ async function selectDict(dict: DictType) {
 async function loadDictItems(dictCode: string) {
   itemsLoading.value = true;
   try {
-    const res = await dictApi.getDictItems(dictCode);
+    const res: any = await dictApi.getDictItems(dictCode);
     if (res.data.code === 1) {
       dictItems.value = res.data.data || [];
     }
@@ -217,7 +217,7 @@ async function handleSaveType() {
   if (valid !== true) return;
   saving.value = true;
   try {
-    let res;
+    let res: any;
     if (editingTypeId.value) {
       res = await dictApi.updateDictType(editingTypeId.value, { ...typeForm });
     } else {
@@ -239,7 +239,7 @@ async function handleSaveType() {
 
 async function handleDeleteType(id: number) {
   try {
-    const res = await dictApi.deleteDictType(id);
+    const res: any = await dictApi.deleteDictType(id);
     if (res.data.code === 1) {
       MessagePlugin.success('已删除');
       if (dictTypes.value.find(d => d.id === id)?.code === selectedDictCode.value) {
@@ -273,7 +273,7 @@ async function handleSaveItem() {
   saving.value = true;
   try {
     if (editingItemId.value) {
-      const res = await dictApi.updateDictItem(editingItemId.value, { ...itemForm, dictCode: selectedDictCode.value });
+      const res: any = await dictApi.updateDictItem(editingItemId.value, { ...itemForm, dictCode: selectedDictCode.value });
       if (res.data.code === 1) {
         MessagePlugin.success('更新成功');
         itemDialogVisible.value = false;
@@ -282,7 +282,7 @@ async function handleSaveItem() {
         MessagePlugin.error(res.data.msg || '操作失败');
       }
     } else {
-      const res = await dictApi.createDictItem({ ...itemForm, dictCode: selectedDictCode.value });
+      const res: any = await dictApi.createDictItem({ ...itemForm, dictCode: selectedDictCode.value });
       if (res.data.code === 1) {
         MessagePlugin.success('添加成功');
         itemDialogVisible.value = false;

@@ -64,7 +64,7 @@
             v-for="page in pages"
             :key="page.id"
             class="tree-item"
-            :class="{ active: isPageActive(page.pageCode || page.code) }"
+            :class="{ active: isPageActive(page.pageCode || (page as any).code) }"
             @click="goToPageDesign(page)"
           >
             <div class="tree-item-icon">
@@ -72,7 +72,7 @@
             </div>
             <div class="tree-item-content">
               <span class="tree-item-name">{{ page.name }}</span>
-              <span class="tree-item-meta">{{ page.pageCode || page.code }}</span>
+              <span class="tree-item-meta">{{ page.pageCode || (page as any).code }}</span>
             </div>
             <span class="tree-item-badge" :class="page.status">{{ page.status || 'draft' }}</span>
           </div>
@@ -125,7 +125,7 @@
             </div>
             <div class="tree-item-content">
               <span class="tree-item-name">{{ entity.name }}</span>
-              <span class="tree-item-meta">{{ entity.code }} · {{ entity.fields?.length || 0 }} 字段</span>
+              <span class="tree-item-meta">{{ entity.code }} · {{ (entity as any).fields?.length || 0 }} 字段</span>
             </div>
             <span class="tree-item-badge" :class="entity.status">{{ entity.status || 'draft' }}</span>
           </div>

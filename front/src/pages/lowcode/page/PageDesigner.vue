@@ -928,7 +928,7 @@
 
 <script setup lang="ts">
 import { ref, computed, markRaw, defineAsyncComponent, onMounted } from 'vue';
-import { useRouter, useRoute } from 'vue-router';
+import { useRoute } from 'vue-router';
 import { MessagePlugin } from 'tdesign-vue-next';
 import { pageSchemaApi } from '../../../api/lowcode/pageSchema';
 import BackButton from '../../../components/common/BackButton.vue';
@@ -940,18 +940,14 @@ import {
   ChartBarIcon, LayoutIcon, MinusIcon, ExpandHorizontalIcon,
   VerticalIcon, CopyIcon, DeleteIcon, LinkIcon,
   SettingIcon, DownloadIcon, RectangleIcon,
-  InkIcon, TapeIcon, ConstraintIcon, CursorIcon, FormatVerticalAlignLeftIcon,
-  FormatVerticalAlignCenterIcon, FormatVerticalAlignRightIcon,
+  InkIcon, TapeIcon, ConstraintIcon, CursorIcon,
   ImageIcon, TimeIcon, AddCircleIcon, SwapIcon, TextboxIcon,
   LayersIcon, CodeIcon, FrameIcon, FolderIcon, ControlPlatformIcon,
   UploadIcon, StarFilledIcon, TipsIcon, RootListIcon,
 } from 'tdesign-icons-vue-next';
 // 使用实际存在的图标作为兼容别名
 const MousePointerIcon = CursorIcon;
-const AlignTopIcon = FormatVerticalAlignLeftIcon;
-const AlignCenterIcon = FormatVerticalAlignCenterIcon;
 
-const router = useRouter();
 const route = useRoute();
 
 // 视图切换
@@ -985,7 +981,7 @@ onMounted(async () => {
       const res = await pageSchemaApi.getById(Number(id));
       if (res.data.code === 1) {
         const pageData = res.data.data;
-        editingPageId.value = pageData.id;
+        editingPageId.value = pageData.id ?? null;
         pageName.value = pageData.name || '未命名页面';
         pageStatus.value = pageData.status || 'draft';
         // 加载页面元素
@@ -1587,9 +1583,6 @@ async function handleSave() {
   }
 }
 
-function goBack() {
-  router.push('/lowcode/page/list');
-}
 </script>
 
 <style scoped lang="less">

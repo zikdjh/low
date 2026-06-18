@@ -158,17 +158,16 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted, markRaw } from 'vue';
-import { useRouter, useRoute } from 'vue-router';
+import { useRoute } from 'vue-router';
 import { MessagePlugin } from 'tdesign-vue-next';
 import type { PrimaryTableCol } from 'tdesign-vue-next';
-import { ChevronLeftIcon, DownloadIcon, PlusIcon, FilterIcon, SearchIcon, DeleteIcon, EditIcon, KeyIcon } from 'tdesign-icons-vue-next';
+import { DownloadIcon, PlusIcon, FilterIcon, SearchIcon, DeleteIcon, EditIcon, KeyIcon } from 'tdesign-icons-vue-next';
 import BackButton from '../../../components/common/BackButton.vue';
 import entityMetaApi from '../../../api/lowcode/entityMeta';
 import dynamicDataApi from '../../../api/lowcode/dynamicData';
 import DynamicForm from '../../../components/lowcode/DynamicForm.vue';
 import type { EntityMeta, FieldMeta } from '../../../types/lowcode';
 
-const router = useRouter();
 const route = useRoute();
 
 const entityCode = computed(() => route.params.entityCode as string);
@@ -381,10 +380,6 @@ function onSortChange(sortInfo: { field: string; order: 'asc' | 'desc' }) {
 
 function onSelectChange(rows: any[]) {
   selectedRows.value = rows;
-}
-
-function goBack() {
-  router.push('/lowcode/entity');
 }
 
 function handleCreate() {
