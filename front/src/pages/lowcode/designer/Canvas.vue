@@ -131,11 +131,11 @@ async function handleSave() {
   const code = (pageSchema.value?.pageCode || name.toLowerCase().replace(/\s+/g, '-')).trim();
   
   const saved = savePage(name, code);
-  
+
   try {
-    if (saved.id) {
+    if (saved && saved.id) {
       await pageSchemaApi.update(saved.id, saved);
-    } else {
+    } else if (saved) {
       await pageSchemaApi.create(saved);
     }
     MessagePlugin.success('保存成功');

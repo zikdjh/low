@@ -27,13 +27,13 @@ export const useDesignerStore = defineStore('designer', () => {
 
   function initPage(schema: PageSchema | null = null) {
     pageSchema.value = schema || {
-      code: '',
+      pageCode: '',
       name: '',
       layoutJson: JSON.stringify([]),
       pageType: 'custom',
       version: 1,
       status: 'draft',
-    };
+    } as PageSchema;
     componentTree.value = schema ? JSON.parse(schema.layoutJson) : [];
     selectedComponentId.value = null;
     history.value = [];
@@ -172,13 +172,13 @@ export const useDesignerStore = defineStore('designer', () => {
   function savePage(name: string, code: string) {
     if (!pageSchema.value) {
       pageSchema.value = {
-        code,
+        pageCode: code,
         name,
         layoutJson: getLayoutJson(),
         pageType: 'custom',
         version: 1,
         status: 'draft',
-      };
+      } as PageSchema;
     } else {
       pageSchema.value.name = name;
       pageSchema.value.pageCode = code;

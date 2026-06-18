@@ -264,15 +264,15 @@ public class EntityMetaService {
             }
 
             if ("REFERENCE".equals(f.getFieldType())) {
-                if (f.getRefEntityCode() == null || f.getRefEntityCode().isEmpty()) {
+                if (f.getReferenceEntityCode() == null || f.getReferenceEntityCode().isEmpty()) {
                     throw new IllegalArgumentException("引用类型字段 '" + f.getCode() + "' 必须指定引用实体编码");
                 }
-                EntityMeta refEntity = entityMetaRepository.findByCode(f.getRefEntityCode())
+                EntityMeta refEntity = entityMetaRepository.findByCode(f.getReferenceEntityCode())
                         .orElseThrow(() -> new IllegalArgumentException(
-                                "引用实体 '" + f.getRefEntityCode() + "' 不存在"));
+                                "引用实体 '" + f.getReferenceEntityCode() + "' 不存在"));
                 if (!"published".equals(refEntity.getStatus())) {
                     throw new IllegalArgumentException(
-                            "引用实体 '" + f.getRefEntityCode() + "' 必须是已发布状态");
+                            "引用实体 '" + f.getReferenceEntityCode() + "' 必须是已发布状态");
                 }
             }
         }

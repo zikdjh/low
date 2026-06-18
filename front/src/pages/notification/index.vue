@@ -80,7 +80,6 @@ import {
 } from 'tdesign-icons-vue-next';
 import BackButton from '../../components/common/BackButton.vue';
 import { useNotificationStore } from '../../store';
-import type { AppNotification } from '../../store/modules/notification';
 
 const notifStore = useNotificationStore();
 const activeCategory = ref<string>('all');

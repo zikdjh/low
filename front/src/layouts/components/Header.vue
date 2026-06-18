@@ -242,12 +242,12 @@
 import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import {
-  MenuIcon, SettingIcon, SearchIcon, CloseIcon, AddIcon,
+  MenuIcon, SettingIcon, SearchIcon, AddIcon,
   MoonIcon, UserIcon, ChevronDownIcon, CheckIcon,
   CheckCircleIcon, TipsIcon, ErrorCircleFilledIcon,
   InfoCircleFilledIcon, NotificationIcon, SunnyIcon,
   UserCircleIcon, LogoutIcon, HelpCircleIcon,
-  LayoutIcon, AppIcon, DataBaseIcon, CodeIcon,
+  LayoutIcon, AppIcon, DataBaseIcon,
   BrowseIcon, RocketIcon, EditIcon, HomeIcon
 } from 'tdesign-icons-vue-next';
 import { useSettingStore, useUserStore, useNotificationStore } from '../../store';
@@ -255,6 +255,7 @@ import { smoothThemeTransition } from '../../utils/theme';
 
 const router = useRouter();
 const route = useRoute();
+void route; // used in template
 const settingStore = useSettingStore();
 const userStore = useUserStore();
 const notifStore = useNotificationStore();

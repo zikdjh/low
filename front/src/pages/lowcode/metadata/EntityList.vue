@@ -195,9 +195,9 @@ import { ref, reactive, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { MessagePlugin } from 'tdesign-vue-next';
 import type { PrimaryTableCol } from 'tdesign-vue-next';
-import { 
-  PlusIcon, SearchIcon, DeleteIcon, DataBaseIcon, CheckCircleIcon, 
-  FolderIcon, FileEditIcon, EditIcon, HomeIcon
+import {
+  PlusIcon, SearchIcon, DeleteIcon, DataBaseIcon, CheckCircleIcon,
+  FolderIcon, FileEditIcon, EditIcon
 } from 'tdesign-icons-vue-next';
 import entityMetaApi from '../../../api/lowcode/entityMeta';
 
@@ -354,10 +354,6 @@ function onSortChange(sortInfo: { field: string; order: 'asc' | 'desc' }) {
 
 function onSelectChange(rows: any[]) {
   selectedRows.value = rows;
-}
-
-function goHome() {
-  router.push('/home');
 }
 
 function handleCreate() {
