@@ -146,45 +146,6 @@
       </div>
     </div>
 
-    <div class="sidebar-divider"></div>
-
-    <!-- ===== 系统导航区域 ===== -->
-    <div class="sidebar-section sidebar-nav-section" v-show="!settingStore.isSidebarCollapsed">
-      <div class="section-header" @click="toggleSection('nav')">
-        <span class="section-label">
-          <AppIcon size="14" />
-          系统
-        </span>
-        <ChevronDownIcon
-          size="14"
-          class="section-arrow"
-          :class="{ rotated: !expandedSections.includes('nav') }"
-        />
-      </div>
-
-      <div class="section-body nav-items" v-show="expandedSections.includes('nav')">
-        <!-- 系统导航项 -->
-        <div
-          v-for="item in systemNavItems"
-          :key="item.path"
-          class="tree-item nav-tree-item"
-          :class="{ active: route.path === item.path }"
-          @click="router.push(item.path)"
-        >
-          <div class="tree-item-icon nav-icon">
-            <component :is="item.icon" size="14" />
-          </div>
-          <span class="tree-item-name">{{ item.label }}</span>
-          <t-badge
-            v-if="item.badge"
-            :count="item.badge"
-            size="small"
-            class="nav-badge"
-          />
-        </div>
-      </div>
-    </div>
-
     <!-- 折叠时的简洁模式 -->
     <div class="sidebar-collapsed-nav" v-show="settingStore.isSidebarCollapsed">
       <t-tooltip content="页面管理" placement="right">
@@ -197,16 +158,7 @@
           <DataBaseIcon size="20" />
         </div>
       </t-tooltip>
-      <t-tooltip content="系统设置" placement="right">
-        <div class="collapsed-nav-item" :class="{ active: route.path === '/lowcode/settings' }" @click="router.push('/lowcode/settings')">
-          <SettingIcon size="20" />
-        </div>
-      </t-tooltip>
-      <t-tooltip content="通知中心" placement="right">
-        <div class="collapsed-nav-item" :class="{ active: route.path === '/lowcode/notification' }" @click="router.push('/lowcode/notification')">
-          <NotificationIcon size="20" />
-        </div>
-      </t-tooltip>
+
     </div>
 
     <!-- 底部 -->
@@ -229,8 +181,7 @@
 import { ref, computed, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import {
-  AddIcon, LayoutIcon, DataBaseIcon, FileIcon,
-  SettingIcon, NotificationIcon, AppIcon, ChevronDownIcon
+  AddIcon, LayoutIcon, DataBaseIcon, FileIcon, ChevronDownIcon
 } from 'tdesign-icons-vue-next';
 import { useSettingStore } from '../../store';
 import { pageSchemaApi } from '../../api/lowcode/pageSchema';
@@ -242,7 +193,7 @@ const router = useRouter();
 const settingStore = useSettingStore();
 
 // 分区展开/折叠状态
-const expandedSections = ref<string[]>(['pages', 'entities', 'nav']);
+const expandedSections = ref<string[]>(['pages', 'entities']);
 
 // 页面列表
 const pages = ref<PageSchema[]>([]);
@@ -256,11 +207,7 @@ const maxEntityPreview = 8;
 
 const pageCount = computed(() => pages.value.length);
 
-// 系统导航项
-const systemNavItems = computed(() => [
-  { path: '/lowcode/settings', label: '系统设置', icon: SettingIcon },
-  { path: '/lowcode/notification', label: '通知中心', icon: NotificationIcon, badge: undefined },
-]);
+
 
 function toggleSection(name: string) {
   const idx = expandedSections.value.indexOf(name);
@@ -582,6 +529,7 @@ function goToEntityList() {
 /* ===== 底部 ===== */
 .sidebar-footer {
   flex-shrink: 0;
+  margin-top: auto;
   padding: 8px 12px;
   border-top: 1px solid #eef0f2;
 }

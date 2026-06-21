@@ -57,6 +57,9 @@ public class SecurityConfig {
                         // 预检请求一律放行，避免被 EntryPoint 401 拦截
                         .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/auth/register", "/auth/login", "/auth/refresh").permitAll()
+                        .requestMatchers("/auth/logout").permitAll()
+                        // 管理员端：仅 admin / root 角色可访问
+                        .requestMatchers("/admin/**").hasAnyRole("admin", "root")
                         // 低代码平台全部接口（临时放行，后续接入鉴权后移除）
                         .requestMatchers("/lowcode/**").permitAll()
                         // error 默认派发路径

@@ -39,6 +39,11 @@ public class User {
     @Column(length = 64)
     private String nickname;
 
+    /** 账号状态：active / frozen */
+    @Column(nullable = false, length = 16)
+    @Builder.Default
+    private String status = "active";
+
     /**
      * 用户拥有的角色，多对多。
      * EAGER 加载是为了 JwtAuthenticationFilter 在每次请求里把 authorities 注入到 SecurityContext，

@@ -1,5 +1,5 @@
 <template>
-  <header class="layout-header">
+  <header ref="headerRef" class="layout-header">
     <!-- 左侧：折叠按钮 + 工作区选择器 -->
     <div class="header-left">
       <t-button
@@ -12,7 +12,7 @@
       </t-button>
 
       <!-- 工作区/应用选择器 -->
-      <div class="workspace-switcher" @click="showWorkspaceMenu = !showWorkspaceMenu">
+      <div ref="workspaceTriggerRef" class="workspace-switcher" @click="showWorkspaceMenu = !showWorkspaceMenu">
         <div class="workspace-icon">
           <LayoutIcon size="18" />
         </div>
@@ -24,7 +24,7 @@
       </div>
 
       <!-- 工作区下拉 -->
-      <div v-show="showWorkspaceMenu" class="workspace-dropdown" @click.stop>
+      <div ref="workspaceDropdownRef" v-show="showWorkspaceMenu" class="workspace-dropdown" @click.stop>
         <div class="ws-dropdown-header">切换工作区</div>
         <div class="ws-dropdown-list">
           <div
@@ -88,6 +88,14 @@
 
       <div class="header-divider"></div>
 
+      <!-- 管理后台入口（仅管理员可见） -->
+      <t-tooltip v-if="userStore.isAdmin" content="管理后台">
+        <t-button variant="text" class="header-action-btn header-action-admin" @click="goToAdmin">
+          <SecuredIcon size="18" />
+          <span class="btn-label">管理后台</span>
+        </t-button>
+      </t-tooltip>
+
       <!-- 主题切换 -->
       <t-tooltip :content="isDark ? '切换亮色模式' : '切换暗色模式'">
         <t-button variant="text" class="icon-btn" @click="toggleTheme">
@@ -110,7 +118,7 @@
       </t-tooltip>
 
       <!-- 用户 -->
-      <div class="user-dropdown">
+      <div ref="userTriggerRef" class="user-dropdown">
         <t-button variant="text" class="user-btn" @click="toggleUserMenu">
           <div class="user-info">
             <t-avatar size="32px" class="user-avatar">
@@ -120,7 +128,7 @@
             <ChevronDownIcon class="user-arrow" :class="{ rotated: showUserMenu }" />
           </div>
         </t-button>
-        <div v-show="showUserMenu" class="dropdown-menu" @click.stop>
+        <div ref="userDropdownRef" v-show="showUserMenu" class="dropdown-menu" @click.stop>
           <div class="dropdown-header">
             <t-avatar size="40px">
               <template #icon><UserIcon /></template>
@@ -248,7 +256,7 @@ import {
   InfoCircleFilledIcon, NotificationIcon, SunnyIcon,
   UserCircleIcon, LogoutIcon, HelpCircleIcon,
   LayoutIcon, AppIcon, DataBaseIcon,
-  BrowseIcon, RocketIcon, EditIcon, HomeIcon
+  BrowseIcon, RocketIcon, EditIcon, HomeIcon, SecuredIcon
 } from 'tdesign-icons-vue-next';
 import { useSettingStore, useUserStore, useNotificationStore } from '../../store';
 import { smoothThemeTransition } from '../../utils/theme';
@@ -395,12 +403,39 @@ function onKeydown(e: KeyboardEvent) {
   }
 }
 
+// 点击其他区域关闭下拉菜单
+const headerRef = ref<HTMLElement | null>(null);
+const workspaceTriggerRef = ref<HTMLElement | null>(null);
+const workspaceDropdownRef = ref<HTMLElement | null>(null);
+const userTriggerRef = ref<HTMLElement | null>(null);
+const userDropdownRef = ref<HTMLElement | null>(null);
+
+function onDocumentClick(e: MouseEvent) {
+  const target = e.target as HTMLElement;
+  // 点击不在工作区触发器 & 不在工作区下拉内 → 关闭工作区菜单
+  if (
+    !workspaceTriggerRef.value?.contains(target) &&
+    !workspaceDropdownRef.value?.contains(target)
+  ) {
+    showWorkspaceMenu.value = false;
+  }
+  // 点击不在用户触发器 & 不在用户下拉内 → 关闭用户菜单
+  if (
+    !userTriggerRef.value?.contains(target) &&
+    !userDropdownRef.value?.contains(target)
+  ) {
+    showUserMenu.value = false;
+  }
+}
+
 onMounted(() => {
   userStore.restoreSession();
   document.addEventListener('keydown', onKeydown);
+  document.addEventListener('click', onDocumentClick);
 });
 onUnmounted(() => {
   document.removeEventListener('keydown', onKeydown);
+  document.removeEventListener('click', onDocumentClick);
 });
 
 const userMenuItems = [
@@ -432,6 +467,7 @@ function handlePublish() {
   });
 }
 function goToSettings() { router.push('/lowcode/settings'); }
+function goToAdmin() { router.push('/admin/users'); }
 function goToNotifications() {
   showNotifications.value = false;
   router.push('/lowcode/notification');
@@ -717,6 +753,11 @@ function getNotifBg(type: string) {
     background: var(--td-brand-color-7, #d4920a) !important;
     color: #fff !important;
   }
+}
+.header-action-admin {
+  color: #1677ff;
+  border-radius: 6px;
+  &:hover { background: #e6f4ff !important; color: #1677ff !important; }
 }
 
 .header-divider {

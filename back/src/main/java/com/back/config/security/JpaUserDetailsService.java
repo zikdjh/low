@@ -27,6 +27,9 @@ public class JpaUserDetailsService implements UserDetailsService {
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("用户不存在: " + username));
+        if ("frozen".equals(user.getStatus())) {
+            throw new UsernameNotFoundException("账号已被冻结");
+        }
         return toPrincipal(user);
     }
 

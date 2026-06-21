@@ -129,9 +129,14 @@ service.interceptors.response.use(
 
 function redirectToLogin() {
     // 已在登录页则不跳，避免循环
-    if (typeof window !== 'undefined' && window.location.pathname !== '/login') {
-        const redirect = encodeURIComponent(window.location.pathname + window.location.search);
-        window.location.href = `/login?redirect=${redirect}`;
+    if (typeof window !== 'undefined') {
+        const pathname = window.location.pathname;
+        if (pathname === '/login' || pathname === '/admin/login') return;
+        const isAdmin = pathname.startsWith('/admin');
+        const redirect = encodeURIComponent(pathname + window.location.search);
+        window.location.href = isAdmin
+            ? `/admin/login?redirect=${redirect}`
+            : `/login?redirect=${redirect}`;
     }
 }
 

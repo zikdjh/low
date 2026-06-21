@@ -15,6 +15,11 @@ const lowcodeModules = import.meta.glob("./modules/**/lowcode.ts", {
     eager: true,
 });
 
+// 添加管理员模块
+const adminModules = import.meta.glob("./modules/**/admin.ts", {
+    eager: true,
+});
+
 
 export const homepageRouterList: Array<RouteRecordRaw> =
     mapModuleRouterList(homepageModules);
@@ -27,8 +32,12 @@ export const loginRouterList: Array<RouteRecordRaw> =
 export const lowcodeRouterList: Array<RouteRecordRaw> =
     mapModuleRouterList(lowcodeModules);
 
+// 添加管理员路由列表
+export const adminRouterList: Array<RouteRecordRaw> =
+    mapModuleRouterList(adminModules);
+
 // 将登录路由添加到所有路由中
-export const allRoutes = [...homepageRouterList, ...loginRouterList, ...lowcodeRouterList];
+export const allRoutes = [...homepageRouterList, ...loginRouterList, ...lowcodeRouterList, ...adminRouterList];
 
 // 固定路由模块转换为路由
 export function mapModuleRouterList(
@@ -59,19 +68,44 @@ router.beforeEach((to) => {
     // 登录态：以 sessionStorage.access (JWT access token) 为权威锚点；
     // userInfo 只用于显示用，刷新页签后 access 自动失效，userInfo 也不再被信任。
     const access = sessionStorage.getItem('access');
-    const userInfo = localStorage.getItem('userInfo');
-    const isLoggedIn = !!access && !!userInfo;
-    const publicPages = ['/login'];
+    const userInfoStr = localStorage.getItem('userInfo');
+    const isLoggedIn = !!access && !!userInfoStr;
+    const publicPages = ['/login', '/admin/login'];
+    const isAdminRoute = to.path.startsWith('/admin');
     
     if (!isLoggedIn && !publicPages.includes(to.path)) {
-        // 未登录且访问需要权限的页面，跳转到登录页
+        // 未登录且访问需要权限的页面，跳转到对应登录页
+        if (isAdminRoute) {
+            return { path: '/admin/login', query: { redirect: to.fullPath } };
+        }
         return {
             path: '/login',
             query: { redirect: to.fullPath }
         };
-    } else if (isLoggedIn && to.path === '/login') {
-        // 已登录访问登录页，跳转到首页
-        return '/home';
+    }
+
+    if (isLoggedIn) {
+        // 判断当前用户角色
+        let userRoles: string[] = [];
+        try {
+            const ui = JSON.parse(userInfoStr || '{}');
+            userRoles = ui.roles || [];
+        } catch {}
+
+        const isAdmin = userRoles.includes('admin') || userRoles.includes('root');
+
+        // 已登录访问非管理员登录页
+        if (to.path === '/login') {
+            return '/home';
+        }
+        if (to.path === '/admin/login') {
+            return '/admin/users';
+        }
+
+        // 非管理员访问管理后台 → 重定向到用户首页
+        if (isAdminRoute && !isAdmin) {
+            return '/home';
+        }
     }
 });
 
