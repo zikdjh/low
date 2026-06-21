@@ -1,13 +1,18 @@
 package com.back.controller;
 
 import com.back.common.Result;
+import com.back.entity.dto.ChangePasswordRequest;
 import com.back.entity.dto.LoginRequest;
 import com.back.entity.dto.RegisterRequest;
+import com.back.config.security.AuthUserPrincipal;
 import com.back.service.AuthService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -46,5 +51,16 @@ public class AuthController {
     @PostMapping("/logout")
     public Result logout(HttpServletResponse response) {
         return authService.logout(response);
+    }
+
+    /** 修改密码：需要已登录，验证当前密码后更新 */
+    @PatchMapping("/password")
+    public Result changePassword(@Valid @RequestBody ChangePasswordRequest req) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated()) {
+            return Result.error("未登录");
+        }
+        AuthUserPrincipal principal = (AuthUserPrincipal) auth.getPrincipal();
+        return authService.changePassword(principal.getUid(), req);
     }
 }

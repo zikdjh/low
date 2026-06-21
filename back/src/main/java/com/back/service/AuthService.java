@@ -1,6 +1,7 @@
 package com.back.service;
 
 import com.back.common.Result;
+import com.back.entity.dto.ChangePasswordRequest;
 import com.back.entity.dto.LoginRequest;
 import com.back.entity.dto.RegisterRequest;
 import jakarta.servlet.http.HttpServletRequest;
@@ -29,4 +30,9 @@ public interface AuthService {
      * 退出登录：清空 refresh Cookie；access 由前端自行丢弃即可（无服务端黑名单）。
      */
     Result logout(HttpServletResponse response);
+
+    /**
+     * 修改密码：验证当前密码，校验新密码一致性，更新密码后返回成功。
+     */
+    Result changePassword(Long userId, ChangePasswordRequest req);
 }

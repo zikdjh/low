@@ -1,4 +1,4 @@
-import { CodeIcon, LayoutIcon } from 'tdesign-icons-vue-next';
+import { CodeIcon, LayoutIcon, HelpCircleIcon } from 'tdesign-icons-vue-next';
 import { shallowRef } from 'vue';
 import Layout from '../../layouts/index.vue';
 
@@ -79,6 +79,12 @@ export default [
         name: 'DictList',
         component: () => import('../../pages/lowcode/metadata/DictList.vue'),
         meta: { title: { zh_CN: '字典管理' }, icon: shallowRef(CodeIcon) },
+      },
+      {
+        path: 'help',
+        name: 'HelpCenter',
+        component: () => import('../../pages/help/index.vue'),
+        meta: { title: { zh_CN: '帮助中心' }, icon: shallowRef(HelpCircleIcon), hidden: true },
       },
     ],
   },

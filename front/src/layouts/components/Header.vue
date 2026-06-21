@@ -478,6 +478,8 @@ function handleUserMenuClick(value: string) {
     void userStore.logout();
   } else if (value === 'profile') {
     router.push('/lowcode/settings');
+  } else if (value === 'help') {
+    router.push('/lowcode/help');
   }
   showUserMenu.value = false;
 }

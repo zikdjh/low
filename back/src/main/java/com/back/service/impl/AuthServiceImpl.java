@@ -4,6 +4,7 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 import com.back.common.Constant;
 import com.back.common.Result;
 import com.back.config.security.AuthProperties;
+import com.back.entity.dto.ChangePasswordRequest;
 import com.back.entity.dto.LoginRequest;
 import com.back.entity.dto.RegisterRequest;
 import com.back.entity.po.Role;
@@ -127,6 +128,30 @@ public class AuthServiceImpl implements AuthService {
     public Result logout(HttpServletResponse response) {
         clearRefreshCookie(response);
         return Result.success();
+    }
+
+    @Override
+    @Transactional
+    public Result changePassword(Long userId, ChangePasswordRequest req) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("用户不存在"));
+
+        // 验证当前密码
+        if (!passwordEncoder.matches(req.getCurrentPassword(), user.getPassword())) {
+            return Result.error("当前密码不正确");
+        }
+
+        // 验证新密码与确认密码一致
+        if (!req.getNewPassword().equals(req.getConfirmPassword())) {
+            return Result.error("两次输入的密码不一致");
+        }
+
+        // 更新密码
+        user.setPassword(passwordEncoder.encode(req.getNewPassword()));
+        userRepository.save(user);
+        log.info("用户 {} 修改密码成功", userId);
+
+        return Result.success("密码修改成功");
     }
 
     /* ------------ 内部辅助 ------------ */

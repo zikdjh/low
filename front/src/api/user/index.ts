@@ -95,6 +95,16 @@ const refreshToken = async () => {
     return response.data;
 }
 
+// 修改密码
+const changePassword = async (currentPassword: string, newPassword: string, confirmPassword: string) => {
+    const response = await service.patch('/auth/password', {
+        currentPassword,
+        newPassword,
+        confirmPassword
+    });
+    return response.data;
+}
+
 const userApi = {
     getPhoneCode,
     login,
@@ -105,7 +115,8 @@ const userApi = {
     updateUserSelfIntroduction,
     getUserInfo,
     getUserInfoPersonal,
-    refreshToken
+    refreshToken,
+    changePassword
 }
 
 export default userApi;

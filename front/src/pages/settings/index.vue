@@ -185,12 +185,56 @@
             </div>
           </div>
           <div class="account-actions">
-            <t-button variant="outline" @click="MessagePlugin.info('修改密码功能开发中')">修改密码</t-button>
+            <t-button variant="outline" @click="openChangePasswordModal">修改密码</t-button>
             <t-button variant="outline" theme="danger" @click="handleLogout">退出登录</t-button>
           </div>
         </div>
       </div>
     </div>
+
+    <!-- 修改密码弹窗 -->
+    <t-dialog
+      v-model:visible="showPasswordModal"
+      header="修改密码"
+      :footer="false"
+      width="480px"
+    >
+      <form class="password-form" @submit.prevent="handleChangePassword">
+        <div class="form-group">
+          <label class="form-label">当前密码</label>
+          <t-input
+            v-model="passwordForm.currentPassword"
+            type="password"
+            placeholder="请输入当前密码"
+            :status="passwordForm.currentPassword ? 'success' : ''"
+          />
+        </div>
+        <div class="form-group">
+          <label class="form-label">新密码</label>
+          <t-input
+            v-model="passwordForm.newPassword"
+            type="password"
+            placeholder="请输入新密码（6-32位）"
+            :status="passwordForm.newPassword && passwordForm.newPassword.length >= 6 ? 'success' : passwordForm.newPassword ? 'error' : ''"
+          />
+          <p v-if="passwordForm.newPassword && passwordForm.newPassword.length < 6" class="form-error">密码长度至少6位</p>
+        </div>
+        <div class="form-group">
+          <label class="form-label">确认密码</label>
+          <t-input
+            v-model="passwordForm.confirmPassword"
+            type="password"
+            placeholder="请再次输入新密码"
+            :status="passwordForm.confirmPassword && passwordForm.confirmPassword === passwordForm.newPassword ? 'success' : passwordForm.confirmPassword ? 'error' : ''"
+          />
+          <p v-if="passwordForm.confirmPassword && passwordForm.confirmPassword !== passwordForm.newPassword" class="form-error">两次输入的密码不一致</p>
+        </div>
+        <div class="form-actions">
+          <t-button variant="outline" @click="showPasswordModal = false">取消</t-button>
+          <t-button theme="primary" type="submit" :loading="isSubmitting">确认修改</t-button>
+        </div>
+      </form>
+    </t-dialog>
   </div>
 </template>
 
@@ -205,6 +249,7 @@ import BackButton from '../../components/common/BackButton.vue';
 import { useSettingStore, useUserStore } from '../../store';
 import { smoothThemeTransition } from '../../utils/theme';
 import { DEFAULT_COLOR_OPTIONS } from '../../config/color';
+import userApi from '../../api/user';
 
 const settingStore = useSettingStore();
 const userStore = useUserStore();
@@ -227,6 +272,15 @@ const notifPrefs = ref({
   task: true,
   team: true,
   desktop: false,
+});
+
+// 修改密码相关
+const showPasswordModal = ref(false);
+const isSubmitting = ref(false);
+const passwordForm = ref({
+  currentPassword: '',
+  newPassword: '',
+  confirmPassword: '',
 });
 
 function handleModeChange(mode: string) {
@@ -258,6 +312,53 @@ function handleCustomColor() {
 
 function handleLogout() {
   void userStore.logout();
+}
+
+function openChangePasswordModal() {
+  showPasswordModal.value = true;
+  // 重置表单
+  passwordForm.value = {
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: '',
+  };
+}
+
+async function handleChangePassword() {
+  // 表单验证
+  if (!passwordForm.value.currentPassword) {
+    MessagePlugin.error('请输入当前密码');
+    return;
+  }
+  if (!passwordForm.value.newPassword || passwordForm.value.newPassword.length < 6) {
+    MessagePlugin.error('新密码长度至少6位');
+    return;
+  }
+  if (passwordForm.value.newPassword !== passwordForm.value.confirmPassword) {
+    MessagePlugin.error('两次输入的密码不一致');
+    return;
+  }
+
+  isSubmitting.value = true;
+  try {
+    const result = await userApi.changePassword(
+      passwordForm.value.currentPassword,
+      passwordForm.value.newPassword,
+      passwordForm.value.confirmPassword
+    );
+    if (result.code === 1) {
+      MessagePlugin.success('密码修改成功，请重新登录');
+      showPasswordModal.value = false;
+      // 密码修改成功后自动登出
+      void userStore.logout();
+    } else {
+      MessagePlugin.error(result.msg || '修改失败');
+    }
+  } catch (error) {
+    MessagePlugin.error('网络异常，请稍后重试');
+  } finally {
+    isSubmitting.value = false;
+  }
 }
 </script>
 
@@ -461,6 +562,34 @@ function handleLogout() {
 .account-actions {
   display: flex;
   gap: 8px;
+}
+
+/* 修改密码弹窗 */
+.password-form {
+  padding: 16px 0;
+}
+.form-group {
+  margin-bottom: 20px;
+}
+.form-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: #555;
+  margin-bottom: 8px;
+}
+.form-error {
+  font-size: 12px;
+  color: #f56c6c;
+  margin: 6px 0 0;
+}
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid #f5f5f5;
 }
 
 /* 响应式 */
