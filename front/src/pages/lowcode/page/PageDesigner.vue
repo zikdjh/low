@@ -195,7 +195,14 @@
                 />
               </div>
               
-              <div class="element-resize-handle" @mousedown.stop="onResizeStart($event, element)"></div>
+              <div class="element-resize-handle handle-n"  @mousedown.stop="onResizeStart($event, element, 'n')"></div>
+              <div class="element-resize-handle handle-ne" @mousedown.stop="onResizeStart($event, element, 'ne')"></div>
+              <div class="element-resize-handle handle-e"  @mousedown.stop="onResizeStart($event, element, 'e')"></div>
+              <div class="element-resize-handle handle-se" @mousedown.stop="onResizeStart($event, element, 'se')"></div>
+              <div class="element-resize-handle handle-s"  @mousedown.stop="onResizeStart($event, element, 's')"></div>
+              <div class="element-resize-handle handle-sw" @mousedown.stop="onResizeStart($event, element, 'sw')"></div>
+              <div class="element-resize-handle handle-w"  @mousedown.stop="onResizeStart($event, element, 'w')"></div>
+              <div class="element-resize-handle handle-nw" @mousedown.stop="onResizeStart($event, element, 'nw')"></div>
             </div>
 
             <!-- 空状态 -->
@@ -244,43 +251,6 @@
         </Transition>
       </div>
 
-      <!-- 预览视图 -->
-      <div v-if="currentView === 'preview'" class="preview-area">
-        <div class="preview-container">
-          <div class="preview-header">
-            <div class="preview-title">{{ pageName || '未命名页面' }}</div>
-            <div class="preview-actions">
-              <t-button variant="outline" size="small" @click="currentView = 'design'">
-                <EditIcon size="14" /> 返回设计
-              </t-button>
-            </div>
-          </div>
-          
-          <div class="preview-content">
-            <div
-              v-for="element in pageElements"
-              :key="element.id"
-              class="preview-element"
-              :style="{
-                left: element.x + 'px',
-                top: element.y + 'px',
-                width: element.width + 'px',
-                height: element.height + 'px',
-              }"
-            >
-              <component 
-                :is="getElementComponent(element.type)" 
-                :element="element"
-              />
-            </div>
-            
-            <div v-if="pageElements.length === 0" class="empty-preview">
-              <LayoutIcon size="64" />
-              <p>页面尚未添加任何组件</p>
-            </div>
-          </div>
-        </div>
-      </div>
 
       <!-- 右侧属性面板 -->
       <div class="property-panel" :class="{ collapsed: propertyPanelCollapsed }">
@@ -299,14 +269,14 @@
         </div>
         
         <div class="panel-content" :class="{ collapsed: propertyPanelCollapsed }">
-          <div v-if="selectedElement" class="property-form">
+          <div v-if="selectedElement" class="property-form" :key="selectedElement.id">
             <!-- 基础信息 -->
             <div class="property-section">
               <div class="section-header">
                 <div class="section-title">基础信息</div>
               </div>
               <div class="section-content">
-                <t-form label-width="70" size="small">
+                <t-form label-width="70px" size="small">
                   <t-form-item label="组件ID">
                     <t-input :value="selectedElement.id" disabled size="small" class="id-input" />
                   </t-form-item>
@@ -333,7 +303,7 @@
                 </t-button>
               </div>
               <div class="section-content">
-                <t-form label-width="70" size="small">
+                <t-form label-width="70px" size="small">
                   <!-- 文本组件属性 -->
                   <template v-if="selectedElement.type === 'text'">
                     <t-form-item label="文本内容">
@@ -344,19 +314,41 @@
                       />
                     </t-form-item>
                     <t-form-item label="字体大小">
-                      <div class="slider-control">
-                        <t-slider 
-                          v-model.number="selectedElement.props.fontSize" 
-                          :min="12" :max="72" :show-tooltip="true"
-                          :marks="{ 12: '12px', 24: '24px', 36: '36px', 48: '48px', 72: '72px' }"
+                      <div class="font-size-stepper">
+                        <t-button 
+                          size="small" 
+                          variant="outline" 
+                          shape="square"
+                          @click="adjustFontSize(-1)"
+                          :disabled="selectedElement.props.fontSize <= 12"
+                        >
+                          <template #icon><RemoveIcon /></template>
+                        </t-button>
+                        <input
+                          v-model.number="selectedElement.props.fontSize"
+                          type="number"
+                          :min="12"
+                          :max="72"
+                          class="fs-input"
+                          @blur="clampFontSize"
+                          @keyup.enter="($event.target as HTMLInputElement).blur()"
                         />
-                        <span class="slider-value">{{ selectedElement.props.fontSize }}px</span>
+                        <span class="fs-suffix">px</span>
+                        <t-button 
+                          size="small" 
+                          variant="outline" 
+                          shape="square"
+                          @click="adjustFontSize(1)"
+                          :disabled="selectedElement.props.fontSize >= 72"
+                        >
+                          <template #icon><AddIcon /></template>
+                        </t-button>
                       </div>
                     </t-form-item>
                     <t-form-item label="字体颜色">
                       <div class="color-picker-wrapper">
                         <t-color-picker v-model="selectedElement.props.color" format="HEX" />
-                        <t-input v-model="selectedElement.props.color" size="small" class="color-input" />
+                        <span class="color-hex-text">{{ selectedElement.props.color }}</span>
                       </div>
                     </t-form-item>
                     <t-form-item label="对齐方式">
@@ -569,12 +561,11 @@
                       </t-select>
                     </t-form-item>
                     <t-form-item label="间距">
-                      <t-slider 
-                        v-model.number="selectedElement.props.gutter" 
-                        :min="0" 
-                        :max="48" 
-                        :step="4"
-                        :show-tooltip="true"
+                      <t-input-number 
+                        v-model="selectedElement.props.gutter" 
+                        :min="0" :max="48" :step="4"
+                        suffix="px"
+                        style="width: 120px"
                       />
                     </t-form-item>
                   </template>
@@ -825,7 +816,7 @@
                     <t-form-item label="背景色">
                       <div class="color-picker-wrapper">
                         <t-color-picker v-model="selectedElement.props.bgColor" format="HEX" />
-                        <t-input v-model="selectedElement.props.bgColor" size="small" class="color-input" />
+                        <span class="color-hex-text">{{ selectedElement.props.bgColor }}</span>
                       </div>
                     </t-form-item>
                     <t-form-item label="阴影">
@@ -902,6 +893,88 @@
               </div>
             </div>
 
+            <!-- 事件/逻辑配置 -->
+            <t-divider />
+            <div v-if="isEventable(selectedElement.type)" class="property-section">
+              <div class="section-header">
+                <div class="section-title">事件配置</div>
+              </div>
+              <div class="section-content">
+                <!-- 已绑定事件列表 -->
+                <div v-if="selectedElement.events && selectedElement.events.length > 0" class="event-list">
+                  <div v-for="evt in selectedElement.events" :key="evt.id" class="event-item">
+                    <div class="event-info">
+                      <t-tag size="small" variant="light" theme="primary">{{ getTriggerLabel(evt.trigger) }}</t-tag>
+                      <span class="event-arrow">→</span>
+                      <span class="event-label">{{ evt.label }}</span>
+                    </div>
+                    <t-button variant="text" size="small" theme="danger" @click="removeEvent(evt.id)">
+                      <DeleteIcon size="14" />
+                    </t-button>
+                  </div>
+                </div>
+
+                <!-- 添加新事件 -->
+                <t-form label-width="60px" size="small">
+                  <t-form-item label="触发方式">
+                    <t-select v-model="newEventTrigger" size="small">
+                      <t-option value="click" label="点击时" />
+                      <t-option value="dblclick" label="双击时" />
+                      <t-option v-if="isFormType(selectedElement.type)" value="change" label="值变更" />
+                    </t-select>
+                  </t-form-item>
+
+                  <t-form-item label="动作类型">
+                    <t-select v-model="newEventAction" size="small" @change="() => { newEventTargetPage = ''; newEventTargetEntity = ''; }">
+                      <t-option value="navigate" label="页面跳转" />
+                      <t-option value="openForm" label="新增数据" />
+                      <t-option value="openDataList" label="查看数据列表" />
+                    </t-select>
+                  </t-form-item>
+
+                  <!-- 页面跳转：选择目标页面 -->
+                  <t-form-item v-if="newEventAction === 'navigate'" label="目标页面">
+                    <t-select 
+                      v-model="newEventTargetPage" 
+                      size="small" 
+                      placeholder="选择要跳转的页面"
+                      filterable
+                    >
+                      <t-option 
+                        v-for="page in availablePages" 
+                        :key="page.id || page.pageCode"
+                        :value="String(page.id || page.pageCode)"
+                        :label="page.name || page.pageName || '未命名页面'"
+                      />
+                    </t-select>
+                  </t-form-item>
+
+                  <!-- 打开表单/列表：选择目标实体 -->
+                  <t-form-item v-if="newEventAction === 'openForm' || newEventAction === 'openDataList'" label="目标实体">
+                    <t-select 
+                      v-model="newEventTargetEntity" 
+                      size="small" 
+                      placeholder="选择数据实体"
+                      filterable
+                    >
+                      <t-option 
+                        v-for="entity in availableEntities" 
+                        :key="entity.id || entity.code"
+                        :value="String(entity.id || entity.code)"
+                        :label="entity.name || entity.entityName || entity.code || '未命名实体'"
+                      />
+                    </t-select>
+                  </t-form-item>
+
+                  <t-form-item>
+                    <t-button theme="primary" size="small" block @click="addEvent">
+                      <AddIcon size="14" /> 添加事件
+                    </t-button>
+                  </t-form-item>
+                </t-form>
+              </div>
+            </div>
+
             <t-divider />
 
             <!-- 操作按钮 -->
@@ -924,6 +997,45 @@
       </div>
     </div>
   </div>
+
+  <!-- 预览弹窗 -->
+  <t-dialog
+    v-model:visible="previewDialogVisible"
+    :header="(pageName || '未命名页面') + ' - 预览'"
+    width="90vw"
+    :top="24"
+    :footer="false"
+    :close-on-overlay-click="true"
+    class="preview-dialog"
+    attach="body"
+  >
+    <div class="preview-dialog-wrapper">
+      <div class="preview-dialog-content">
+        <div
+          v-for="element in pageElements"
+          :key="element.id"
+          class="preview-element"
+          :style="{
+            left: element.x + 'px',
+            top: element.y + 'px',
+            width: element.width + 'px',
+            height: element.height + 'px',
+          }"
+        >
+          <component 
+            :is="getElementComponent(element.type)" 
+            :element="element"
+          />
+        </div>
+        
+        <div v-if="pageElements.length === 0" class="empty-preview">
+          <LayoutIcon size="64" />
+          <p>页面尚未添加任何组件</p>
+          <p class="empty-hint">请从左侧拖拽组件到画布，然后点击预览</p>
+        </div>
+      </div>
+    </div>
+  </t-dialog>
 </template>
 
 <script setup lang="ts">
@@ -931,6 +1043,7 @@ import { ref, computed, markRaw, defineAsyncComponent, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import { MessagePlugin } from 'tdesign-vue-next';
 import { pageSchemaApi } from '../../../api/lowcode/pageSchema';
+import entityMetaApi from '../../../api/lowcode/entityMeta';
 import BackButton from '../../../components/common/BackButton.vue';
 import {
   ChevronLeftIcon, ChevronRightIcon, ChevronUpIcon, ChevronDownIcon,
@@ -944,6 +1057,7 @@ import {
   ImageIcon, TimeIcon, AddCircleIcon, SwapIcon, TextboxIcon,
   LayersIcon, CodeIcon, FrameIcon, FolderIcon, ControlPlatformIcon,
   UploadIcon, StarFilledIcon, TipsIcon, RootListIcon,
+  AddIcon, RemoveIcon,
 } from 'tdesign-icons-vue-next';
 // 使用实际存在的图标作为兼容别名
 const MousePointerIcon = CursorIcon;
@@ -954,13 +1068,19 @@ const route = useRoute();
 const currentView = ref('design');
 const viewTabs = [
   { key: 'design', label: '设计', icon: LayoutIcon },
-  { key: 'preview', label: '预览', icon: BrowseIcon },
 ];
+
+// 预览弹窗
+const previewDialogVisible = ref(false);
+
+// 可用页面和实体列表 (用于事件绑定)
+const availablePages = ref<any[]>([]);
+const availableEntities = ref<any[]>([]);
 
 // 面板折叠状态
 const panelCollapsed = ref(false);
 const propertyPanelCollapsed = ref(false);
-const expandedGroups = ref(['basic', 'layout']);
+const expandedGroups = ref(['basic']);
 
 // 拖拽状态
 const draggingComponent = ref<any>(null);
@@ -975,6 +1095,25 @@ const isSaving = ref(false);
 
 // 从路由参数加载页面
 onMounted(async () => {
+  // 加载可用页面列表
+  try {
+    const pagesRes = await pageSchemaApi.getAllPages();
+    if (pagesRes.data) {
+      availablePages.value = (pagesRes.data as any)?.data || pagesRes.data || [];
+    }
+  } catch { /* 忽略 */ }
+  
+  // 加载可用实体列表
+  try {
+    const entitiesRes = await entityMetaApi.list({ page: 1, pageSize: 200 });
+    if (entitiesRes.data) {
+      availableEntities.value = (entitiesRes.data as any)?.data?.records 
+        || (entitiesRes.data as any)?.data 
+        || entitiesRes.data 
+        || [];
+    }
+  } catch { /* 忽略 */ }
+
   const id = route.query.id;
   if (id) {
     try {
@@ -1007,6 +1146,15 @@ interface PageElement {
   y: number;
   width: number;
   height: number;
+  events?: ElementEvent[];
+}
+
+interface ElementEvent {
+  id: string;
+  trigger: 'click' | 'dblclick' | 'change';
+  action: 'navigate' | 'openForm' | 'openDataList' | 'custom';
+  config: Record<string, any>;
+  label: string;
 }
 
 const pageElements = ref<PageElement[]>([]);
@@ -1034,8 +1182,11 @@ const draggingElementId = ref<string | null>(null);
 const draggingElement = ref<PageElement | null>(null);
 const dragOffset = ref({ x: 0, y: 0 });
 const isResizing = ref(false);
+const resizeDirection = ref('se');
 const resizeStartPos = ref({ x: 0, y: 0 });
 const resizeStartSize = ref({ width: 0, height: 0 });
+const resizeStartX = ref(0);
+const resizeStartY = ref(0);
 
 // 组件面板图标
 const componentPanelIcon = computed(() => {
@@ -1196,6 +1347,37 @@ function onDragStart(event: DragEvent, component: any) {
     event.dataTransfer.effectAllowed = 'copy';
     event.dataTransfer.setData('application/json', JSON.stringify(component));
     event.dataTransfer.setData('text/plain', component.type);
+    
+    // 创建自定义拖拽幽灵图，使图标跟随鼠标更自然
+    const el = event.target as HTMLElement;
+    const item = el?.closest('.component-item') as HTMLElement;
+    if (item) {
+      const ghost = item.cloneNode(true) as HTMLElement;
+      ghost.style.position = 'fixed';
+      ghost.style.left = '-9999px';
+      ghost.style.top = '0';
+      ghost.style.width = item.offsetWidth + 'px';
+      ghost.style.pointerEvents = 'none';
+      ghost.style.opacity = '0.9';
+      ghost.style.transform = 'scale(1.05)';
+      ghost.style.boxShadow = '0 8px 24px rgba(59,130,246,0.35)';
+      ghost.style.border = '1.5px solid #3b82f6';
+      ghost.style.background = '#eff6ff';
+      ghost.style.borderRadius = '8px';
+      ghost.style.zIndex = '9999';
+      document.body.appendChild(ghost);
+      
+      // 将拖拽图像的中心对准鼠标
+      const rect = item.getBoundingClientRect();
+      const offsetX = event.clientX - rect.left;
+      const offsetY = event.clientY - rect.top;
+      event.dataTransfer.setDragImage(ghost, offsetX, offsetY);
+      
+      // 立即清理（浏览器会保留幽灵图的快照）
+      requestAnimationFrame(() => {
+        if (ghost.parentNode) ghost.parentNode.removeChild(ghost);
+      });
+    }
   }
   
   const target = event.target as HTMLElement;
@@ -1234,15 +1416,17 @@ function onDrop(event: DragEvent) {
 
   if (!draggingComponent.value) return;
 
-  // 获取鼠标位置相对于画布的坐标
+  // 获取鼠标位置相对于画布内容区的坐标
   const canvasContent = document.querySelector('.canvas-content') as HTMLElement;
   let x = 20;
   let y = 20;
   
-  if (event.dataTransfer && canvasContent) {
+  if (canvasContent) {
     const rect = canvasContent.getBoundingClientRect();
-    x = Math.max(0, (event.dataTransfer as DataTransfer).getData('text/plain') ? 20 : (event.clientX - rect.left - 100));
-    y = Math.max(0, event.clientY - rect.top - 50);
+    // 鼠标位置减去画布区域偏移，再减去组件宽高的一半使其居中放置
+    const size = getDefaultSize(draggingComponent.value.type);
+    x = Math.max(0, event.clientX - rect.left - size.width / 2);
+    y = Math.max(0, event.clientY - rect.top - 20);
   }
 
   const size = getDefaultSize(draggingComponent.value.type);
@@ -1443,6 +1627,19 @@ function resetProps() {
   MessagePlugin.success('属性已重置');
 }
 
+function adjustFontSize(delta: number) {
+  if (!selectedElement.value) return;
+  const el = selectedElement.value;
+  const newVal = (el.props.fontSize || 16) + delta;
+  el.props.fontSize = Math.max(12, Math.min(72, newVal));
+}
+
+function clampFontSize() {
+  if (!selectedElement.value) return;
+  const el = selectedElement.value;
+  el.props.fontSize = Math.max(12, Math.min(72, el.props.fontSize || 16));
+}
+
 function saveHistory() {
   history.value = history.value.slice(0, historyIndex.value + 1);
   history.value.push(JSON.parse(JSON.stringify(pageElements.value)));
@@ -1513,11 +1710,14 @@ function onMouseUp() {
 }
 
 // 调整大小函数
-function onResizeStart(event: MouseEvent, element: PageElement) {
+function onResizeStart(event: MouseEvent, element: PageElement, direction: string) {
   isResizing.value = true;
   draggingElement.value = element;
+  resizeDirection.value = direction;
   resizeStartPos.value = { x: event.clientX, y: event.clientY };
   resizeStartSize.value = { width: element.width, height: element.height };
+  resizeStartX.value = element.x;
+  resizeStartY.value = element.y;
   
   document.addEventListener('mousemove', onResizeMove);
   document.addEventListener('mouseup', onResizeUp);
@@ -1528,9 +1728,32 @@ function onResizeMove(event: MouseEvent) {
   
   const deltaX = event.clientX - resizeStartPos.value.x;
   const deltaY = event.clientY - resizeStartPos.value.y;
+  const dir = resizeDirection.value;
+  const el = draggingElement.value;
   
-  draggingElement.value.width = Math.max(100, resizeStartSize.value.width + deltaX);
-  draggingElement.value.height = Math.max(60, resizeStartSize.value.height + deltaY);
+  const MIN_W = 60;
+  const MIN_H = 40;
+  
+  // 右方向：增大宽度
+  if (dir.includes('e')) {
+    el.width = Math.max(MIN_W, resizeStartSize.value.width + deltaX);
+  }
+  // 左方向：减小宽度并移动 x
+  if (dir.includes('w')) {
+    const newW = Math.max(MIN_W, resizeStartSize.value.width - deltaX);
+    el.x = resizeStartX.value + (resizeStartSize.value.width - newW);
+    el.width = newW;
+  }
+  // 下方向：增大高度
+  if (dir.includes('s')) {
+    el.height = Math.max(MIN_H, resizeStartSize.value.height + deltaY);
+  }
+  // 上方向：减小高度并移动 y
+  if (dir.includes('n')) {
+    const newH = Math.max(MIN_H, resizeStartSize.value.height - deltaY);
+    el.y = resizeStartY.value + (resizeStartSize.value.height - newH);
+    el.height = newH;
+  }
 }
 
 function onResizeUp() {
@@ -1545,8 +1768,7 @@ function onResizeUp() {
 }
 
 function handlePreview() {
-  currentView.value = 'preview';
-  MessagePlugin.info('预览模式已开启');
+  previewDialogVisible.value = true;
 }
 
 async function handleSave() {
@@ -1581,6 +1803,106 @@ async function handleSave() {
   } finally {
     isSaving.value = false;
   }
+}
+
+// ============ 事件/逻辑配置 ============
+const newEventTrigger = ref<'click' | 'dblclick' | 'change'>('click');
+const newEventAction = ref<'navigate' | 'openForm' | 'openDataList' | 'custom'>('navigate');
+const newEventTargetPage = ref('');
+const newEventTargetEntity = ref('');
+
+const eventableTypes = ['button', 'link', 'image', 'card', 'text', 'tag'];
+
+function isEventable(type: string): boolean {
+  return eventableTypes.includes(type);
+}
+
+function isFormType(type: string): boolean {
+  return ['input', 'textarea', 'inputNumber', 'select', 'date', 'time', 'switch', 'checkbox', 'radio', 'slider', 'rate', 'upload'].includes(type);
+}
+
+function addEvent() {
+  if (!selectedElement.value) return;
+  if (!selectedElement.value.events) {
+    selectedElement.value.events = [];
+  }
+  
+  const id = `evt_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`;
+  const config: Record<string, any> = {};
+  let label = '';
+
+  if (newEventAction.value === 'navigate') {
+    if (!newEventTargetPage.value) {
+      MessagePlugin.warning('请选择目标页面');
+      return;
+    }
+    const page = availablePages.value.find((p: any) => String(p.id || p.pageCode) === newEventTargetPage.value);
+    config.pageId = newEventTargetPage.value;
+    config.pageName = page?.name || page?.pageName || '';
+    label = `打开页面: ${config.pageName || config.pageId}`;
+  } else if (newEventAction.value === 'openForm') {
+    if (!newEventTargetEntity.value) {
+      MessagePlugin.warning('请选择目标实体');
+      return;
+    }
+    const entity = availableEntities.value.find((e: any) => String(e.id || e.code) === newEventTargetEntity.value);
+    config.entityCode = entity?.code || newEventTargetEntity.value;
+    config.entityName = entity?.name || entity?.entityName || '';
+    config.mode = 'create';
+    label = `新增 ${config.entityName || config.entityCode} 记录`;
+  } else if (newEventAction.value === 'openDataList') {
+    if (!newEventTargetEntity.value) {
+      MessagePlugin.warning('请选择目标实体');
+      return;
+    }
+    const entity = availableEntities.value.find((e: any) => String(e.id || e.code) === newEventTargetEntity.value);
+    config.entityCode = entity?.code || newEventTargetEntity.value;
+    config.entityName = entity?.name || entity?.entityName || '';
+    label = `查看 ${config.entityName || config.entityCode} 列表`;
+  } else if (newEventAction.value === 'custom') {
+    label = '自定义逻辑';
+  }
+
+  selectedElement.value.events.push({
+    id,
+    trigger: newEventTrigger.value,
+    action: newEventAction.value,
+    config,
+    label,
+  });
+
+  saveHistory();
+  MessagePlugin.success(`已添加事件: ${label}`);
+  
+  // 重置表单
+  newEventTargetPage.value = '';
+  newEventTargetEntity.value = '';
+}
+
+function removeEvent(eventId: string) {
+  if (!selectedElement.value?.events) return;
+  selectedElement.value.events = selectedElement.value.events.filter(e => e.id !== eventId);
+  saveHistory();
+  MessagePlugin.success('事件已移除');
+}
+
+function getActionLabel(action: string): string {
+  const map: Record<string, string> = {
+    navigate: '页面跳转',
+    openForm: '打开表单',
+    openDataList: '查看数据',
+    custom: '自定义',
+  };
+  return map[action] || action;
+}
+
+function getTriggerLabel(trigger: string): string {
+  const map: Record<string, string> = {
+    click: '点击',
+    dblclick: '双击',
+    change: '值变更',
+  };
+  return map[trigger] || trigger;
 }
 
 </script>
@@ -2076,19 +2398,24 @@ async function handleSave() {
 
     .element-resize-handle {
       position: absolute;
-      bottom: 0;
-      right: 0;
-      width: 12px;
-      height: 12px;
-      cursor: se-resize;
-      border-right: 2px solid #9ca3af;
-      border-bottom: 2px solid #9ca3af;
+      width: 10px;
+      height: 10px;
+      background: #3b82f6;
+      border: 2px solid #fff;
+      border-radius: 50%;
+      box-shadow: 0 1px 4px rgba(59,130,246,0.45);
       opacity: 0;
-      transition: opacity 0.2s;
+      transition: opacity 0.15s;
+      z-index: 10;
 
-      &:hover {
-        border-color: #3b82f6;
-      }
+      &.handle-n  { top: -5px;    left: 50%;        margin-left: -5px; cursor: n-resize;  }
+      &.handle-ne { top: -5px;    right: -5px;       cursor: ne-resize; }
+      &.handle-e  { top: 50%;     right: -5px;       margin-top: -5px;  cursor: e-resize;  }
+      &.handle-se { bottom: -5px; right: -5px;       cursor: se-resize; }
+      &.handle-s  { bottom: -5px; left: 50%;         margin-left: -5px; cursor: s-resize;  }
+      &.handle-sw { bottom: -5px; left: -5px;        cursor: sw-resize; }
+      &.handle-w  { top: 50%;     left: -5px;        margin-top: -5px;  cursor: w-resize;  }
+      &.handle-nw { top: -5px;    left: -5px;        cursor: nw-resize; }
     }
 
     &:hover .element-resize-handle {
@@ -2296,25 +2623,58 @@ async function handleSave() {
             font-size: 12px;
           }
 
-          .slider-control {
+          .font-size-stepper {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 6px;
 
-            .slider-value {
+            .fs-input {
+              width: 56px;
+              height: 28px;
+              text-align: center;
+              font-size: 14px;
+              font-weight: 600;
+              color: #1f2937;
+              border: 1px solid #d0d5dd;
+              border-radius: 4px;
+              outline: none;
+              box-sizing: border-box;
+              font-variant-numeric: tabular-nums;
+
+              &::-webkit-inner-spin-button,
+              &::-webkit-outer-spin-button {
+                -webkit-appearance: none;
+                margin: 0;
+              }
+              -moz-appearance: textfield;
+
+              &:focus {
+                border-color: #3b82f6;
+                box-shadow: 0 0 0 2px rgba(59,130,246,0.12);
+              }
+            }
+
+            .fs-suffix {
               font-size: 13px;
-              color: #374151;
+              color: #6b7280;
               font-weight: 500;
-              min-width: 60px;
             }
           }
 
           .color-picker-wrapper {
             display: flex;
+            align-items: center;
             gap: 8px;
 
             .color-input {
               width: 100px;
+            }
+
+            .color-hex-text {
+              font-size: 13px;
+              color: #6b7280;
+              font-family: monospace;
+              font-weight: 500;
             }
           }
 
@@ -2328,6 +2688,42 @@ async function handleSave() {
             p {
               margin: 12px 0 0 0;
               font-size: 13px;
+            }
+          }
+        }
+      }
+
+      .event-list {
+        margin-bottom: 12px;
+
+        .event-item {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 6px 8px;
+          background: #f9fafb;
+          border: 1px solid #e5e7eb;
+          border-radius: 6px;
+          margin-bottom: 6px;
+
+          .event-info {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex: 1;
+            min-width: 0;
+
+            .event-arrow {
+              color: #9ca3af;
+              font-size: 12px;
+            }
+
+            .event-label {
+              font-size: 12px;
+              color: #374151;
+              overflow: hidden;
+              text-overflow: ellipsis;
+              white-space: nowrap;
             }
           }
         }
@@ -2421,69 +2817,34 @@ async function handleSave() {
   opacity: 0;
 }
 
-/* 调整大小手柄 */
-.element-resize-handle {
-  position: absolute;
-  right: 4px;
-  bottom: 4px;
-  width: 12px;
-  height: 12px;
-  background: #3b82f6;
-  border-radius: 50%;
-  cursor: se-resize;
-  box-shadow: 0 2px 4px rgba(59, 130, 246, 0.4);
-  transition: all 0.2s;
 
-  &:hover {
-    background: #2563eb;
-    transform: scale(1.2);
-  }
-}
 
-/* 预览视图 */
-.preview-area {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
 
-  .preview-container {
+
+/* 预览弹窗 */
+.preview-dialog {
+  .preview-dialog-wrapper {
     width: 100%;
-    max-width: 1200px;
-    background: #fff;
-    border-radius: 16px;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
-    overflow: hidden;
+    min-height: 60vh;
+    max-height: 80vh;
+    overflow: auto;
   }
 
-  .preview-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 16px 24px;
-    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-    color: #fff;
-
-    .preview-title {
-      font-size: 18px;
-      font-weight: 600;
-    }
-  }
-
-  .preview-content {
-    padding: 20px;
-    min-height: 500px;
+  .preview-dialog-content {
     position: relative;
-    background: #f9fafb;
+    min-height: 500px;
+    background: #f4f6f8;
+    border-radius: 12px;
+    padding: 24px;
+    border: 1px solid #e5e7eb;
   }
 
   .preview-element {
     position: absolute;
     background: #fff;
-    padding: 16px;
     border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+    overflow: hidden;
   }
 
   .empty-preview {
@@ -2491,14 +2852,25 @@ async function handleSave() {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    height: 300px;
+    min-height: 360px;
     color: #9ca3af;
     text-align: center;
 
+    :deep(svg) {
+      opacity: 0.4;
+    }
+
     p {
-      margin-top: 16px;
+      margin-top: 12px;
       font-size: 14px;
+    }
+
+    .empty-hint {
+      margin-top: 6px;
+      font-size: 12px;
+      color: #c0c4cc;
     }
   }
 }
+
 </style>

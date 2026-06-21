@@ -29,52 +29,23 @@
       </div>
       <div v-else class="viewer-frame">
         <div class="viewer-page-content">
-          <!-- 按类型渲染每个元素 -->
-          <div v-for="element in pageElements" :key="element.id" class="page-element">
-            <template v-if="element.type === 'heading'">
-              <component :is="`h${element.props?.level || 2}`" :style="getElementStyle(element)">
-                {{ element.props?.text || '标题' }}
-              </component>
-            </template>
-            <template v-else-if="element.type === 'text'">
-              <p :style="getElementStyle(element)">{{ element.props?.content || '文本内容' }}</p>
-            </template>
-            <template v-else-if="element.type === 'button'">
-              <t-button :theme="element.props?.variant || 'primary'" :size="element.props?.size || 'medium'">
-                {{ element.props?.text || '按钮' }}
-              </t-button>
-            </template>
-            <template v-else-if="element.type === 'input'">
-              <t-input
-                :placeholder="element.props?.placeholder || '请输入'"
-                :style="getElementStyle(element)"
-              />
-            </template>
-            <template v-else-if="element.type === 'image'">
-              <div class="image-placeholder" :style="getElementStyle(element)">
-                <ImageIcon size="32" />
-                <span>图片</span>
-              </div>
-            </template>
-            <template v-else-if="element.type === 'table'">
-              <t-table
-                :columns="element.props?.columns || [{ colKey: 'col1', title: '列1' }]"
-                :data="[]"
-                bordered
-                stripe
-                :style="getElementStyle(element)"
-              />
-            </template>
-            <template v-else-if="element.type === 'card'">
-              <t-card :title="element.props?.title || '卡片'" :style="getElementStyle(element)">
-                {{ element.props?.content || '卡片内容' }}
-              </t-card>
-            </template>
-            <template v-else>
-              <div class="fallback-element" :style="getElementStyle(element)">
-                {{ element.type }} 组件
-              </div>
-            </template>
+          <!-- 按类型渲染每个元素，使用组件渲染器并启用事件 -->
+          <div 
+            v-for="element in pageElements" 
+            :key="element.id" 
+            class="page-element"
+            :style="{
+              left: element.x + 'px',
+              top: element.y + 'px',
+              width: element.width + 'px',
+              height: element.height + 'px',
+            }"
+          >
+            <component 
+              :is="getElementComponent(element.type)" 
+              :element="element"
+              :enable-events="true"
+            />
           </div>
           <div v-if="pageElements.length === 0" class="empty-page-hint">
             <LayoutIcon size="64" />
@@ -88,12 +59,16 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, markRaw } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { MessagePlugin } from 'tdesign-vue-next';
 import {
   BrowseIcon, FullscreenIcon, FullscreenExitIcon,
-  ImageIcon, LayoutIcon
+  ImageIcon, LayoutIcon, EditIcon, ButtonIcon, LinkIcon, TapeIcon,
+  FormIcon, TextboxIcon, CalendarIcon, TimeIcon, CheckCircleFilledIcon,
+  CircleIcon, StarFilledIcon, ControlPlatformIcon, AddCircleIcon,
+  ChevronDownIcon, ChevronUpIcon, LayersIcon, CodeIcon, FrameIcon,
+  FolderIcon, RootListIcon, SwapIcon, UploadIcon, SettingIcon,
 } from 'tdesign-icons-vue-next';
 import BackButton from '../../../components/common/BackButton.vue';
 import { pageSchemaApi } from '../../../api/lowcode/pageSchema';
@@ -105,6 +80,52 @@ const pageData = ref<any>(null);
 const pageElements = ref<any[]>([]);
 const loading = ref(true);
 const isFullscreen = ref(false);
+
+// 组件映射表
+const componentMap: Record<string, any> = {
+  text: () => import('./components/TextElement.vue'),
+  button: () => import('./components/ButtonElement.vue'),
+  link: () => import('./components/LinkElement.vue'),
+  image: () => import('./components/ImageElement.vue'),
+  input: () => import('./components/InputElement.vue'),
+  textarea: () => import('./components/TextareaElement.vue'),
+  inputNumber: () => import('./components/InputNumberElement.vue'),
+  select: () => import('./components/SelectElement.vue'),
+  date: () => import('./components/DateElement.vue'),
+  time: () => import('./components/TimeElement.vue'),
+  switch: () => import('./components/SwitchElement.vue'),
+  checkbox: () => import('./components/CheckboxElement.vue'),
+  radio: () => import('./components/RadioElement.vue'),
+  slider: () => import('./components/SliderElement.vue'),
+  rate: () => import('./components/RateElement.vue'),
+  upload: () => import('./components/UploadElement.vue'),
+  table: () => import('./components/TableElement.vue'),
+  form: () => import('./components/FormElement.vue'),
+  list: () => import('./components/ListElement.vue'),
+  chart: () => import('./components/ChartElement.vue'),
+  card: () => import('./components/CardElement.vue'),
+  tag: () => import('./components/TagElement.vue'),
+  progress: () => import('./components/ProgressElement.vue'),
+  steps: () => import('./components/StepsElement.vue'),
+  alert: () => import('./components/AlertElement.vue'),
+  divider: () => import('./components/DividerElement.vue'),
+  container: () => import('./components/ContainerElement.vue'),
+  grid: () => import('./components/GridElement.vue'),
+  tabs: () => import('./components/TabsElement.vue'),
+  collapse: () => import('./components/CollapseElement.vue'),
+  space: () => import('./components/SpaceElement.vue'),
+  breadcrumb: () => import('./components/BreadcrumbElement.vue'),
+};
+
+import { defineAsyncComponent } from 'vue';
+
+function getElementComponent(type: string) {
+  const loader = componentMap[type];
+  if (loader) {
+    return defineAsyncComponent(loader);
+  }
+  return null;
+}
 
 onMounted(async () => {
   const code = route.query.code as string;
@@ -129,16 +150,6 @@ onMounted(async () => {
     loading.value = false;
   }
 });
-
-function getElementStyle(element: any) {
-  const props = element.props || {};
-  const style: any = {};
-  if (props.width) style.width = typeof props.width === 'number' ? `${props.width}px` : props.width;
-  if (props.color) style.color = props.color;
-  if (props.backgroundColor) style.backgroundColor = props.backgroundColor;
-  if (props.align) style.textAlign = props.align;
-  return style;
-}
 
 function goBack() {
   router.push('/lowcode/page/list');
@@ -218,35 +229,13 @@ function goBack() {
 }
 
 .viewer-page-content {
+  position: relative;
   min-height: 400px;
 }
 
 .page-element {
-  margin-bottom: 16px;
-}
-
-.image-placeholder {
-  background: #f5f5f5;
-  border: 2px dashed #ddd;
-  border-radius: 8px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 40px;
-  color: #ccc;
-  font-size: 14px;
-}
-
-.fallback-element {
-  padding: 20px;
-  background: #fafafa;
-  border: 1px dashed #e5e5e5;
-  border-radius: 8px;
-  text-align: center;
-  color: #999;
-  font-size: 13px;
+  position: absolute;
+  overflow: hidden;
 }
 
 .empty-page-hint {

@@ -1,8 +1,10 @@
 <template>
   <main class="layout-content">
-    <router-view v-slot="{ Component }">
-      <transition name="page-fade" mode="out-in">
-        <component :is="Component" />
+    <router-view v-slot="{ Component, route }">
+      <transition name="page-fade">
+        <keep-alive>
+          <component :is="Component" :key="route.fullPath" />
+        </keep-alive>
       </transition>
     </router-view>
   </main>
