@@ -45,10 +45,38 @@
       <div class="dict-item-panel">
         <div class="panel-header" v-if="selectedDictCode">
           <span>字典项 — {{ selectedDictName }}</span>
-          <t-button size="small" theme="primary" @click="openItemDialog()">
-            <template #icon><t-icon name="add" /></template>
-            新增项
-          </t-button>
+          <t-space>
+            <t-button size="small" variant="outline" @click="openBatchEdit()">
+              <template #icon><t-icon name="edit-1" /></template>
+              批量编辑
+            </t-button>
+            <t-button size="small" theme="primary" @click="openItemDialog()">
+              <template #icon><t-icon name="add" /></template>
+              新增项
+            </t-button>
+          </t-space>
+        </div>
+        <!-- Map 预览区 -->
+        <div v-if="selectedDictCode && Object.keys(dictMap).length > 0" class="dict-map-preview">
+          <div class="map-header">
+            <span class="map-title">键值映射预览</span>
+            <t-button size="small" variant="text" :loading="mapLoading" @click="loadDictMap">
+              <t-icon name="refresh" />
+            </t-button>
+          </div>
+          <div class="map-tags">
+            <t-tag
+              v-for="(label, value) in dictMap"
+              :key="value"
+              variant="light"
+              size="small"
+              class="map-tag"
+            >
+              <span class="tag-value">{{ value }}</span>
+              <span class="tag-arrow">→</span>
+              <span class="tag-label">{{ label }}</span>
+            </t-tag>
+          </div>
         </div>
         <div v-if="!selectedDictCode" class="empty-hint">
           <t-icon name="browse" size="48" />
@@ -120,6 +148,25 @@
         </t-form-item>
       </t-form>
     </t-dialog>
+
+    <!-- 批量编辑字典项对话框 -->
+    <t-dialog
+      v-model:visible="batchEditVisible"
+      header="批量编辑字典项"
+      width="600px"
+      :confirm-btn="{ content: '保存全部', loading: saving }"
+      @confirm="handleBatchSave"
+    >
+      <p class="batch-hint">
+        每行一个字典项，格式：<code>值=标签</code>，如 <code>pending=待处理</code>。
+        保存后将覆盖当前字典的全部条目。
+      </p>
+      <t-textarea
+        v-model="batchEditText"
+        placeholder="值1=标签1&#10;值2=标签2&#10;值3=标签3"
+        :autosize="{ minRows: 6, maxRows: 20 }"
+      />
+    </t-dialog>
   </div>
 </template>
 
@@ -132,10 +179,16 @@ import type { DictType, DictItem } from '../../../types/lowcode';
 
 const dictTypes = ref<DictType[]>([]);
 const dictItems = ref<DictItem[]>([]);
+const dictMap = ref<Record<string, string>>({});
 const itemsLoading = ref(false);
+const mapLoading = ref(false);
 const saving = ref(false);
 const selectedDictCode = ref('');
 const selectedDictName = ref('');
+
+// Batch edit
+const batchEditVisible = ref(false);
+const batchEditText = ref('');
 
 // Type dialog
 const typeDialogVisible = ref(false);
@@ -182,7 +235,22 @@ async function loadDictTypes() {
 async function selectDict(dict: DictType) {
   selectedDictCode.value = dict.code!;
   selectedDictName.value = dict.name!;
-  await loadDictItems(dict.code!);
+  await Promise.all([loadDictItems(dict.code!), loadDictMap()]);
+}
+
+async function loadDictMap() {
+  if (!selectedDictCode.value) return;
+  mapLoading.value = true;
+  try {
+    const res: any = await dictApi.getDictMap(selectedDictCode.value);
+    if (res.data.code === 1) {
+      dictMap.value = res.data.data || {};
+    }
+  } catch {
+    dictMap.value = {};
+  } finally {
+    mapLoading.value = false;
+  }
 }
 
 async function loadDictItems(dictCode: string) {
@@ -278,6 +346,7 @@ async function handleSaveItem() {
         MessagePlugin.success('更新成功');
         itemDialogVisible.value = false;
         loadDictItems(selectedDictCode.value);
+        loadDictMap();
       } else {
         MessagePlugin.error(res.data.msg || '操作失败');
       }
@@ -287,6 +356,7 @@ async function handleSaveItem() {
         MessagePlugin.success('添加成功');
         itemDialogVisible.value = false;
         loadDictItems(selectedDictCode.value);
+        loadDictMap();
       } else {
         MessagePlugin.error(res.data.msg || '操作失败');
       }
@@ -304,11 +374,59 @@ async function handleDeleteItem(id: number) {
     if (res.data.code === 1) {
       MessagePlugin.success('已删除');
       loadDictItems(selectedDictCode.value);
+      loadDictMap();
     } else {
       MessagePlugin.error(res.data.msg || '删除失败');
     }
   } catch (e: any) {
     MessagePlugin.error(e?.response?.data?.msg || '删除失败');
+  }
+}
+
+// Batch edit
+function openBatchEdit() {
+  // 将当前所有条目序列化为 value=label 格式
+  const lines = dictItems.value.map(item => `${item.value}=${item.label}`);
+  batchEditText.value = lines.join('\n');
+  batchEditVisible.value = true;
+}
+
+async function handleBatchSave() {
+  const text = batchEditText.value.trim();
+  if (!text) {
+    MessagePlugin.warning('请输入至少一个字典项');
+    return;
+  }
+  const lines = text.split('\n').filter(l => l.trim());
+  const items: DictItem[] = [];
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim();
+    const eqIdx = line.indexOf('=');
+    if (eqIdx <= 0) {
+      MessagePlugin.warning(`第 ${i + 1} 行格式错误，应为"值=标签"：${line}`);
+      return;
+    }
+    items.push({
+      value: line.substring(0, eqIdx).trim(),
+      label: line.substring(eqIdx + 1).trim(),
+      sortOrder: i + 1,
+    });
+  }
+  saving.value = true;
+  try {
+    const res: any = await dictApi.batchSaveItems(selectedDictCode.value, items);
+    if (res.data.code === 1) {
+      MessagePlugin.success(`已保存 ${items.length} 个字典项`);
+      batchEditVisible.value = false;
+      await loadDictItems(selectedDictCode.value);
+      await loadDictMap();
+    } else {
+      MessagePlugin.error(res.data.msg || '操作失败');
+    }
+  } catch (e: any) {
+    MessagePlugin.error(e?.response?.data?.msg || '操作失败');
+  } finally {
+    saving.value = false;
   }
 }
 
@@ -397,6 +515,53 @@ onMounted(() => {
     padding: 80px 0;
     color: #94a3b8;
     p { margin-top: 16px; }
+  }
+}
+
+/* Map 预览区 */
+.dict-map-preview {
+  padding: 12px 16px;
+  border-top: 1px solid #f1f5f9;
+  background: #fafbfc;
+
+  .map-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+  .map-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+  }
+  .map-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .map-tag {
+    font-size: 12px;
+    .tag-value { font-family: monospace; color: #475569; }
+    .tag-arrow { margin: 0 4px; color: #94a3b8; }
+    .tag-label { color: #667eea; }
+  }
+}
+
+/* 批量编辑 */
+.batch-hint {
+  font-size: 13px;
+  color: #64748b;
+  margin: 0 0 12px;
+  line-height: 1.6;
+  code {
+    background: #f1f5f9;
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-size: 12px;
+    color: #667eea;
   }
 }
 </style>

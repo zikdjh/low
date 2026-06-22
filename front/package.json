@@ -39,6 +39,7 @@
     "autoprefixer": "^10.5.0",
     "less": "^4.6.4",
     "less-loader": "^13.0.0",
+    "playwright": "^1.61.0",
     "postcss": "8.5.10",
     "typescript": "~6.0.3",
     "vite": "8.0.14",
