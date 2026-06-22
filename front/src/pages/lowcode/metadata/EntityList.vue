@@ -33,7 +33,7 @@
         <t-select
           v-model="statusFilter"
           placeholder="全部状态"
-          :style="{ width: '160px', marginLeft: '16px' }"
+          :style="{ width: '160px' }"
           @change="handleSearch"
         >
           <t-option value="" label="全部状态" />
@@ -486,15 +486,34 @@ onMounted(() => {
       margin: 0;
     }
   }
+  
+  .header-right {
+    display: flex;
+    gap: 16px;
+    
+    :deep(.t-button) {
+      padding: 12px 24px;
+      font-size: 15px;
+      font-weight: 500;
+      border-radius: 8px;
+    }
+  }
 }
 
 .toolbar {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   padding: 16px 24px;
   background: #ffffff;
   border-bottom: 1px solid #e2e8f0;
+  
+  .toolbar-left {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
   
   .toolbar-right {
     display: flex;
@@ -520,7 +539,9 @@ onMounted(() => {
   
   .stat-card {
     display: flex;
+    flex-direction: column;
     align-items: center;
+    justify-content: center;
     padding: 24px;
     background: #ffffff;
     border-radius: 12px;
@@ -534,7 +555,7 @@ onMounted(() => {
       display: flex;
       align-items: center;
       justify-content: center;
-      margin-right: 20px;
+      margin-bottom: 16px;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
       
       &.total {
@@ -556,16 +577,23 @@ onMounted(() => {
     }
     
     .stat-info {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      
       .stat-value {
         font-size: 28px;
         font-weight: 700;
         color: #1e293b;
         margin-bottom: 4px;
+        text-align: center;
       }
       
       .stat-label {
         font-size: 14px;
         color: #64748b;
+        text-align: center;
       }
     }
   }
@@ -597,6 +625,11 @@ onMounted(() => {
       font-weight: 500;
     }
   }
+}
+
+/* 下拉框选项居中 */
+:deep(.t-select__option) {
+  text-align: center;
 }
 
 /* 深色模式适配 - 图标容器背景色 */
