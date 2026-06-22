@@ -237,9 +237,11 @@ async function loadEntities() {
   entitiesLoading.value = true;
   try {
     const res: any = await entityMetaApi.list({ page: 1, pageSize: maxEntityPreview });
-    const data = res?.data?.records || res?.data || res?.records || [];
+    // Spring Data Page 返回 content + totalElements；兼容多种响应格式
+    const pageData = res?.data?.data || res?.data || res || {};
+    const data = pageData?.content || pageData?.records || pageData || [];
     entities.value = Array.isArray(data) ? data : [];
-    entityCount.value = res?.data?.total || entities.value.length;
+    entityCount.value = pageData?.totalElements || pageData?.total || entities.value.length;
   } catch {
     entities.value = [];
     entityCount.value = 0;
