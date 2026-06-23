@@ -106,11 +106,12 @@
       <!-- 中间画布区域 -->
       <div 
         class="canvas-area"
-        :class="{ 'drag-over': isDraggingOver }"
+        :class="{ 'drag-over': isDraggingOver, 'panning': isPanning }"
         @dragover.prevent="onDragOver"
         @dragenter="onDragEnter"
         @dragleave="onDragLeave"
         @drop="onDrop"
+        @mousedown="onCanvasMouseDown"
       >
         <div class="canvas-container">
           <div class="canvas-header">
@@ -1245,6 +1246,11 @@ let pendingMoveEvent: MouseEvent | null = null;
 let resizeRafId: number | null = null;
 let pendingResizeEvent: MouseEvent | null = null;
 
+// 画布平移（pan）状态——拖动画布空白区域来移动视口
+const isPanning = ref(false);
+const panStart = ref({ x: 0, y: 0 });
+const panScrollStart = ref({ x: 0, y: 0 });
+
 // 组件面板图标
 const componentPanelIcon = computed(() => {
   return panelCollapsed.value ? ChevronRightIcon : AppIcon;
@@ -1996,6 +2002,37 @@ function onResizeUp() {
   document.removeEventListener('mouseup', onResizeUp);
 }
 
+// 画布平移：在空白区域按下鼠标拖动来移动画布视口
+function onCanvasMouseDown(event: MouseEvent) {
+  const target = event.target as HTMLElement;
+  // 只在画布空白区域触发，排除组件元素和画布头部
+  if (target.closest('.canvas-element') || target.closest('.canvas-header')) return;
+  
+  isPanning.value = true;
+  panStart.value = { x: event.clientX, y: event.clientY };
+  const area = document.querySelector('.canvas-area') as HTMLElement;
+  if (area) {
+    panScrollStart.value = { x: area.scrollLeft, y: area.scrollTop };
+  }
+  document.addEventListener('mousemove', onCanvasPanMove);
+  document.addEventListener('mouseup', onCanvasPanUp);
+  event.preventDefault();
+}
+
+function onCanvasPanMove(event: MouseEvent) {
+  if (!isPanning.value) return;
+  const area = document.querySelector('.canvas-area') as HTMLElement;
+  if (!area) return;
+  area.scrollLeft = panScrollStart.value.x - (event.clientX - panStart.value.x);
+  area.scrollTop = panScrollStart.value.y - (event.clientY - panStart.value.y);
+}
+
+function onCanvasPanUp() {
+  isPanning.value = false;
+  document.removeEventListener('mousemove', onCanvasPanMove);
+  document.removeEventListener('mouseup', onCanvasPanUp);
+}
+
 function handlePreview() {
   previewDialogVisible.value = true;
 }
@@ -2446,9 +2483,15 @@ function getTriggerLabel(trigger: string): string {
 .canvas-area {
   flex: 1;
   padding: 24px;
-  overflow-y: auto;
+  overflow: auto;
   position: relative;
   transition: background 0.3s;
+  cursor: grab;
+  user-select: none;
+
+  &.panning {
+    cursor: grabbing;
+  }
 
   &.drag-over {
     background: rgba(59, 130, 246, 0.08);
@@ -2460,14 +2503,14 @@ function getTriggerLabel(trigger: string): string {
   }
 
   .canvas-container {
-    max-width: 900px;
+    min-width: 1150px;
     margin: 0 auto;
     min-height: calc(100vh - 160px);
     background: #fff;
     border-radius: 16px;
     box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
     border: 2px dashed #e5e7eb;
-    transition: all 0.3s;
+    transition: border-color 0.3s, box-shadow 0.3s;
     overflow: hidden;
   }
 
