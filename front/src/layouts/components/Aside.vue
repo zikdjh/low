@@ -213,13 +213,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, shallowRef } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import {
-  AddIcon, LayoutIcon, DataBaseIcon, FileIcon, ChevronDownIcon
+  AddIcon, LayoutIcon, DataBaseIcon, FileIcon, ChevronDownIcon,
+  EditIcon, ViewListIcon,
 } from 'tdesign-icons-vue-next';
-import { shallowRef } from 'vue';
-import { EditIcon, ViewListIcon, CheckCircleIcon } from 'tdesign-icons-vue-next';
 import { useSettingStore } from '../../store';
 import { pageSchemaApi } from '../../api/lowcode/pageSchema';
 import entityMetaApi from '../../api/lowcode/entityMeta';

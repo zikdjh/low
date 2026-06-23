@@ -61,6 +61,11 @@
             :label="opt.label"
           />
         </t-select>
+        <!-- 开关（布尔值） -->
+        <t-switch
+          v-else-if="field.fieldType === 'BOOLEAN'"
+          v-model="formData[field.code]"
+        />
         <!-- 默认输入框 -->
         <t-input
           v-else
@@ -145,7 +150,7 @@ const staticOptionsMap: Record<string, { value: string; label: string }[]> = {
 };
 
 function isTextInput(fieldType: string): boolean {
-  return ['VARCHAR', 'INTEGER', 'LONG', 'DOUBLE', 'DECIMAL', 'BOOLEAN'].includes(fieldType);
+  return ['VARCHAR', 'INTEGER', 'LONG', 'DOUBLE', 'DECIMAL'].includes(fieldType);
 }
 
 function hasStaticOptions(field: any): boolean {
@@ -161,11 +166,13 @@ async function loadReferenceOptions(field: any) {
   if (!field.referenceEntityCode) return;
   try {
     const res = await dynamicDataApi.list(field.referenceEntityCode, { page: 1, pageSize: 200 });
+    if (res.data?.code !== 1) return;
     const data = res.data?.data;
     const rows = data?.content || data?.records || [];
+    const displayField = field.referenceDisplayFieldCode || 'name';
     referenceOptions[field.code] = rows.map((row: any) => ({
       value: row.id,
-      label: row.name || row.code || String(row.id),
+      label: row[displayField] || row.name || row.code || String(row.id),
     }));
   } catch {
     // 忽略加载失败

@@ -58,7 +58,10 @@ public class LeavePageInitializer implements CommandLineRunner {
         if (exists(pageCode)) return;
 
         Optional<EntityMeta> entityOpt = entityMetaRepository.findByCode(entityCode);
-        if (entityOpt.isEmpty()) return;
+        if (entityOpt.isEmpty()) {
+            System.err.println("[WARN] LeavePageInitializer: 实体 " + entityCode + " 不存在，跳过页面 " + pageCode);
+            return;
+        }
         List<FieldMeta> fields = fieldMetaRepository.findByEntityIdOrderBySortOrderAsc(entityOpt.get().getId());
         // 只取 showInList=true 的字段作为表格列
         List<Map<String, Object>> columns = fields.stream()
@@ -86,7 +89,10 @@ public class LeavePageInitializer implements CommandLineRunner {
         if (exists(pageCode)) return;
 
         Optional<EntityMeta> entityOpt = entityMetaRepository.findByCode(entityCode);
-        if (entityOpt.isEmpty()) return;
+        if (entityOpt.isEmpty()) {
+            System.err.println("[WARN] LeavePageInitializer: 实体 " + entityCode + " 不存在，跳过页面 " + pageCode);
+            return;
+        }
         List<FieldMeta> fields = fieldMetaRepository.findByEntityIdOrderBySortOrderAsc(entityOpt.get().getId());
 
         List<Map<String, Object>> elements = new ArrayList<>();
@@ -152,6 +158,7 @@ public class LeavePageInitializer implements CommandLineRunner {
                     ff.put("required", !Boolean.TRUE.equals(f.getNullable()));
                     ff.put("defaultValue", f.getDefaultValue());
                     ff.put("referenceEntityCode", f.getReferenceEntityCode());
+                    ff.put("referenceDisplayFieldCode", f.getReferenceDisplayFieldCode());
                     return ff;
                 }).collect(Collectors.toList());
         props.put("fields", formFields);

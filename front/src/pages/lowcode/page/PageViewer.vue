@@ -59,7 +59,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, markRaw } from 'vue';
+import { ref, onMounted, watch, markRaw } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { MessagePlugin } from 'tdesign-vue-next';
 import {
@@ -127,7 +127,8 @@ function getElementComponent(type: string) {
   return null;
 }
 
-onMounted(async () => {
+async function loadPage() {
+  loading.value = true;
   const code = (route.query.code as string) || (route.meta.pageCode as string);
   if (!code) {
     loading.value = false;
@@ -149,7 +150,21 @@ onMounted(async () => {
   } finally {
     loading.value = false;
   }
+}
+
+onMounted(() => {
+  loadPage();
 });
+
+// 监听路由变化（同一组件不同路由时重新加载页面）
+watch(
+  () => route.fullPath,
+  () => {
+    if (route.path.startsWith('/leave/')) {
+      loadPage();
+    }
+  },
+);
 
 function goBack() {
   router.push('/lowcode/page/list');

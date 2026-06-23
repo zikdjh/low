@@ -511,13 +511,29 @@
 
                   <!-- 表格组件属性 -->
                   <template v-else-if="selectedElement.type === 'table'">
-                    <t-form-item label="数据源">
-                      <t-select v-model="selectedElement.props.dataSource">
-                        <t-option value="" label="请选择数据源" />
-                        <t-option value="mock1" label="示例数据1" />
-                        <t-option value="mock2" label="示例数据2" />
-                        <t-option value="mock3" label="示例数据3" />
+                    <t-form-item label="绑定实体">
+                      <t-select 
+                        v-model="selectedElement.props.entityCode" 
+                        placeholder="选择数据实体"
+                        clearable
+                        filterable
+                        @change="(v: string) => onTableEntityChange(v)"
+                      >
+                        <t-option 
+                          v-for="entity in availableEntities" 
+                          :key="entity.code || entity.id"
+                          :value="entity.code" 
+                          :label="entity.name || entity.entityName"
+                        />
                       </t-select>
+                    </t-form-item>
+                    <t-form-item v-if="selectedElement.props.entityCode" label="表格列">
+                      <div class="entity-fields-info">
+                        <t-tag v-for="col in selectedElement.props.columns" :key="col.fieldCode" variant="light" theme="primary" size="small" class="field-tag">
+                          {{ col.title || col.fieldCode }}
+                        </t-tag>
+                        <span v-if="!selectedElement.props.columns?.length" class="no-fields">选择实体后将自动加载列定义</span>
+                      </div>
                     </t-form-item>
                     <t-form-item label="显示边框">
                       <t-switch v-model="selectedElement.props.border" />
@@ -802,6 +818,37 @@
                     </t-form-item>
                   </template>
 
+                  <!-- 表单容器属性 -->
+                  <template v-else-if="selectedElement.type === 'form'">
+                    <t-form-item label="绑定实体">
+                      <t-select 
+                        v-model="selectedElement.props.entityCode" 
+                        placeholder="选择数据实体"
+                        clearable
+                        filterable
+                        @change="(v: string) => onFormEntityChange(v)"
+                      >
+                        <t-option 
+                          v-for="entity in availableEntities" 
+                          :key="entity.code || entity.id"
+                          :value="entity.code" 
+                          :label="entity.name || entity.entityName"
+                        />
+                      </t-select>
+                    </t-form-item>
+                    <t-form-item v-if="selectedElement.props.entityCode" label="表单字段">
+                      <div class="entity-fields-info">
+                        <t-tag v-for="f in selectedElement.props.fields" :key="f.code" variant="light" theme="success" size="small" class="field-tag">
+                          {{ f.name || f.code }}
+                        </t-tag>
+                        <span v-if="!selectedElement.props.fields?.length" class="no-fields">选择实体后将自动加载表单字段</span>
+                      </div>
+                    </t-form-item>
+                    <t-form-item label="标签宽度">
+                      <t-input-number v-model.number="selectedElement.props.labelWidth" :min="60" :max="200" suffix="px" style="width:120px" />
+                    </t-form-item>
+                  </template>
+
                   <!-- 容器属性 -->
                   <template v-else-if="selectedElement.type === 'container'">
                     <t-form-item label="容器标题">
@@ -1056,7 +1103,7 @@ import {
   InkIcon, TapeIcon, ConstraintIcon, CursorIcon,
   ImageIcon, TimeIcon, AddCircleIcon, SwapIcon, TextboxIcon,
   LayersIcon, CodeIcon, FrameIcon, FolderIcon, ControlPlatformIcon,
-  UploadIcon, StarFilledIcon, TipsIcon, RootListIcon,
+  UploadIcon, StarFilledIcon, TipsIcon, RootListIcon, DataBaseIcon,
   AddIcon, RemoveIcon,
 } from 'tdesign-icons-vue-next';
 // 使用实际存在的图标作为兼容别名
@@ -1111,6 +1158,10 @@ onMounted(async () => {
         || (entitiesRes.data as any)?.data 
         || entitiesRes.data 
         || [];
+      // 自动展开业务实体分组
+      if (availableEntities.value.length > 0 && !expandedGroups.value.includes('entity')) {
+        expandedGroups.value.push('entity');
+      }
     }
   } catch { /* 忽略 */ }
 
@@ -1188,13 +1239,19 @@ const resizeStartSize = ref({ width: 0, height: 0 });
 const resizeStartX = ref(0);
 const resizeStartY = ref(0);
 
+// requestAnimationFrame 节流——避免高频 mousemove 触发 Vue 响应式重渲染导致拖拽延迟
+let moveRafId: number | null = null;
+let pendingMoveEvent: MouseEvent | null = null;
+let resizeRafId: number | null = null;
+let pendingResizeEvent: MouseEvent | null = null;
+
 // 组件面板图标
 const componentPanelIcon = computed(() => {
   return panelCollapsed.value ? ChevronRightIcon : AppIcon;
 });
 
-// 组件分组定义
-const componentGroups = [
+// 组件分组定义（静态部分）
+const staticGroups = [
   {
     name: 'basic',
     label: '基础组件',
@@ -1264,6 +1321,31 @@ const componentGroups = [
   },
 ];
 
+// 动态合并实体业务组件到组件面板
+const componentGroups = computed(() => {
+  const groups = [...staticGroups];
+  const entities = availableEntities.value;
+  if (entities && entities.length > 0) {
+    groups.push({
+      name: 'entity',
+      label: '业务实体',
+      icon: DataBaseIcon,
+      components: [
+        // 每个实体生成表格和表单两种组件
+        ...entities.flatMap((entity: any) => {
+          const code = entity.code || entity.id;
+          const name = entity.name || entity.entityName || code;
+          return [
+            { type: '__entity_table__', label: `${name} - 表格`, iconComponent: markRaw(TableIcon), entityCode: code, entityName: name },
+            { type: '__entity_form__', label: `${name} - 表单`, iconComponent: markRaw(FormIcon), entityCode: code, entityName: name },
+          ];
+        }),
+      ],
+    });
+  }
+  return groups;
+});
+
 function togglePanelCollapse() {
   panelCollapsed.value = !panelCollapsed.value;
 }
@@ -1282,15 +1364,17 @@ function toggleGroup(name: string) {
 }
 
 function getComponentLabel(type: string): string {
-  for (const group of componentGroups) {
+  for (const group of staticGroups) {
     const comp = group.components.find(c => c.type === type);
     if (comp) return comp.label;
   }
+  if (type === '__entity_table__') return '实体表格';
+  if (type === '__entity_form__') return '实体表单';
   return type;
 }
 
 function getElementIcon(type: string) {
-  for (const group of componentGroups) {
+  for (const group of staticGroups) {
     const comp = group.components.find(c => c.type === type);
     if (comp) return comp.iconComponent;
   }
@@ -1348,36 +1432,25 @@ function onDragStart(event: DragEvent, component: any) {
     event.dataTransfer.setData('application/json', JSON.stringify(component));
     event.dataTransfer.setData('text/plain', component.type);
     
-    // 创建自定义拖拽幽灵图，使图标跟随鼠标更自然
-    const el = event.target as HTMLElement;
-    const item = el?.closest('.component-item') as HTMLElement;
-    if (item) {
-      const ghost = item.cloneNode(true) as HTMLElement;
-      ghost.style.position = 'fixed';
-      ghost.style.left = '-9999px';
-      ghost.style.top = '0';
-      ghost.style.width = item.offsetWidth + 'px';
-      ghost.style.pointerEvents = 'none';
-      ghost.style.opacity = '0.9';
-      ghost.style.transform = 'scale(1.05)';
-      ghost.style.boxShadow = '0 8px 24px rgba(59,130,246,0.35)';
-      ghost.style.border = '1.5px solid #3b82f6';
-      ghost.style.background = '#eff6ff';
-      ghost.style.borderRadius = '8px';
-      ghost.style.zIndex = '9999';
-      document.body.appendChild(ghost);
-      
-      // 将拖拽图像的中心对准鼠标
-      const rect = item.getBoundingClientRect();
-      const offsetX = event.clientX - rect.left;
-      const offsetY = event.clientY - rect.top;
-      event.dataTransfer.setDragImage(ghost, offsetX, offsetY);
-      
-      // 立即清理（浏览器会保留幽灵图的快照）
-      requestAnimationFrame(() => {
-        if (ghost.parentNode) ghost.parentNode.removeChild(ghost);
-      });
+    // 轻量幽灵图：用 Canvas 画一个小标签，避免 clone DOM 导致的卡顿
+    const canvas = document.createElement('canvas');
+    canvas.width = 120;
+    canvas.height = 40;
+    const ctx = canvas.getContext('2d');
+    if (ctx) {
+      ctx.fillStyle = '#eff6ff';
+      ctx.strokeStyle = '#3b82f6';
+      ctx.lineWidth = 2;
+      roundRect(ctx, 2, 2, 116, 36, 8);
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = '#1e40af';
+      ctx.font = '12px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(component.label, 60, 20);
     }
+    event.dataTransfer.setDragImage(canvas, 60, 20);
   }
   
   const target = event.target as HTMLElement;
@@ -1389,6 +1462,21 @@ function onDragStart(event: DragEvent, component: any) {
 function onDragEnd() {
   draggingComponent.value = null;
   document.querySelectorAll('.dragging').forEach(el => el.classList.remove('dragging'));
+}
+
+// Canvas 圆角矩形绘制辅助函数
+function roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.arcTo(x + w, y, x + w, y + r, r);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.arcTo(x + w, y + h, x + w - r, y + h, r);
+  ctx.lineTo(x + r, y + h);
+  ctx.arcTo(x, y + h, x, y + h - r, r);
+  ctx.lineTo(x, y + r);
+  ctx.arcTo(x, y, x + r, y, r);
+  ctx.closePath();
 }
 
 function onDragOver(event: DragEvent) {
@@ -1416,6 +1504,22 @@ function onDrop(event: DragEvent) {
 
   if (!draggingComponent.value) return;
 
+  // 解析实体业务组件
+  const comp = draggingComponent.value;
+  let actualType = comp.type;
+  let props = getDefaultProps(actualType);
+  
+  if (comp.type === '__entity_table__') {
+    actualType = 'table';
+    props = { ...getDefaultProps('table'), entityCode: comp.entityCode, entityName: comp.entityName };
+    // 异步加载列定义
+    loadEntityColumns(props);
+  } else if (comp.type === '__entity_form__') {
+    actualType = 'form';
+    props = { ...getDefaultProps('form'), entityCode: comp.entityCode, entityName: comp.entityName };
+    loadEntityFields(props);
+  }
+
   // 获取鼠标位置相对于画布内容区的坐标
   const canvasContent = document.querySelector('.canvas-content') as HTMLElement;
   let x = 20;
@@ -1423,18 +1527,17 @@ function onDrop(event: DragEvent) {
   
   if (canvasContent) {
     const rect = canvasContent.getBoundingClientRect();
-    // 鼠标位置减去画布区域偏移，再减去组件宽高的一半使其居中放置
-    const size = getDefaultSize(draggingComponent.value.type);
+    const size = getDefaultSize(actualType);
     x = Math.max(0, event.clientX - rect.left - size.width / 2);
     y = Math.max(0, event.clientY - rect.top - 20);
   }
 
-  const size = getDefaultSize(draggingComponent.value.type);
+  const size = getDefaultSize(actualType);
   const newElement: PageElement = {
     id: `el_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-    type: draggingComponent.value.type,
-    name: `${draggingComponent.value.label}_${pageElements.value.length + 1}`,
-    props: getDefaultProps(draggingComponent.value.type),
+    type: actualType,
+    name: `${comp.entityName || comp.label}_${pageElements.value.length + 1}`,
+    props,
     x: Math.round(x),
     y: Math.round(y),
     width: size.width,
@@ -1446,7 +1549,41 @@ function onDrop(event: DragEvent) {
   saveHistory();
   draggingComponent.value = null;
 
-  MessagePlugin.success(`已添加 ${getComponentLabel(newElement.type)}`);
+  MessagePlugin.success(`已添加 ${comp.entityName || getComponentLabel(actualType)}`);
+}
+
+// 异步为拖入的实体表格加载列定义
+async function loadEntityColumns(props: Record<string, any>) {
+  if (!props.entityCode) return;
+  try {
+    const res = await entityMetaApi.getByCode(props.entityCode);
+    if (res.data?.code === 1 && res.data?.data?.fields) {
+      props.columns = res.data.data.fields
+        .filter((f: any) => f.showInList !== false)
+        .map((f: any) => ({
+          fieldCode: f.code, title: f.name,
+          width: estimateFieldWidth(f), fieldType: f.fieldType,
+        }));
+    }
+  } catch { /* ignore */ }
+}
+
+// 异步为拖入的实体表单加载字段定义
+async function loadEntityFields(props: Record<string, any>) {
+  if (!props.entityCode) return;
+  try {
+    const res = await entityMetaApi.getByCode(props.entityCode);
+    if (res.data?.code === 1 && res.data?.data?.fields) {
+      props.fields = res.data.data.fields
+        .filter((f: any) => f.showInForm !== false)
+        .map((f: any) => ({
+          code: f.code, name: f.name, fieldType: f.fieldType,
+          required: !f.nullable, defaultValue: f.defaultValue,
+          referenceEntityCode: f.referenceEntityCode,
+          referenceDisplayFieldCode: f.referenceDisplayFieldCode,
+        }));
+    }
+  } catch { /* ignore */ }
 }
 
 function quickAdd(type: string) {
@@ -1533,8 +1670,8 @@ function getDefaultProps(type: string): Record<string, any> {
     rate: { value: 3, count: 5, size: 20, allowHalf: false, readonly: false, color: '#f5a623', showLabel: true, label: '评分' },
     upload: { disabled: false, multiple: false, max: 5, draggable: true, hint: '点击或拖拽上传文件', maxSize: 10 },
     // 数据组件
-    table: { dataSource: '', border: true, showIndex: true, stripe: false, pagination: true },
-    form: { labelWidth: 100 },
+    table: { entityCode: '', columns: [], border: true, showIndex: true, stripe: false, pagination: true },
+    form: { entityCode: '', fields: [], labelWidth: 100 },
     list: { data: [] },
     chart: { type: 'bar', data: [] },
     // 展示组件
@@ -1557,6 +1694,69 @@ function getDefaultProps(type: string): Record<string, any> {
 
 function selectElement(element: PageElement) {
   selectedElementId.value = element.id;
+}
+
+// 当表格选择实体时，自动加载字段作为列定义
+async function onTableEntityChange(entityCode: string) {
+  const el = selectedElement.value;
+  if (!el || !entityCode) {
+    if (el) el.props.columns = [];
+    return;
+  }
+  try {
+    const res = await entityMetaApi.getByCode(entityCode);
+    if (res.data?.code === 1 && res.data?.data?.fields) {
+      const fields = res.data.data.fields;
+      el.props.columns = fields
+        .filter((f: any) => f.showInList !== false)
+        .map((f: any) => ({
+          fieldCode: f.code,
+          title: f.name,
+          width: estimateFieldWidth(f),
+          fieldType: f.fieldType,
+        }));
+      el.props.entityName = res.data.data.name;
+      MessagePlugin.success(`已加载实体 "${res.data.data.name}" 的列定义`);
+    }
+  } catch { /* ignore */ }
+}
+
+// 当表单选择实体时，自动加载字段作为表单字段
+async function onFormEntityChange(entityCode: string) {
+  const el = selectedElement.value;
+  if (!el || !entityCode) {
+    if (el) el.props.fields = [];
+    return;
+  }
+  try {
+    const res = await entityMetaApi.getByCode(entityCode);
+    if (res.data?.code === 1 && res.data?.data?.fields) {
+      const fields = res.data.data.fields;
+      el.props.fields = fields
+        .filter((f: any) => f.showInForm !== false)
+        .map((f: any) => ({
+          code: f.code,
+          name: f.name,
+          fieldType: f.fieldType,
+          required: !f.nullable,
+          defaultValue: f.defaultValue,
+          referenceEntityCode: f.referenceEntityCode,
+          referenceDisplayFieldCode: f.referenceDisplayFieldCode,
+        }));
+      el.props.entityName = res.data.data.name;
+      MessagePlugin.success(`已加载实体 "${res.data.data.name}" 的表单字段`);
+    }
+  } catch { /* ignore */ }
+}
+
+function estimateFieldWidth(f: any): number {
+  const type = f.fieldType;
+  if (type === 'DATE' || type === 'DATETIME') return 120;
+  if (type === 'INTEGER' || type === 'LONG') return 100;
+  if (type === 'TEXT') return 200;
+  const len = f.length;
+  if (len && len > 64) return 180;
+  return 140;
 }
 
 function handleCopy(index: number) {
@@ -1685,21 +1885,41 @@ function onMouseDown(event: MouseEvent, element: PageElement) {
 }
 
 function onMouseMove(event: MouseEvent) {
-  if (!draggingElement.value) return;
+  // 保存最新事件，用 RAF 节流避免高频响应式更新导致拖拽卡顿
+  pendingMoveEvent = event;
+  if (moveRafId !== null) return;
   
-  const canvasContent = document.querySelector('.canvas-content') as HTMLElement;
-  if (!canvasContent) return;
-  
-  const rect = canvasContent.getBoundingClientRect();
-  const newX = Math.max(0, event.clientX - rect.left - dragOffset.value.x);
-  const newY = Math.max(0, event.clientY - rect.top - dragOffset.value.y);
-  
-  draggingElement.value.x = Math.round(newX);
-  draggingElement.value.y = Math.round(newY);
+  moveRafId = requestAnimationFrame(() => {
+    moveRafId = null;
+    const evt = pendingMoveEvent;
+    pendingMoveEvent = null;
+    if (!draggingElement.value || !evt) return;
+    
+    const canvasContent = document.querySelector('.canvas-content') as HTMLElement;
+    if (!canvasContent) return;
+    
+    const rect = canvasContent.getBoundingClientRect();
+    draggingElement.value.x = Math.round(Math.max(0, evt.clientX - rect.left - dragOffset.value.x));
+    draggingElement.value.y = Math.round(Math.max(0, evt.clientY - rect.top - dragOffset.value.y));
+  });
 }
 
 function onMouseUp() {
+  if (moveRafId !== null) {
+    cancelAnimationFrame(moveRafId);
+    moveRafId = null;
+  }
   if (draggingElement.value) {
+    // 用最后一次待处理事件做最终更新
+    if (pendingMoveEvent) {
+      const canvasContent = document.querySelector('.canvas-content') as HTMLElement;
+      if (canvasContent) {
+        const rect = canvasContent.getBoundingClientRect();
+        draggingElement.value.x = Math.round(Math.max(0, pendingMoveEvent.clientX - rect.left - dragOffset.value.x));
+        draggingElement.value.y = Math.round(Math.max(0, pendingMoveEvent.clientY - rect.top - dragOffset.value.y));
+      }
+      pendingMoveEvent = null;
+    }
     saveHistory();
   }
   draggingElementId.value = null;
@@ -1724,39 +1944,48 @@ function onResizeStart(event: MouseEvent, element: PageElement, direction: strin
 }
 
 function onResizeMove(event: MouseEvent) {
-  if (!isResizing.value || !draggingElement.value) return;
+  // 保存最新事件，用 RAF 节流
+  pendingResizeEvent = event;
+  if (resizeRafId !== null) return;
   
-  const deltaX = event.clientX - resizeStartPos.value.x;
-  const deltaY = event.clientY - resizeStartPos.value.y;
-  const dir = resizeDirection.value;
-  const el = draggingElement.value;
-  
-  const MIN_W = 60;
-  const MIN_H = 40;
-  
-  // 右方向：增大宽度
-  if (dir.includes('e')) {
-    el.width = Math.max(MIN_W, resizeStartSize.value.width + deltaX);
-  }
-  // 左方向：减小宽度并移动 x
-  if (dir.includes('w')) {
-    const newW = Math.max(MIN_W, resizeStartSize.value.width - deltaX);
-    el.x = resizeStartX.value + (resizeStartSize.value.width - newW);
-    el.width = newW;
-  }
-  // 下方向：增大高度
-  if (dir.includes('s')) {
-    el.height = Math.max(MIN_H, resizeStartSize.value.height + deltaY);
-  }
-  // 上方向：减小高度并移动 y
-  if (dir.includes('n')) {
-    const newH = Math.max(MIN_H, resizeStartSize.value.height - deltaY);
-    el.y = resizeStartY.value + (resizeStartSize.value.height - newH);
-    el.height = newH;
-  }
+  resizeRafId = requestAnimationFrame(() => {
+    resizeRafId = null;
+    const evt = pendingResizeEvent;
+    pendingResizeEvent = null;
+    if (!isResizing.value || !draggingElement.value || !evt) return;
+    
+    const deltaX = evt.clientX - resizeStartPos.value.x;
+    const deltaY = evt.clientY - resizeStartPos.value.y;
+    const dir = resizeDirection.value;
+    const el = draggingElement.value;
+    
+    const MIN_W = 60;
+    const MIN_H = 40;
+    
+    if (dir.includes('e')) {
+      el.width = Math.max(MIN_W, resizeStartSize.value.width + deltaX);
+    }
+    if (dir.includes('w')) {
+      const newW = Math.max(MIN_W, resizeStartSize.value.width - deltaX);
+      el.x = resizeStartX.value + (resizeStartSize.value.width - newW);
+      el.width = newW;
+    }
+    if (dir.includes('s')) {
+      el.height = Math.max(MIN_H, resizeStartSize.value.height + deltaY);
+    }
+    if (dir.includes('n')) {
+      const newH = Math.max(MIN_H, resizeStartSize.value.height - deltaY);
+      el.y = resizeStartY.value + (resizeStartSize.value.height - newH);
+      el.height = newH;
+    }
+  });
 }
 
 function onResizeUp() {
+  if (resizeRafId !== null) {
+    cancelAnimationFrame(resizeRafId);
+    resizeRafId = null;
+  }
   if (draggingElement.value) {
     saveHistory();
   }
@@ -2621,6 +2850,25 @@ function getTriggerLabel(trigger: string): string {
 
           .type-tag {
             font-size: 12px;
+          }
+
+          .entity-fields-info {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            max-height: 120px;
+            overflow-y: auto;
+            padding: 4px 0;
+
+            .field-tag {
+              font-size: 11px;
+            }
+
+            .no-fields {
+              font-size: 12px;
+              color: #9ca3af;
+              font-style: italic;
+            }
           }
 
           .font-size-stepper {

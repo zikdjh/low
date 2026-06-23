@@ -127,8 +127,7 @@ async function fetchData() {
         }));
       }
     }
-  } catch (e) {
-    console.error('Failed to fetch table data:', e);
+  } catch {
     tableData.value = getMockData();
   } finally {
     loading.value = false;
