@@ -60,8 +60,14 @@ public class SecurityConfig {
                         .requestMatchers("/auth/logout").permitAll()
                         // 管理员端：仅 admin / root 角色可访问
                         .requestMatchers("/admin/**").hasAnyRole("admin", "root")
-                        // 低代码平台全部接口（临时放行，后续接入鉴权后移除）
-                        .requestMatchers("/lowcode/**").permitAll()
+                        // 低代码平台管理接口（实体/页面设计器等） — 临时放行
+                        .requestMatchers("/lowcode/entity/**").permitAll()
+                        .requestMatchers("/lowcode/data/**").permitAll()
+                        .requestMatchers("/lowcode/page/**").permitAll()
+                        .requestMatchers("/lowcode/component/**").permitAll()
+                        .requestMatchers("/lowcode/dict/**").permitAll()
+                        // 请假管理接口 — 需要认证
+                        .requestMatchers("/lowcode/leave/**").authenticated()
                         // error 默认派发路径
                         .requestMatchers("/error").permitAll()
                         .anyRequest().authenticated())

@@ -10,4 +10,7 @@ import java.util.List;
 public interface DdlLogRepository extends JpaRepository<DdlLog, Long> {
 
     List<DdlLog> findByEntityIdOrderByExecutedAtDesc(Long entityId);
+
+    List<DdlLog> findByEntityIdAndOperationTypeAndResultOrderByExecutedAtDesc(
+            Long entityId, String operationType, String result);
 }

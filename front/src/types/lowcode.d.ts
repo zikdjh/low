@@ -149,3 +149,76 @@ export interface GenericPageResult {
   page: number;
   pageSize: number;
 }
+
+// ---- 请假管理 & 工作流 ----
+
+export interface LeaveApplication {
+  studentId: number;
+  studentName: string;
+  leaveType: string;
+  reason: string;
+  startDate: string;
+  endDate: string;
+}
+
+export interface LeaveQueryParams {
+  page?: number;
+  pageSize?: number;
+  studentId?: number;
+  status?: string;
+  leaveType?: string;
+}
+
+export interface WorkflowTask {
+  id: number;
+  instanceId: number;
+  nodeName: string;
+  nodeOrder: number;
+  assigneeRole: string;
+  assigneeId?: number;
+  assigneeName?: string;
+  status: 'pending' | 'approved' | 'rejected' | 'skipped';
+  comment?: string;
+  processedAt?: string;
+  createdAt: string;
+}
+
+export interface WorkflowInstance {
+  id: number;
+  businessId: number;
+  businessCode: string;
+  workflowCode: string;
+  workflowName: string;
+  status: 'pending' | 'approved' | 'rejected' | 'cancelled' | 'archived';
+  initiatorId: number;
+  initiatorName: string;
+  currentNodeIndex: number;
+  totalNodes: number;
+  finishedAt?: string;
+  createdAt: string;
+}
+
+export interface WorkflowProgress {
+  instance: WorkflowInstance;
+  tasks: WorkflowTask[];
+  currentNode: number;
+}
+
+export interface ApprovalRequest {
+  instanceId: number;
+  userId: number;
+  username: string;
+  comment: string;
+}
+
+export interface PageResult {
+  content?: any[];
+  records?: any[];
+  totalElements?: number;
+  total?: number;
+  number?: number;
+  page?: number;
+  size?: number;
+  pageSize?: number;
+}
+

@@ -15,6 +15,11 @@ const lowcodeModules = import.meta.glob("./modules/**/lowcode.ts", {
     eager: true,
 });
 
+// 添加请假管理模块
+const leaveModules = import.meta.glob("./modules/**/leave.ts", {
+    eager: true,
+});
+
 // 添加管理员模块
 const adminModules = import.meta.glob("./modules/**/admin.ts", {
     eager: true,
@@ -32,12 +37,16 @@ export const loginRouterList: Array<RouteRecordRaw> =
 export const lowcodeRouterList: Array<RouteRecordRaw> =
     mapModuleRouterList(lowcodeModules);
 
+// 添加请假管理路由列表
+export const leaveRouterList: Array<RouteRecordRaw> =
+    mapModuleRouterList(leaveModules);
+
 // 添加管理员路由列表
 export const adminRouterList: Array<RouteRecordRaw> =
     mapModuleRouterList(adminModules);
 
 // 将登录路由添加到所有路由中
-export const allRoutes = [...homepageRouterList, ...loginRouterList, ...lowcodeRouterList, ...adminRouterList];
+export const allRoutes = [...homepageRouterList, ...loginRouterList, ...lowcodeRouterList, ...leaveRouterList, ...adminRouterList];
 
 // 固定路由模块转换为路由
 export function mapModuleRouterList(

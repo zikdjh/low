@@ -8,7 +8,6 @@ import com.back.lowcode.entity.FieldMeta;
 import com.back.lowcode.enums.FieldType;
 import com.back.lowcode.repository.DdlLogRepository;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,7 +20,6 @@ import java.util.stream.Collectors;
  * 动态 DDL 服务
  * 根据实体元数据生成并执行 CREATE TABLE / ALTER TABLE 语句
  */
-@Slf4j
 @Service
 @RequiredArgsConstructor
 public class DDLService {
@@ -42,7 +40,6 @@ public class DDLService {
         validateTableName(entity.getTableName());
 
         String sql = buildCreateTableSql(entity, fields);
-        log.warn("[DDL] Executing: {}", sql);
 
         DdlLog.DdlLogBuilder logBuilder = DdlLog.builder()
                 .entityId(entity.getId())
@@ -52,10 +49,8 @@ public class DDLService {
         try {
             jdbcTemplate.execute(sql);
             ddlLogRepository.save(logBuilder.result("SUCCESS").build());
-            log.info("[DDL] Table {} created successfully", entity.getTableName());
         } catch (Exception e) {
             ddlLogRepository.save(logBuilder.result("FAILED").errorMessage(e.getMessage()).build());
-            log.error("[DDL] Failed to create table {}: {}", entity.getTableName(), e.getMessage(), e);
             throw new RuntimeException("创建数据表失败: " + e.getMessage(), e);
         }
     }
@@ -181,7 +176,6 @@ public class DDLService {
     }
 
     private void executeDDL(Long entityId, String sql, String operationType) {
-        log.warn("[DDL] Executing: {}", sql);
         DdlLog.DdlLogBuilder logBuilder = DdlLog.builder()
                 .entityId(entityId)
                 .sqlStatement(sql)
@@ -192,7 +186,6 @@ public class DDLService {
             ddlLogRepository.save(logBuilder.result("SUCCESS").build());
         } catch (Exception e) {
             ddlLogRepository.save(logBuilder.result("FAILED").errorMessage(e.getMessage()).build());
-            log.error("[DDL] Failed: {}", e.getMessage(), e);
             throw new RuntimeException("执行 DDL 失败: " + e.getMessage(), e);
         }
     }

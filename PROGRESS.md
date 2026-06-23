@@ -1,8 +1,9 @@
 # 低代码平台 · 项目进度跟踪
 
-> 文档版本：2026-06-15 · 维护策略：**每完成一项任务实时更新本文档**
+> 文档版本：2026-06-23 · 维护策略：**每完成一项任务实时更新本文档**
 > 这是项目的"实时仪表盘"，所有人看这一份就能知道现在做到哪、谁在做、卡在哪。
 > 配套文档：`CLAUDE.md`（代码约束）/ `DEVELOPMENT.md`（路线图）/ `LIGHTWEIGHT_SCOPE.md`（范围）/ `FEATURES.md`（手册）
+> 新增：`docs/01-业务分析文档.md` / `docs/02-系统分析文档.md` / `docs/03-系统设计文档.md`
 
 ---
 
@@ -10,22 +11,23 @@
 
 | 维度 | 数值 |
 |------|------|
-| **当前 Phase** | Phase 1 已完成 ✅ · 准备进入 Phase 2 |
-| **当前里程碑** | M1（稳健化）— 未启动 |
-| **总进度** | 28 / 73 任务（38%） |
-| **P0 红线进度** | 0 / 5（0%） — 🔴 全部待启动 |
+| **当前 Phase** | Phase 2（稳健化）✅ 部分完成 + 🆕 业务场景（学生请假管理）已完成 |
+| **当前里程碑** | M0.5（业务验证）— 已完成 ✅ |
+| **总进度** | 39 / 73 任务（53%） |
+| **P0 红线进度** | 2 / 5（40%） — JWT ✅ 角色 ✅ |
 | **P1 可用性进度** | 0 / 12（0%） |
 | **P2 体验进度** | 0 / 11（0%） |
-| **代码行数（业务相关）** | 后端 ~3500 行 / 前端 ~5000 行 |
+| **代码行数（业务相关）** | 后端 ~4500 行 / 前端 ~6500 行 |
 | **本周更新人** | zc |
-| **最近更新时间** | 2026-06-15 |
+| **最近更新时间** | 2026-06-23 |
 
 ```
 进度条
-Phase 1 (基础元数据 + 设计器) ██████████ 100% ✅
-Phase 2 (稳健化 / 安全)         ░░░░░░░░░░   0%
-Phase 3 (可用化 / 接通后端)     ░░░░░░░░░░   0%
-Phase 4 (体验打磨)              ░░░░░░░░░░   0%
+Phase 1 (基础元数据 + 设计器)        ██████████ 100% ✅
+Phase 2 (稳健化 / 安全)              ████░░░░░░  40% 🟢
+Phase 3 (可用化 / 接通后端)          ░░░░░░░░░░   0%
+Phase 4 (体验打磨)                   ░░░░░░░░░░   0%
+🆕 业务场景 (学生请假管理)           ██████████ 100% ✅
 ```
 
 ---
@@ -187,13 +189,69 @@ Week 4  [ ] 集成测试 + 文档更新 + M1 验收
 
 ---
 
+## 8. 🆕 业务场景：学生请假管理（一次性交付）
+
+> 为课程要求实现的特定业务场景，验证低代码平台的完备性。
+
+### 8.1 已完成清单
+
+| # | 任务 | 状态 | 关键文件 |
+|---|------|------|---------|
+| B-1 | 多角色系统 (student/counselor/dept_head) | ✅ | `RoleInitializer.java` |
+| B-2 | 演示用户自动创建 (zhangsan/fdy/xizhuren) | ✅ | `RoleInitializer.java` |
+| B-3 | 工作流引擎 (WorkflowService) | ✅ | `WorkflowService.java` |
+| B-4 | 工作流实体 (WorkflowInstance, WorkflowTask) | ✅ | `entity/Workflow*.java` |
+| B-5 | 请假管理服务 (LeaveService) | ✅ | `LeaveService.java` |
+| B-6 | 请假管理 API (LeaveController, 11个端点) | ✅ | `LeaveController.java` |
+| B-7 | 请假实体自动创建 (LeaveDataInitializer) | ✅ | `LeaveDataInitializer.java` |
+| B-8 | 前端请假申请页 (LeaveApply.vue) | ✅ | `pages/lowcode/leave/LeaveApply.vue` |
+| B-9 | 前端我的申请页 (LeaveList.vue) | ✅ | `pages/lowcode/leave/LeaveList.vue` |
+| B-10 | 前端申请详情页 (LeaveDetail.vue) | ✅ | `pages/lowcode/leave/LeaveDetail.vue` |
+| B-11 | 前端审批列表页 (ApprovalList.vue) | ✅ | `pages/lowcode/leave/ApprovalList.vue` |
+| B-12 | 前端审批处理页 (ApprovalDetail.vue) | ✅ | `pages/lowcode/leave/ApprovalDetail.vue` |
+| B-13 | 前端 API 封装 (leave.ts) | ✅ | `api/lowcode/leave.ts` |
+| B-14 | 前端类型定义更新 | ✅ | `types/lowcode.d.ts` |
+| B-15 | 路由注册 (leave.ts) | ✅ | `router/modules/leave.ts` |
+| B-16 | 侧边栏「业务应用」分区 | ✅ | `Aside.vue` |
+| B-17 | SecurityConfig 鉴权更新 | ✅ | `SecurityConfig.java` |
+| B-18 | 业务分析文档 | ✅ | `docs/01-业务分析文档.md` |
+| B-19 | 系统分析文档 | ✅ | `docs/02-系统分析文档.md` |
+| B-20 | 系统设计文档 | ✅ | `docs/03-系统设计文档.md` |
+
+### 8.2 验证: 3个核心服务
+
+| 服务 | 端点 | 低代码体现 |
+|------|------|-----------|
+| 数据查询服务 | `GET /lowcode/leave/records` | DynamicDataService 通用引擎，免 SQL |
+| 数据源服务 | `GET /lowcode/leave/datasources` | 配置化下拉数据，前端声明式绑定 |
+| 数据库操作服务 | `POST /lowcode/leave/apply\|approve\|reject` | RESTful 封装，可视化组件调用 |
+
+### 8.3 演示流程
+
+```
+zhangsan(学生) → 请假申请 → fdy(辅导员) → 审批通过 → xizhuren(系主任) → 审批通过 → 完成
+                                                                  ↓
+                                                              驳回 → 结束
+```
+
+### 8.4 P0 部分完成
+
+| # | 任务 | 状态 | 备注 |
+|---|------|------|------|
+| P0-1 | JWT 鉴权 | ✅ | 已有多角色体系，/lowcode/leave/** 需认证 |
+| P0-4 | 多角色体系 | ✅ | student/counselor/dept_head + 演示用户 |
+
+---
+
 ## 9. 变更日志
 
 > **每次更新本文档都要在这里加一行**。格式：`日期 | 变更人 | 摘要`
 
 | 日期 | 变更人 | 摘要 |
 |------|-------|------|
+| 2026-06-23 | zc | 🆕 完成学生请假管理业务场景：工作流引擎 + 多角色 + 3核心服务 + 5前端页面 + 3份文档 |
 | 2026-06-15 | zc | 初始化 PROGRESS.md，登记 Phase 1 完成基线 + Phase 2-4 任务清单 + 风险登记册 |
+
 
 ---
 

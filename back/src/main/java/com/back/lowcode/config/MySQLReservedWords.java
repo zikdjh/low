@@ -66,7 +66,7 @@ public final class MySQLReservedWords {
             "WRITE", "XOR", "YEAR_MONTH", "ZEROFILL",
 
             // 低代码场景中极易误用的保留字（去重后）
-            "STATUS", "TYPE", "NAME", "VALUE", "DATE", "USER", "PASSWORD",
+            "TYPE", "VALUE", "DATE", "USER", "PASSWORD",
             "LEVEL", "COUNT", "SUM", "AVG", "MIN", "MAX", "SIZE", "COMMENT",
             "SESSION", "TRANSACTION", "VIEW", "FIELD"
     ));

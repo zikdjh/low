@@ -128,7 +128,7 @@ function getElementComponent(type: string) {
 }
 
 onMounted(async () => {
-  const code = route.query.code as string;
+  const code = (route.query.code as string) || (route.meta.pageCode as string);
   if (!code) {
     loading.value = false;
     return;

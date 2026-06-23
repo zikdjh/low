@@ -161,6 +161,41 @@
 
     </div>
 
+    <!-- ===== 业务应用区域 ===== -->
+    <div class="sidebar-section" v-show="!settingStore.isSidebarCollapsed">
+      <div class="section-header" @click="toggleSection('apps')">
+        <span class="section-label">
+          <StudentIcon size="14" />
+          业务应用
+        </span>
+        <div class="section-header-right">
+          <ChevronDownIcon
+            size="14"
+            class="section-arrow"
+            :class="{ rotated: !expandedSections.includes('apps') }"
+          />
+        </div>
+      </div>
+      <div class="section-body" v-show="expandedSections.includes('apps')">
+        <div class="nav-items">
+          <div
+            v-for="app in businessApps"
+            :key="app.path"
+            class="tree-item nav-tree-item"
+            :class="{ active: route.path.startsWith(app.path) }"
+            @click="router.push(app.path)"
+          >
+            <div class="tree-item-icon nav-icon">
+              <component :is="app.icon" size="14" />
+            </div>
+            <div class="tree-item-content">
+              <span class="tree-item-name">{{ app.name }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- 底部 -->
     <div class="sidebar-footer">
       <div class="version-bar" v-show="!settingStore.isSidebarCollapsed">
@@ -183,6 +218,8 @@ import { useRoute, useRouter } from 'vue-router';
 import {
   AddIcon, LayoutIcon, DataBaseIcon, FileIcon, ChevronDownIcon
 } from 'tdesign-icons-vue-next';
+import { shallowRef } from 'vue';
+import { EditIcon, ViewListIcon, CheckCircleIcon } from 'tdesign-icons-vue-next';
 import { useSettingStore } from '../../store';
 import { pageSchemaApi } from '../../api/lowcode/pageSchema';
 import entityMetaApi from '../../api/lowcode/entityMeta';
@@ -193,11 +230,19 @@ const router = useRouter();
 const settingStore = useSettingStore();
 
 // 分区展开/折叠状态
-const expandedSections = ref<string[]>(['pages', 'entities']);
+const expandedSections = ref<string[]>(['apps', 'pages', 'entities']);
 
 // 页面列表
 const pages = ref<PageSchema[]>([]);
 const pagesLoading = ref(false);
+
+// 业务应用列表 — 使用低代码平台 PageViewer 渲染
+const businessApps = [
+  { name: '请假申请', path: '/leave/apply', icon: shallowRef(EditIcon) },
+  { name: '请假记录', path: '/leave/my-list', icon: shallowRef(ViewListIcon) },
+  { name: '学生管理', path: '/leave/students', icon: shallowRef(ViewListIcon) },
+  { name: '教职工管理', path: '/leave/approvers', icon: shallowRef(ViewListIcon) },
+];
 
 // 实体列表
 const entities = ref<EntityMeta[]>([]);

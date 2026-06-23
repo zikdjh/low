@@ -42,7 +42,7 @@ public class RoleInitializer implements CommandLineRunner {
     @Transactional
     public void run(String... args) {
         initRoles();
-        initRootUser();
+        initDemoUsers();
     }
 
     private void initRoles() {
@@ -51,6 +51,10 @@ public class RoleInitializer implements CommandLineRunner {
         roleSpecs.put("user", "普通用户");
         roleSpecs.put("admin", "管理员");
         roleSpecs.put("root", "超级管理员");
+        // 请假管理场景专用角色
+        roleSpecs.put("student", "学生");
+        roleSpecs.put("counselor", "辅导员");
+        roleSpecs.put("dept_head", "系主任");
 
         roleSpecs.forEach((code, name) -> {
             if (!roleRepository.existsByCode(code)) {
@@ -60,24 +64,62 @@ public class RoleInitializer implements CommandLineRunner {
         });
     }
 
-    private void initRootUser() {
+    private void initDemoUsers() {
         if (userRepository.count() > 0) {
             return;
         }
+
+        // 初始化 root 账户
         Optional<Role> rootRole = roleRepository.findByCode("root");
-        if (rootRole.isEmpty()) {
-            log.warn("root 角色缺失，跳过 root 用户初始化");
-            return;
-        }
-        Set<Role> roles = new HashSet<>(List.of(rootRole.get()));
-        User root = User.builder()
-                .username(DEFAULT_ROOT_USERNAME)
-                .password(passwordEncoder.encode(DEFAULT_ROOT_PASSWORD))
-                .nickname(DEFAULT_ROOT_NICKNAME)
-                .roles(roles)
-                .build();
-        userRepository.save(root);
-        log.info("初始化 root 账户: username={} password={}（请尽快修改密码）",
-                DEFAULT_ROOT_USERNAME, DEFAULT_ROOT_PASSWORD);
+        rootRole.ifPresent(role -> {
+            Set<Role> roles = new HashSet<>(List.of(role));
+            User root = User.builder()
+                    .username(DEFAULT_ROOT_USERNAME)
+                    .password(passwordEncoder.encode(DEFAULT_ROOT_PASSWORD))
+                    .nickname(DEFAULT_ROOT_NICKNAME)
+                    .roles(roles)
+                    .build();
+            userRepository.save(root);
+            log.info("初始化 root 账户: username={} password={}", DEFAULT_ROOT_USERNAME, DEFAULT_ROOT_PASSWORD);
+        });
+
+        // 初始化演示用户：学生
+        Optional<Role> studentRole = roleRepository.findByCode("student");
+        studentRole.ifPresent(role -> {
+            User student = User.builder()
+                    .username("zhangsan")
+                    .password(passwordEncoder.encode("123456"))
+                    .nickname("张三（学生）")
+                    .roles(new HashSet<>(List.of(role)))
+                    .build();
+            userRepository.save(student);
+            log.info("初始化学生账户: username=zhangsan password=123456");
+        });
+
+        // 初始化演示用户：辅导员
+        Optional<Role> counselorRole = roleRepository.findByCode("counselor");
+        counselorRole.ifPresent(role -> {
+            User counselor = User.builder()
+                    .username("fdy")
+                    .password(passwordEncoder.encode("123456"))
+                    .nickname("李辅导员")
+                    .roles(new HashSet<>(List.of(role)))
+                    .build();
+            userRepository.save(counselor);
+            log.info("初始化辅导员账户: username=fdy password=123456");
+        });
+
+        // 初始化演示用户：系主任
+        Optional<Role> deptHeadRole = roleRepository.findByCode("dept_head");
+        deptHeadRole.ifPresent(role -> {
+            User deptHead = User.builder()
+                    .username("xizhuren")
+                    .password(passwordEncoder.encode("123456"))
+                    .nickname("王主任（系主任）")
+                    .roles(new HashSet<>(List.of(role)))
+                    .build();
+            userRepository.save(deptHead);
+            log.info("初始化系主任账户: username=xizhuren password=123456");
+        });
     }
 }
