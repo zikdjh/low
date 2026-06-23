@@ -27,6 +27,13 @@
         <template #createdAt="{ row }">
           {{ formatDate(row.createdAt) }}
         </template>
+        <template #action="{ row }">
+          <div style="display: flex; align-items: center; justify-content: center; height: 100%;">
+            <t-button variant="text" @click="viewEntity(row)">
+              👁 查看
+            </t-button>
+          </div>
+        </template>
       </t-table>
     </div>
   </div>
@@ -34,7 +41,9 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
 import { MessagePlugin } from 'tdesign-vue-next';
+import { BrowseIcon } from 'tdesign-icons-vue-next';
 import adminApi from '../../api/admin';
 
 interface AdminEntity {
@@ -47,6 +56,8 @@ interface AdminEntity {
   createdAt: string;
 }
 
+const router = useRouter();
+
 const entities = ref<AdminEntity[]>([]);
 const loading = ref(false);
 
@@ -58,7 +69,12 @@ const columns = [
   { colKey: 'status', title: '状态', width: 90 },
   { colKey: 'description', title: '描述', ellipsis: true },
   { colKey: 'createdAt', title: '创建时间', width: 170 },
+  { colKey: 'action', title: '操作', width: 100 },
 ];
+
+function viewEntity(row: AdminEntity) {
+  router.push(`/lowcode/entity/${row.id}/view`);
+}
 
 function formatDate(dateStr?: string) {
   if (!dateStr) return '-';
@@ -97,6 +113,9 @@ onMounted(() => { loadEntities(); });
   padding: 24px;
   box-shadow: 0 1px 4px rgba(0,0,0,0.04);
 }
+
+
+
 .admin-page-header {
   margin-bottom: 24px;
   h2 { font-size: 18px; font-weight: 600; color: #1a1a1a; margin: 0 0 4px; }

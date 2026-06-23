@@ -28,10 +28,11 @@
           {{ formatDate(row.createdAt) }}
         </template>
         <template #action="{ row }">
-          <t-button variant="text" @click="viewPage(row)">
-            <template #icon><BrowseIcon /></template>
-            浏览
-          </t-button>
+          <div style="display: flex; align-items: center; justify-content: center; height: 100%;">
+            <t-button variant="text" @click="viewPage(row)">
+              👁 浏览
+            </t-button>
+          </div>
         </template>
       </t-table>
     </div>
@@ -112,6 +113,9 @@ onMounted(() => { loadPages(); });
   padding: 24px;
   box-shadow: 0 1px 4px rgba(0,0,0,0.04);
 }
+
+
+
 .admin-page-header {
   margin-bottom: 24px;
   h2 { font-size: 18px; font-weight: 600; color: #1a1a1a; margin: 0 0 4px; }

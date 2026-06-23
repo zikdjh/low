@@ -20,6 +20,7 @@
         :loading="loading"
         :pagination="pagination"
         row-key="id"
+        bordered
         stripe
         show-header-overflow
         show-row-overflow
@@ -38,51 +39,54 @@
         </template>
 
         <template #actions="{ row }">
-          <t-button
-            variant="text"
-            size="small"
-            @click="viewNotification(row)"
-          >
-            <template #icon><SearchIcon /></template>
-            查看
-          </t-button>
-          <t-button
-            variant="text"
-            size="small"
-            @click="editNotification(row)"
-          >
-            <template #icon><EditIcon /></template>
-            编辑
-          </t-button>
-          <t-button
-            v-if="!row.isPublished"
-            variant="text"
-            size="small"
-            theme="primary"
-            @click="handlePublish(row.id)"
-          >
-            <template #icon><SendIcon /></template>
-            发布
-          </t-button>
-          <t-button
-            v-if="row.isPublished"
-            variant="text"
-            size="small"
-            theme="warning"
-            @click="handleUnpublish(row.id)"
-          >
-            <template #icon><PauseIcon /></template>
-            下架
-          </t-button>
-          <t-button
-            variant="text"
-            size="small"
-            theme="danger"
-            @click="handleDelete(row.id)"
-          >
-            <template #icon><DeleteIcon /></template>
-            删除
-          </t-button>
+          <t-space :size="4">
+            <t-button
+              variant="text"
+              size="small"
+              @click="viewNotification(row)"
+            >
+              <template #icon><t-icon name="search" /></template>
+              查看
+            </t-button>
+            <t-button
+              variant="text"
+              size="small"
+              @click="editNotification(row)"
+            >
+              <template #icon><t-icon name="edit" /></template>
+              编辑
+            </t-button>
+            <t-button
+              v-if="!row.isPublished"
+              variant="text"
+              size="small"
+              theme="primary"
+              @click="handlePublish(row.id)"
+            >
+              <template #icon><t-icon name="send" /></template>
+              发布
+            </t-button>
+            <t-button
+              v-if="row.isPublished"
+              variant="text"
+              size="small"
+              theme="warning"
+              @click="handleUnpublish(row.id)"
+            >
+              <template #icon><t-icon name="pause" /></template>
+              下架
+            </t-button>
+            <t-popconfirm content="确定要删除这条通知吗？" @confirm="handleDelete(row.id)">
+              <t-button
+                variant="text"
+                size="small"
+                theme="danger"
+              >
+                <template #icon><t-icon name="delete" /></template>
+                删除
+              </t-button>
+            </t-popconfirm>
+          </t-space>
         </template>
 
         <template #empty>
@@ -181,15 +185,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted } from 'vue'
-import {
-  PlusIcon,
-  SearchIcon,
-  EditIcon,
-  SendIcon,
-  PauseIcon,
-  DeleteIcon,
-  NotificationIcon
-} from 'tdesign-icons-vue-next'
+import { NotificationIcon } from 'tdesign-icons-vue-next'
 import {
   notificationApi,
   type NotificationRequest,

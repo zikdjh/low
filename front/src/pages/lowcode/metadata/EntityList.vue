@@ -120,6 +120,14 @@
         @page-change="onPageChange"
         @sort-change="onSortChange"
       >
+        <template #name="{ row }">
+          <a 
+            style="color: #3b82f6; cursor: pointer;" 
+            @click="handleView(row)"
+          >
+            {{ row.name }}
+          </a>
+        </template>
         <template #status="{ row }">
           <t-tag 
             :theme="getStatusTheme(row.status)" 
@@ -137,6 +145,14 @@
         </template>
         <template #operation="{ row }">
           <t-space :size="4">
+            <t-button
+              size="small"
+              variant="text"
+              @click="handleView(row)"
+            >
+              <template #icon><t-icon name="eye" /></template>
+              查看
+            </t-button>
             <t-button
               size="small"
               variant="text"
@@ -197,7 +213,7 @@ import { MessagePlugin } from 'tdesign-vue-next';
 import type { PrimaryTableCol } from 'tdesign-vue-next';
 import {
   PlusIcon, SearchIcon, DeleteIcon, DataBaseIcon, CheckCircleIcon,
-  FolderIcon, FileEditIcon, EditIcon
+  FolderIcon, FileEditIcon, EditIcon, BrowseIcon
 } from 'tdesign-icons-vue-next';
 import entityMetaApi from '../../../api/lowcode/entityMeta';
 
@@ -273,7 +289,7 @@ const columns: PrimaryTableCol[] = [
   { 
     colKey: 'operation', 
     title: '操作', 
-    width: 300, 
+    width: 350, 
     fixed: 'right',
   },
 ];
@@ -362,6 +378,10 @@ function handleCreate() {
 
 function goRelations() {
   router.push('/lowcode/entity/relations');
+}
+
+function handleView(row: any) {
+  router.push(`/lowcode/entity/${row.id}/view`);
 }
 
 function handleEdit(row: any) {

@@ -27,6 +27,12 @@ export default [
         meta: { title: { zh_CN: '实体编辑' }, hidden: true },
       },
       {
+        path: 'entity/:id/view',
+        name: 'EntityView',
+        component: () => import('../../pages/lowcode/metadata/EntityView.vue'),
+        meta: { title: { zh_CN: '实体详情' }, hidden: true },
+      },
+      {
         path: 'entity/relations',
         name: 'EntityRelationList',
         component: () => import('../../pages/lowcode/metadata/EntityRelationList.vue'),
