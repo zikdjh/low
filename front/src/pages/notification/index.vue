@@ -72,7 +72,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { MessagePlugin } from 'tdesign-vue-next';
 import {
   NotificationIcon, CloseIcon, CheckCircleIcon,
@@ -80,9 +80,11 @@ import {
 } from 'tdesign-icons-vue-next';
 import BackButton from '../../components/common/BackButton.vue';
 import { useNotificationStore } from '../../store';
+import { notificationApi, type NotificationResponse } from '../../api/notification';
 
 const notifStore = useNotificationStore();
 const activeCategory = ref<string>('all');
+const loading = ref(false);
 
 const categories = [
   { key: 'all', label: '全部', color: '#666' },
@@ -148,6 +150,60 @@ function getTypeLabel(type: string) {
     default: return '其他';
   }
 }
+
+async function loadNotifications() {
+  loading.value = true;
+  try {
+    const response = await notificationApi.getPublishedNotifications();
+    notifStore.clearAll();
+    const data = response.data || response;
+    let notificationsData: any[] = [];
+    
+    if (Array.isArray(data)) {
+      notificationsData = data;
+    } else if (data.code === 1 && data.data) {
+      notificationsData = data.data;
+    }
+    
+    const notifications = notificationsData.map((item: NotificationResponse) => ({
+      id: String(item.id),
+      title: item.title,
+      description: item.content,
+      type: item.type === 'warning' ? 'warning' : item.type === 'error' ? 'error' : item.type === 'success' ? 'success' : 'info',
+      category: 'system',
+      time: formatTime(item.publishedAt || item.createdAt),
+      read: false
+    }));
+    
+    notifications.forEach(notif => {
+      notifStore.addNotification(notif);
+    });
+  } catch (error) {
+    console.error('加载通知失败:', error);
+  } finally {
+    loading.value = false;
+  }
+}
+
+function formatTime(dateStr: string | null) {
+  if (!dateStr) return '';
+  const date = new Date(dateStr);
+  const now = new Date();
+  const diff = now.getTime() - date.getTime();
+  const minutes = Math.floor(diff / 60000);
+  const hours = Math.floor(diff / 3600000);
+  const days = Math.floor(diff / 86400000);
+  
+  if (minutes < 1) return '刚刚';
+  if (minutes < 60) return `${minutes}分钟前`;
+  if (hours < 24) return `${hours}小时前`;
+  if (days < 7) return `${days}天前`;
+  return date.toLocaleDateString('zh-CN');
+}
+
+onMounted(() => {
+  loadNotifications();
+});
 </script>
 
 <style scoped lang="less">

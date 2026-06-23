@@ -26,10 +26,15 @@ export default defineConfig({
     allowedHosts: true,
     proxy: {
       '/api': {
-        target: 'http://127.0.0.1:8080',
+        target: 'http://127.0.0.1:8082',
         changeOrigin: true,
         ws: true,
-        rewrite: (path) => path.replace(/^\/api/, '')
+        rewrite: (path) => {
+          if (path.startsWith('/api/auth') || path.startsWith('/api/admin') || path.startsWith('/api/lowcode')) {
+            return path.replace(/^\/api/, '')
+          }
+          return path
+        }
       }
     }
   }

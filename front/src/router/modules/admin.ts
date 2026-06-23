@@ -43,6 +43,12 @@ export default [
         meta: { title: { zh_CN: '实体管理' }, admin: true },
       },
       {
+        path: 'notifications',
+        name: 'AdminNotifications',
+        component: () => import('../../views/admin/Notifications.vue'),
+        meta: { title: { zh_CN: '通知管理' }, admin: true },
+      },
+      {
         path: 'profile',
         name: 'AdminProfile',
         component: () => import('../../views/admin/Profile.vue'),

@@ -430,6 +430,7 @@ function onDocumentClick(e: MouseEvent) {
 
 onMounted(() => {
   userStore.restoreSession();
+  notifStore.loadNotifications();
   document.addEventListener('keydown', onKeydown);
   document.addEventListener('click', onDocumentClick);
 });

@@ -33,6 +33,10 @@
           <DataBaseIcon size="16" />
           <span>实体管理</span>
         </router-link>
+        <router-link to="/admin/notifications" class="admin-nav-item" active-class="active">
+          <NotificationIcon size="16" />
+          <span>通知管理</span>
+        </router-link>
       </nav>
 
       <div class="admin-header-right">
@@ -66,7 +70,7 @@ import { useRouter } from 'vue-router';
 import { MessagePlugin } from 'tdesign-vue-next';
 import {
   UserIcon, LayoutIcon, DataBaseIcon, SettingIcon,
-  LogoutIcon, UserCircleIcon, ChevronDownIcon,
+  LogoutIcon, UserCircleIcon, ChevronDownIcon, NotificationIcon,
 } from 'tdesign-icons-vue-next';
 import { useUserStore } from '../../store';
 import { adminAuthApi } from '../../api/admin';
