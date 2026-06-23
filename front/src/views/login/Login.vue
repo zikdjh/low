@@ -95,15 +95,6 @@
             <span>{{ isLogin ? '还没有账号？' : '已有账号？' }}</span>
             <a href="#" @click.prevent="toggleMode">{{ isLogin ? '立即注册' : '返回登录' }}</a>
           </div>
-
-          <div v-if="isLogin" class="social-login">
-            <t-divider>其他方式登录</t-divider>
-            <div class="social-icons">
-              <t-tooltip content="微信登录"><div class="social-btn wechat"><LogoWechatpayIcon size="18" /></div></t-tooltip>
-              <t-tooltip content="GitHub登录"><div class="social-btn github"><LogoGithubIcon size="18" /></div></t-tooltip>
-              <t-tooltip content="企业微信"><div class="social-btn wecom"><LogoWecomIcon size="18" /></div></t-tooltip>
-            </div>
-          </div>
         </div>
       </div>
     </div>
@@ -119,8 +110,7 @@ import { ref, reactive } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { MessagePlugin } from 'tdesign-vue-next';
 import {
-  CheckCircleFilledIcon, UserIcon, LockOnIcon,
-  LogoWechatpayIcon, LogoGithubIcon, LogoWecomIcon
+  CheckCircleFilledIcon, UserIcon, LockOnIcon
 } from 'tdesign-icons-vue-next';
 import { useUserStore } from '../../store';
 
@@ -344,25 +334,6 @@ async function handleSubmit({ validateResult }: any) {
   font-size: 14px;
   color: #999;
   a { color: var(--td-brand-color, #E8A317); text-decoration: none; font-weight: 500; margin-left: 4px; }
-}
-
-/* ===== 社交登录 ===== */
-.social-login {
-  margin-top: 28px;
-  :deep(.t-divider) { margin: 16px 0; .t-divider__inner-text { font-size: 12px; color: #ccc; } }
-}
-.social-icons { display: flex; justify-content: center; gap: 16px; }
-.social-btn {
-  width: 44px; height: 44px;
-  border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
-  cursor: pointer; transition: all 0.3s;
-  border: 1.5px solid #eee;
-  color: #888;
-  &:hover { transform: translateY(-3px); box-shadow: 0 6px 16px rgba(0,0,0,0.1); }
-  &.wechat:hover { background: #07c160; color: #fff; border-color: #07c160; }
-  &.github:hover { background: #24292e; color: #fff; border-color: #24292e; }
-  &.wecom:hover { background: #3370ff; color: #fff; border-color: #3370ff; }
 }
 
 /* ===== 底部 ===== */
