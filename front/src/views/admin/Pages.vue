@@ -27,6 +27,12 @@
         <template #createdAt="{ row }">
           {{ formatDate(row.createdAt) }}
         </template>
+        <template #action="{ row }">
+          <t-button variant="text" @click="viewPage(row)">
+            <template #icon><BrowseIcon /></template>
+            浏览
+          </t-button>
+        </template>
       </t-table>
     </div>
   </div>
@@ -34,8 +40,12 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
 import { MessagePlugin } from 'tdesign-vue-next';
+import { BrowseIcon } from 'tdesign-icons-vue-next';
 import adminApi from '../../api/admin';
+
+const router = useRouter();
 
 interface AdminPage {
   id: number;
@@ -58,11 +68,16 @@ const columns = [
   { colKey: 'status', title: '状态', width: 90 },
   { colKey: 'description', title: '描述', ellipsis: true },
   { colKey: 'createdAt', title: '创建时间', width: 170 },
+  { colKey: 'action', title: '操作', width: 100 },
 ];
 
 function formatDate(dateStr?: string) {
   if (!dateStr) return '-';
   return new Date(dateStr).toLocaleString('zh-CN');
+}
+
+function viewPage(row: AdminPage) {
+  router.push(`/lowcode/page/preview/${row.pageCode}`);
 }
 
 async function loadPages() {
