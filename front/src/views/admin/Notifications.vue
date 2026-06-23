@@ -26,6 +26,10 @@
         show-row-overflow
         @page-change="onPageChange"
       >
+        <template #title="{ row }">
+          <span>{{ row.title || '无标题' }}</span>
+        </template>
+
         <template #type="{ row }">
           <t-tag :theme="getTypeTheme(row.type)" variant="light">
             {{ getTypeText(row.type) }}
@@ -231,7 +235,8 @@ const columns = [
   {
     title: '标题',
     key: 'title',
-    ellipsis: true
+    cell: 'title',
+    width: 300
   },
   {
     title: '类型',
