@@ -66,6 +66,8 @@ public class SecurityConfig {
                         .requestMatchers("/lowcode/page/**").permitAll()
                         .requestMatchers("/lowcode/component/**").permitAll()
                         .requestMatchers("/lowcode/dict/**").permitAll()
+                        .requestMatchers("/lowcode/app/**").permitAll()
+                        .requestMatchers("/lowcode/release/**").permitAll()
                         // 请假管理接口 — 需要认证
                         .requestMatchers("/lowcode/leave/admin/**").hasAnyRole("admin")
                         .requestMatchers("/lowcode/leave/**").authenticated()
