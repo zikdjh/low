@@ -14,8 +14,12 @@
 ###    JWT 仍要带，可先 POST /auth/login 拿 token 填入下面 @token。
 ###
 ### ⚠️ 实测注意事项：
-### - MySQL 列字符集若为 utf8mb3，4-byte emoji（📋📊 等）写入会被全局兜底成「操作失败」。
-###   本脚本已剥离 emoji；要测 emoji 请先把 lc_app_menu 列改成 utf8mb4。
+### - 已对 lc_* 系列表执行 utf8mb4 迁移（back/scripts/migrate-utf8mb4.sql），
+###   前端/Postman/JetBrains HTTP Client 写 emoji + 中文不再有字符集问题。
+### - 但若用 Git Bash + curl 命令行带中文/emoji，shell 会按 GBK 编码参数导致
+###   "Invalid UTF-8 middle byte 0xeb"；需改用文件载体：
+###     curl ... --data-binary @payload.json
+###   或直接用 HTTP Client 跑本文件（推荐）。
 
 ### 登录拿 token（如无可用 token 时手动跑一次，把响应 token 拷到 @token）
 # @name login
