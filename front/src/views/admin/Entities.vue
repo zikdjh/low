@@ -73,7 +73,7 @@ const columns = [
 ];
 
 function viewEntity(row: AdminEntity) {
-  router.push(`/lowcode/entity/${row.id}/view`);
+  router.push(`/admin/entity/${row.id}/view`);
 }
 
 function formatDate(dateStr?: string) {

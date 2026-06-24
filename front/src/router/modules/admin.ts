@@ -54,6 +54,18 @@ export default [
         component: () => import('../../views/admin/Profile.vue'),
         meta: { title: { zh_CN: '个人信息' }, admin: true },
       },
+      {
+        path: 'page/preview/:pageCode',
+        name: 'AdminPagePreview',
+        component: () => import('../../pages/lowcode/SchemaRenderer.vue'),
+        meta: { title: { zh_CN: '页面预览' }, admin: true, hidden: true },
+      },
+      {
+        path: 'entity/:id/view',
+        name: 'AdminEntityView',
+        component: () => import('../../pages/lowcode/metadata/EntityView.vue'),
+        meta: { title: { zh_CN: '实体详情' }, admin: true, hidden: true },
+      },
     ],
   },
 ];

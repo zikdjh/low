@@ -78,7 +78,7 @@ function formatDate(dateStr?: string) {
 }
 
 function viewPage(row: AdminPage) {
-  router.push(`/lowcode/page/preview/${row.pageCode}`);
+  router.push(`/admin/page/preview/${row.pageCode}`);
 }
 
 async function loadPages() {

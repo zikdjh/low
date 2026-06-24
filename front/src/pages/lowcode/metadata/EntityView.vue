@@ -3,7 +3,7 @@
     <!-- 页面头部 -->
     <div class="page-header">
       <div class="header-left">
-        <BackButton to="/lowcode/entity" label="返回实体列表" />
+        <BackButton :to="isAdminRoute ? '/admin/entities' : '/lowcode/entity'" label="返回实体列表" />
         <h2>{{ entityData?.name || '实体详情' }}</h2>
         <t-tag 
           :theme="getStatusTheme(entityData?.status)" 
@@ -131,7 +131,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import BackButton from '../../../components/common/BackButton.vue';
 import {
@@ -144,6 +144,7 @@ const route = useRoute();
 
 const loading = ref(true);
 const entityData = ref<any>(null);
+const isAdminRoute = computed(() => route.path.startsWith('/admin'));
 
 const fieldColumns = [
   { colKey: 'code', title: '字段编码', width: 160, ellipsis: true },
@@ -195,7 +196,8 @@ async function loadEntity() {
 }
 
 function goBack() {
-  router.push('/lowcode/entity');
+  const isAdminRoute = route.path.startsWith('/admin');
+  router.push(isAdminRoute ? '/admin/entities' : '/lowcode/entity');
 }
 
 function goEdit() {
