@@ -20,6 +20,10 @@
               <template #icon><DataBaseIcon /></template>
               管理实体
             </t-button>
+            <t-button theme="primary" size="large" @click="$router.push('/lowcode/app')">
+              <template #icon><AppIcon /></template>
+              业务应用
+            </t-button>
           </div>
         </div>
         <div class="hero-visual">
@@ -54,6 +58,33 @@
         <div class="stat-trend" :class="card.trendDir">
           <component :is="card.trendIcon" size="12" />
           <span>{{ card.trend }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 业务应用卡片 -->
+    <div class="app-section" v-if="businessApps.length > 0">
+      <div class="app-header">
+        <h3><RocketIcon size="18" /> 业务应用</h3>
+        <t-button variant="text" size="small" @click="$router.push('/lowcode/app')">查看全部 →</t-button>
+      </div>
+      <div class="app-grid">
+        <div
+          v-for="app in businessApps"
+          :key="app.code"
+          class="app-card"
+          @click="goToApp(app)"
+        >
+          <div class="app-card-icon" :style="{ background: app.color || 'linear-gradient(135deg, #f5a623, #e8a317)' }">
+            <component :is="getAppIcon(app.icon)" size="22" />
+          </div>
+          <div class="app-card-info">
+            <h4>{{ app.name }}</h4>
+            <p>{{ app.description || '暂无描述' }}</p>
+          </div>
+          <div class="app-card-arrow">
+            <ChevronRightIcon size="16" />
+          </div>
         </div>
       </div>
     </div>
@@ -281,10 +312,11 @@ import {
   AddCircleIcon, DataBaseIcon, LayoutIcon, TableIcon,
   StarIcon, ChartIcon, TrendingUpIcon, TrendingDownIcon,
   CodeIcon, ShieldErrorIcon, FileIcon, SettingIcon, LightbulbIcon,
-  RocketIcon
+  RocketIcon, AppIcon, ChevronRightIcon, CalendarIcon
 } from 'tdesign-icons-vue-next';
 import entityMetaApi from '../../api/lowcode/entityMeta';
 import { pageSchemaApi } from '../../api/lowcode/pageSchema';
+import { businessAppApi, type BusinessApp } from '../../api/lowcode/businessApp';
 import { useUserStore } from '../../store';
 
 const router = useRouter();
@@ -301,6 +333,7 @@ const statCards = ref([
 ]);
 
 const topEntities = ref<any[]>([]);
+const businessApps = ref<BusinessApp[]>([]);
 
 // 快捷导航
 const quickNavs = [
@@ -322,6 +355,22 @@ function goToEntityData(entity: any) {
   if (entity.code) {
     router.push(`/lowcode/data/${entity.code}`);
   }
+}
+
+function goToApp(app: BusinessApp) {
+  router.push(`/run/${app.code}`);
+}
+
+function getAppIcon(iconName?: string) {
+  const icons: Record<string, any> = {
+    calendar: CalendarIcon,
+    app: AppIcon,
+    database: DataBaseIcon,
+    layout: LayoutIcon,
+    settings: SettingIcon,
+    rocket: RocketIcon,
+  };
+  return icons[iconName || ''] || AppIcon;
 }
 
 async function loadData() {
@@ -356,6 +405,17 @@ async function loadData() {
       }
     } catch {
       statCards.value[1].value = 0;
+    }
+
+    // 加载业务应用
+    try {
+      const appRes = await businessAppApi.getAll();
+      if (appRes.data.code === 1) {
+        const apps = appRes.data.data;
+        businessApps.value = Array.isArray(apps) ? apps : [];
+      }
+    } catch {
+      businessApps.value = [];
     }
   } catch {
     // 使用默认值
@@ -490,6 +550,82 @@ onMounted(() => {
   flex-shrink: 0;
   &.up { color: #10b981; background: #ecfdf5; }
   &.down { color: #ef4444; background: #fef2f2; }
+}
+
+/* ===== 业务应用 ===== */
+.app-section {
+  margin-bottom: 28px;
+  background: #fff;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+.app-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  h3 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin: 0;
+  }
+}
+.app-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 14px;
+}
+.app-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 18px 20px;
+  border-radius: 12px;
+  border: 1px solid #f0f0f0;
+  cursor: pointer;
+  transition: all 0.2s;
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
+    border-color: #e8a317;
+  }
+}
+.app-card-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  flex-shrink: 0;
+}
+.app-card-info {
+  flex: 1;
+  min-width: 0;
+  h4 {
+    font-size: 15px;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin: 0 0 4px;
+  }
+  p {
+    font-size: 12px;
+    color: #999;
+    margin: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+.app-card-arrow {
+  color: #ccc;
+  flex-shrink: 0;
 }
 
 /* ===== 双栏 ===== */

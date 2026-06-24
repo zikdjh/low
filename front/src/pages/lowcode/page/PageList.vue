@@ -22,6 +22,38 @@
       </div>
     </div>
     
+    <!-- 批量操作栏 -->
+    <div v-if="selectedIds.size > 0" class="batch-bar">
+      <div class="batch-info">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+          <polyline points="9 11 12 14 22 4" />
+          <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+        </svg>
+        <span>已选择 <b>{{ selectedIds.size }}</b> 个页面</span>
+      </div>
+      <div class="batch-actions">
+        <button class="batch-btn aggregate" @click="handleBatchAggregate">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+            <rect x="3" y="3" width="7" height="7" />
+            <rect x="14" y="3" width="7" height="7" />
+            <rect x="14" y="14" width="7" height="7" />
+            <rect x="3" y="14" width="7" height="7" />
+          </svg>
+          聚合为业务应用
+        </button>
+        <button class="batch-btn select-all" @click="selectAll">
+          全选 ({{ pages.length }})
+        </button>
+        <button class="batch-btn clear" @click="clearSelection">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+            <path d="M18 6 6 18" />
+            <path d="m6 6 12 12" />
+          </svg>
+          取消选择
+        </button>
+      </div>
+    </div>
+
     <div class="page-content">
       <div class="search-bar">
         <input
@@ -44,9 +76,15 @@
           v-for="page in pages"
           :key="page.id"
           class="page-card"
-          :class="{ 'is-published': page.status === 'published' }"
-          @click="handleView(page)"
+          :class="{ 'is-published': page.status === 'published', 'is-selected': selectedIds.has(page.id!) }"
+          @click="handleCardClick(page)"
         >
+          <!-- 多选复选框 -->
+          <div class="card-check" @click.stop="toggleSelect(page)" :class="{ checked: selectedIds.has(page.id!) }">
+            <svg v-if="selectedIds.has(page.id!)" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" width="14" height="14">
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+          </div>
           <div class="card-icon">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <rect x="3" y="3" width="7" height="7" />
@@ -176,6 +214,181 @@
         </div>
       </div>
     </div>
+
+    <!-- 发布到业务应用弹窗 -->
+    <div v-if="showPublishDialog" class="modal-overlay" @click="showPublishDialog = false">
+      <div class="modal-content" @click.stop>
+        <div class="modal-header">
+          <h3>发布到业务应用</h3>
+          <button class="close-btn" @click="showPublishDialog = false">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M18 6 6 18" />
+              <path d="m6 6 12 12" />
+            </svg>
+          </button>
+        </div>
+        <div class="modal-body">
+          <p class="publish-hint">将页面 <b>"{{ publishingPage?.name }}"</b> 发布到以下业务应用：</p>
+          <div class="app-select-list">
+            <div
+              v-for="app in appList"
+              :key="app.code"
+              class="app-select-item"
+              :class="{ selected: selectedAppCode === app.code }"
+              @click="selectedAppCode = app.code"
+            >
+              <div class="asi-icon" :style="{ background: app.color || 'linear-gradient(135deg, #f5a623, #e8a317)' }">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                  <rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" />
+                  <rect x="14" y="14" width="7" height="7" /><rect x="3" y="14" width="7" height="7" />
+                </svg>
+              </div>
+              <div class="asi-info">
+                <span class="asi-name">{{ app.name }}</span>
+                <span class="asi-code">{{ app.code }}</span>
+              </div>
+              <div class="asi-check" v-if="selectedAppCode === app.code">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="3" width="18" height="18">
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+              </div>
+            </div>
+
+            <!-- 新建应用 -->
+            <div class="app-select-item new-app" :class="{ active: showNewAppForm }" @click="showNewAppForm = !showNewAppForm">
+              <div class="asi-icon" style="background: #f0f0f0; color: #999;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                  <path d="M12 4v16m8-8H4" />
+                </svg>
+              </div>
+              <div class="asi-info">
+                <span class="asi-name">新建业务应用</span>
+              </div>
+            </div>
+
+            <!-- 新建表单 -->
+            <div v-if="showNewAppForm" class="new-app-form">
+              <input
+                type="text"
+                class="form-input"
+                v-model="newAppName"
+                placeholder="应用名称，如：请假管理系统"
+              />
+              <input
+                type="text"
+                class="form-input"
+                v-model="newAppCode"
+                placeholder="应用编码，如：leave_management"
+              />
+              <div class="new-app-actions">
+                <button class="cancel-btn" @click="showNewAppForm = false">取消</button>
+                <button class="confirm-btn" @click="createAndSelectApp">创建</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="cancel-btn" @click="showPublishDialog = false">取消</button>
+          <button
+            class="confirm-btn"
+            :disabled="!selectedAppCode && !showNewAppForm"
+            @click="confirmPublishWithApp"
+          >{{ showNewAppForm ? '先创建应用' : '确认发布' }}</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 批量聚合到业务应用弹窗 -->
+    <div v-if="showBatchPublishDialog" class="modal-overlay" @click="showBatchPublishDialog = false">
+      <div class="modal-content" @click.stop>
+        <div class="modal-header">
+          <h3>聚合为业务应用</h3>
+          <button class="close-btn" @click="showBatchPublishDialog = false">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M18 6 6 18" />
+              <path d="m6 6 12 12" />
+            </svg>
+          </button>
+        </div>
+        <div class="modal-body">
+          <p class="publish-hint">
+            将 <b>{{ selectedIds.size }}</b> 个页面聚合到一个业务应用中：
+          </p>
+          <div class="selected-pages-preview">
+            <span
+              v-for="pid in selectedPageList"
+              :key="pid"
+              class="page-tag"
+            >{{ getPageNameById(pid) }}</span>
+          </div>
+          <div class="app-select-list" style="margin-top: 12px;">
+            <div
+              v-for="app in appList"
+              :key="app.code"
+              class="app-select-item"
+              :class="{ selected: batchSelectedAppCode === app.code }"
+              @click="batchSelectedAppCode = app.code"
+            >
+              <div class="asi-icon" :style="{ background: app.color || 'linear-gradient(135deg, #f5a623, #e8a317)' }">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                  <rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" />
+                  <rect x="14" y="14" width="7" height="7" /><rect x="3" y="14" width="7" height="7" />
+                </svg>
+              </div>
+              <div class="asi-info">
+                <span class="asi-name">{{ app.name }}</span>
+                <span class="asi-code">{{ app.code }}</span>
+              </div>
+              <div class="asi-check" v-if="batchSelectedAppCode === app.code">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="3" width="18" height="18">
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+              </div>
+            </div>
+
+            <!-- 新建应用 -->
+            <div class="app-select-item new-app" :class="{ active: showBatchNewAppForm }" @click="showBatchNewAppForm = !showBatchNewAppForm">
+              <div class="asi-icon" style="background: #f0f0f0; color: #999;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                  <path d="M12 4v16m8-8H4" />
+                </svg>
+              </div>
+              <div class="asi-info">
+                <span class="asi-name">新建业务应用</span>
+              </div>
+            </div>
+
+            <!-- 新建表单 -->
+            <div v-if="showBatchNewAppForm" class="new-app-form">
+              <input
+                type="text"
+                class="form-input"
+                v-model="batchNewAppName"
+                placeholder="应用名称，如：请假管理系统"
+              />
+              <input
+                type="text"
+                class="form-input"
+                v-model="batchNewAppCode"
+                placeholder="应用编码，如：leave_management"
+              />
+              <div class="new-app-actions">
+                <button class="cancel-btn" @click="showBatchNewAppForm = false">取消</button>
+                <button class="confirm-btn" @click="createAndSelectBatchApp">创建</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="cancel-btn" @click="showBatchPublishDialog = false">取消</button>
+          <button
+            class="confirm-btn"
+            :disabled="!batchSelectedAppCode && !showBatchNewAppForm"
+            @click="confirmBatchPublish"
+          >{{ showBatchNewAppForm ? '先创建应用' : '确认聚合' }}</button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -184,6 +397,7 @@ import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { pageSchemaApi } from '../../../api/lowcode/pageSchema';
 import entityMetaApi from '../../../api/lowcode/entityMeta';
+import { businessAppApi, type BusinessApp } from '../../../api/lowcode/businessApp';
 import type { PageSchema, EntityMeta, PageType } from '../../../types/lowcode';
 import { MessagePlugin } from 'tdesign-vue-next';
 
@@ -194,6 +408,28 @@ const searchKeyword = ref('');
 const showCreateModal = ref(false);
 const editingPage = ref<PageSchema | null>(null);
 const entities = ref<EntityMeta[]>([]);
+
+// 多选相关
+const selectedIds = ref<Set<number>>(new Set());
+
+// 发布到业务应用相关（单个）
+const showPublishDialog = ref(false);
+const publishingPage = ref<PageSchema | null>(null);
+const appList = ref<BusinessApp[]>([]);
+const selectedAppCode = ref('');
+const showNewAppForm = ref(false);
+const newAppName = ref('');
+const newAppCode = ref('');
+
+// 批量聚合到业务应用相关
+const showBatchPublishDialog = ref(false);
+const batchSelectedAppCode = ref('');
+const showBatchNewAppForm = ref(false);
+const batchNewAppName = ref('');
+const batchNewAppCode = ref('');
+
+// 已选页面ID列表（用于展示）
+const selectedPageList = ref<number[]>([]);
 
 const formData = ref({
   name: '',
@@ -304,9 +540,63 @@ function handleView(page: PageSchema) {
 }
 
 async function handlePublish(page: PageSchema) {
+  // 打开发布到业务应用弹窗
+  publishingPage.value = page;
+  selectedAppCode.value = '';
+  showNewAppForm.value = false;
+  newAppName.value = '';
+  newAppCode.value = '';
+  // 加载业务应用列表
   try {
-    await pageSchemaApi.publish(page.id!);
-    MessagePlugin.success('发布成功');
+    const res = await businessAppApi.getAll();
+    if (res.data.code === 1) {
+      appList.value = Array.isArray(res.data.data) ? res.data.data : [];
+    }
+  } catch {
+    appList.value = [];
+  }
+  showPublishDialog.value = true;
+}
+
+async function createAndSelectApp() {
+  if (!newAppName.value || !newAppCode.value) {
+    MessagePlugin.warning('请填写应用名称和编码');
+    return;
+  }
+  try {
+    const res = await businessAppApi.create({
+      name: newAppName.value,
+      code: newAppCode.value,
+      description: '',
+      color: '#e8a317',
+    });
+    const createdApp = (res as any)?.data?.data || (res as any)?.data;
+    const code = createdApp?.code || newAppCode.value;
+    // 刷新列表
+    const listRes = await businessAppApi.getAll();
+    if (listRes.data.code === 1) {
+      appList.value = Array.isArray(listRes.data.data) ? listRes.data.data : [];
+    }
+    selectedAppCode.value = code;
+    showNewAppForm.value = false;
+    MessagePlugin.success('应用已创建');
+  } catch (e: any) {
+    MessagePlugin.error(e?.response?.data?.msg || '创建应用失败');
+  }
+}
+
+async function confirmPublishWithApp() {
+  if (!selectedAppCode.value || !publishingPage.value) {
+    MessagePlugin.warning('请选择业务应用');
+    return;
+  }
+  try {
+    // 先发布页面
+    await pageSchemaApi.publish(publishingPage.value.id!);
+    // 再分配到应用
+    await businessAppApi.assignPage(selectedAppCode.value, publishingPage.value.id!);
+    MessagePlugin.success(`已发布到 "${selectedAppCode.value}" 业务应用`);
+    showPublishDialog.value = false;
     loadPages();
   } catch (error) {
     MessagePlugin.error('发布失败');
@@ -333,6 +623,117 @@ async function handleDelete(page: PageSchema) {
     loadPages();
   } catch (error) {
     MessagePlugin.error('删除失败');
+  }
+}
+
+// ====== 多选与批量聚合 ======
+
+/** 切换单页选中 */
+function toggleSelect(page: PageSchema) {
+  const id = page.id!;
+  const newSet = new Set(selectedIds.value);
+  if (newSet.has(id)) {
+    newSet.delete(id);
+  } else {
+    newSet.add(id);
+  }
+  selectedIds.value = newSet;
+}
+
+/** 点击卡片：有选择时切换选中，否则查看页面 */
+function handleCardClick(page: PageSchema) {
+  if (selectedIds.value.size > 0) {
+    toggleSelect(page);
+  } else {
+    handleView(page);
+  }
+}
+
+/** 全选 */
+function selectAll() {
+  selectedIds.value = new Set(pages.value.map(p => p.id!));
+}
+
+/** 取消全选 */
+function clearSelection() {
+  selectedIds.value = new Set();
+}
+
+/** 按ID获取页面名称 */
+function getPageNameById(id: number) {
+  return pages.value.find(p => p.id === id)?.name || `#${id}`;
+}
+
+/** 打开批量聚合弹窗 */
+async function handleBatchAggregate() {
+  if (selectedIds.value.size === 0) {
+    MessagePlugin.warning('请先选择页面');
+    return;
+  }
+  batchSelectedAppCode.value = '';
+  showBatchNewAppForm.value = false;
+  batchNewAppName.value = '';
+  batchNewAppCode.value = '';
+  selectedPageList.value = Array.from(selectedIds.value);
+  // 加载业务应用列表
+  try {
+    const res = await businessAppApi.getAll();
+    if (res.data.code === 1) {
+      appList.value = Array.isArray(res.data.data) ? res.data.data : [];
+    }
+  } catch {
+    appList.value = [];
+  }
+  showBatchPublishDialog.value = true;
+}
+
+/** 批量模式：创建并选中新应用 */
+async function createAndSelectBatchApp() {
+  if (!batchNewAppName.value || !batchNewAppCode.value) {
+    MessagePlugin.warning('请填写应用名称和编码');
+    return;
+  }
+  try {
+    const res = await businessAppApi.create({
+      name: batchNewAppName.value,
+      code: batchNewAppCode.value,
+      description: '',
+      color: '#e8a317',
+    });
+    const createdApp = (res as any)?.data?.data || (res as any)?.data;
+    const code = createdApp?.code || batchNewAppCode.value;
+    // 刷新列表
+    const listRes = await businessAppApi.getAll();
+    if (listRes.data.code === 1) {
+      appList.value = Array.isArray(listRes.data.data) ? listRes.data.data : [];
+    }
+    batchSelectedAppCode.value = code;
+    showBatchNewAppForm.value = false;
+    MessagePlugin.success('应用已创建');
+  } catch (e: any) {
+    MessagePlugin.error(e?.response?.data?.msg || '创建应用失败');
+  }
+}
+
+/** 确认批量聚合 */
+async function confirmBatchPublish() {
+  if (!batchSelectedAppCode.value) {
+    MessagePlugin.warning('请选择业务应用');
+    return;
+  }
+  const pageIds = Array.from(selectedIds.value);
+  if (pageIds.length === 0) {
+    MessagePlugin.warning('请选择至少一个页面');
+    return;
+  }
+  try {
+    await businessAppApi.assignBatchPages(batchSelectedAppCode.value, pageIds);
+    MessagePlugin.success(`已将 ${pageIds.length} 个页面聚合到 "${batchSelectedAppCode.value}" 业务应用`);
+    showBatchPublishDialog.value = false;
+    clearSelection();
+    loadPages();
+  } catch (error: any) {
+    MessagePlugin.error(error?.response?.data?.msg || '聚合失败');
   }
 }
 </script>
@@ -415,6 +816,115 @@ async function handleDelete(page: PageSchema) {
 .create-btn svg {
   width: 18px;
   height: 18px;
+}
+
+/* 批量操作栏 */
+.batch-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: linear-gradient(135deg, #eff6ff, #f0f9ff);
+  border: 1.5px solid #bfdbfe;
+  border-radius: 14px;
+  padding: 14px 20px;
+  margin-bottom: 16px;
+  animation: slideDown 0.2s ease;
+}
+@keyframes slideDown { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
+.batch-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: #1e40af;
+}
+.batch-info svg { color: #2563eb; }
+.batch-info b { color: #1d4ed8; }
+.batch-actions {
+  display: flex;
+  gap: 8px;
+}
+.batch-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+}
+.batch-btn.aggregate {
+  background: linear-gradient(135deg, #f5a623, #e8a317);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(232, 163, 23, 0.3);
+}
+.batch-btn.aggregate:hover {
+  box-shadow: 0 4px 14px rgba(232, 163, 23, 0.45);
+  transform: translateY(-1px);
+}
+.batch-btn.select-all {
+  background: #fff;
+  color: #555;
+  border: 1.5px solid #e5e5e5;
+}
+.batch-btn.select-all:hover { background: #f5f5f5; }
+.batch-btn.clear {
+  background: #fff;
+  color: #999;
+  border: 1.5px solid #e5e5e5;
+}
+.batch-btn.clear:hover { background: #f5f5f5; color: #ef4444; border-color: #fecaca; }
+
+/* 卡片多选复选框 */
+.card-check {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 22px;
+  height: 22px;
+  border: 2px solid #d1d5db;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  z-index: 2;
+  background: #fff;
+}
+.card-check:hover {
+  border-color: #e8a317;
+  background: #fef9ef;
+}
+.card-check.checked {
+  background: #e8a317;
+  border-color: #e8a317;
+  color: #fff;
+}
+.page-card.is-selected {
+  border-color: #e8a317;
+  box-shadow: 0 0 0 2px rgba(232, 163, 23, 0.15);
+  background: #fffdf5;
+}
+
+/* 批量弹窗 - 已选页面预览 */
+.selected-pages-preview {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+.page-tag {
+  display: inline-block;
+  padding: 4px 10px;
+  background: #fef3c7;
+  color: #b45309;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
 }
 
 .page-content {
@@ -657,4 +1167,71 @@ async function handleDelete(page: PageSchema) {
   transition: all 0.2s;
 }
 .confirm-btn:hover { box-shadow: 0 4px 12px rgba(232, 163, 23, 0.4); }
+.confirm-btn:disabled { opacity: 0.5; cursor: not-allowed; box-shadow: none; }
+
+/* 发布到业务应用弹窗 */
+.publish-hint {
+  font-size: 14px;
+  color: #555;
+  margin: 0 0 16px;
+  b { color: #1a1a1a; }
+}
+.app-select-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+.app-select-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1.5px solid #e5e5e5;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+  &:hover { border-color: #e8a317; background: #fef9ef; }
+  &.selected { border-color: #e8a317; background: rgba(232, 163, 23, 0.06); }
+  &.new-app { border-style: dashed; }
+  &.new-app.active { border-color: #10b981; }
+}
+.asi-icon {
+  width: 36px; height: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  flex-shrink: 0;
+}
+.asi-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.asi-name { font-size: 14px; font-weight: 500; color: #1a1a1a; }
+.asi-code { font-size: 12px; color: #999; font-family: 'JetBrains Mono', monospace; }
+.asi-check { flex-shrink: 0; }
+.new-app-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 8px 0;
+  .form-input {
+    padding: 8px 12px;
+    border: 1.5px solid #e5e5e5;
+    border-radius: 8px;
+    font-size: 13px;
+    outline: none;
+    &:focus { border-color: #e8a317; }
+  }
+  .new-app-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+  }
+}
 </style>

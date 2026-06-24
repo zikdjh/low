@@ -8,51 +8,36 @@ import lombok.AllArgsConstructor;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "lc_page_schema")
+@Table(name = "lc_business_app")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class PageSchema {
+public class BusinessApp {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "page_code", unique = true, nullable = false, length = 64)
-    private String pageCode;
-
     @Column(name = "name", nullable = false, length = 128)
     private String name;
 
-    @Column(name = "layout_json", columnDefinition = "LONGTEXT")
-    private String layoutJson;
-
-    @Column(name = "page_type", length = 32)
-    private String pageType = "list";
-
-    @Column(name = "entity_code", length = 64)
-    private String entityCode;
-
-    @Column(name = "version")
-    private Integer version = 1;
-
-    @Column(name = "status")
-    private String status = "draft";
+    @Column(name = "code", unique = true, nullable = false, length = 64)
+    private String code;
 
     @Column(name = "description", length = 512)
     private String description;
+
+    @Column(name = "icon", length = 64)
+    private String icon;
+
+    @Column(name = "color", length = 32)
+    private String color;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
-
-    @Column(name = "app_code", length = 64)
-    private String appCode;
-
-    @Column(name = "published_at")
-    private LocalDateTime publishedAt;
 
     @PrePersist
     public void prePersist() {

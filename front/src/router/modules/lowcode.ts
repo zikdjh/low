@@ -1,4 +1,4 @@
-import { CodeIcon, LayoutIcon, HelpCircleIcon } from 'tdesign-icons-vue-next';
+import { CodeIcon, LayoutIcon, HelpCircleIcon, AppIcon } from 'tdesign-icons-vue-next';
 import { shallowRef } from 'vue';
 import Layout from '../../layouts/index.vue';
 
@@ -14,6 +14,18 @@ export default [
       orderNo: 100,
     },
     children: [
+      {
+        path: 'app',
+        name: 'BusinessAppList',
+        component: () => import('../../pages/lowcode/app/BusinessAppPage.vue'),
+        meta: { title: { zh_CN: '业务应用' }, icon: shallowRef(AppIcon), hidden: true },
+      },
+      {
+        path: 'app/:appCode',
+        name: 'BusinessAppDetail',
+        component: () => import('../../pages/lowcode/app/BusinessAppPage.vue'),
+        meta: { title: { zh_CN: '业务应用详情' }, hidden: true },
+      },
       {
         path: 'entity',
         name: 'EntityList',

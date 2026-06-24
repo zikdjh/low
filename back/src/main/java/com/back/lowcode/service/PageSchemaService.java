@@ -50,6 +50,9 @@ public class PageSchemaService {
         existing.setPageType(pageSchema.getPageType());
         existing.setEntityCode(pageSchema.getEntityCode());
         existing.setDescription(pageSchema.getDescription());
+        if (pageSchema.getAppCode() != null) {
+            existing.setAppCode(pageSchema.getAppCode());
+        }
         return pageSchemaRepository.save(existing);
     }
 

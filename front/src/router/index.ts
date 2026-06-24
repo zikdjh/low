@@ -25,6 +25,10 @@ const adminModules = import.meta.glob("./modules/**/admin.ts", {
     eager: true,
 });
 
+// 添加运行时模块（应用运行时，独立布局）
+const runtimeModules = import.meta.glob("./modules/**/runtime.ts", {
+    eager: true,
+});
 
 export const homepageRouterList: Array<RouteRecordRaw> =
     mapModuleRouterList(homepageModules);
@@ -45,8 +49,12 @@ export const leaveRouterList: Array<RouteRecordRaw> =
 export const adminRouterList: Array<RouteRecordRaw> =
     mapModuleRouterList(adminModules);
 
+// 添加运行时路由列表
+export const runtimeRouterList: Array<RouteRecordRaw> =
+    mapModuleRouterList(runtimeModules);
+
 // 将登录路由添加到所有路由中
-export const allRoutes = [...homepageRouterList, ...loginRouterList, ...lowcodeRouterList, ...leaveRouterList, ...adminRouterList];
+export const allRoutes = [...homepageRouterList, ...loginRouterList, ...lowcodeRouterList, ...leaveRouterList, ...adminRouterList, ...runtimeRouterList];
 
 // 固定路由模块转换为路由
 export function mapModuleRouterList(

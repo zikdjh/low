@@ -17,4 +17,8 @@ public interface PageSchemaRepository extends JpaRepository<PageSchema, Long> {
     List<PageSchema> findByEntityCode(String entityCode);
 
     boolean existsByPageCode(String pageCode);
+
+    List<PageSchema> findByAppCode(String appCode);
+
+    List<PageSchema> findByAppCodeAndStatus(String appCode, String status);
 }

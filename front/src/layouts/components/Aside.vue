@@ -165,7 +165,7 @@
     <div class="sidebar-section" v-show="!settingStore.isSidebarCollapsed">
       <div class="section-header" @click="toggleSection('apps')">
         <span class="section-label">
-          <StudentIcon size="14" />
+          <AppIcon size="14" />
           业务应用
         </span>
         <div class="section-header-right">
@@ -177,19 +177,23 @@
         </div>
       </div>
       <div class="section-body" v-show="expandedSections.includes('apps')">
-        <div class="nav-items">
+        <div v-if="businessApps.length === 0" class="tree-empty">
+          <p>暂无业务应用</p>
+        </div>
+        <div v-else class="nav-items">
           <div
             v-for="app in businessApps"
-            :key="app.path"
+            :key="app.code"
             class="tree-item nav-tree-item"
-            :class="{ active: route.path.startsWith(app.path) }"
-            @click="router.push(app.path)"
+            :class="{ active: route.path.includes(`/run/${app.code}`) }"
+            @click="router.push(`/run/${app.code}`)"
           >
             <div class="tree-item-icon nav-icon">
-              <component :is="app.icon" size="14" />
+              <AppIcon size="14" />
             </div>
             <div class="tree-item-content">
               <span class="tree-item-name">{{ app.name }}</span>
+              <span class="tree-item-meta" v-if="(app as any).pageCount != null">{{ (app as any).pageCount }} 个页面</span>
             </div>
           </div>
         </div>
@@ -213,15 +217,16 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, shallowRef } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import {
   AddIcon, LayoutIcon, DataBaseIcon, FileIcon, ChevronDownIcon,
-  EditIcon, ViewListIcon,
+  AppIcon,
 } from 'tdesign-icons-vue-next';
 import { useSettingStore } from '../../store';
 import { pageSchemaApi } from '../../api/lowcode/pageSchema';
 import entityMetaApi from '../../api/lowcode/entityMeta';
+import { businessAppApi, type BusinessApp } from '../../api/lowcode/businessApp';
 import type { PageSchema, EntityMeta } from '../../types/lowcode';
 
 const route = useRoute();
@@ -235,13 +240,8 @@ const expandedSections = ref<string[]>(['apps', 'pages', 'entities']);
 const pages = ref<PageSchema[]>([]);
 const pagesLoading = ref(false);
 
-// 业务应用列表 — 使用低代码平台 PageViewer 渲染
-const businessApps = [
-  { name: '请假申请', path: '/leave/apply', icon: shallowRef(EditIcon) },
-  { name: '请假记录', path: '/leave/my-list', icon: shallowRef(ViewListIcon) },
-  { name: '学生管理', path: '/leave/students', icon: shallowRef(ViewListIcon) },
-  { name: '教职工管理', path: '/leave/approvers', icon: shallowRef(ViewListIcon) },
-];
+// 业务应用列表 — 从后端动态加载
+const businessApps = ref<(BusinessApp & { pageCount?: number })[]>([]);
 
 // 实体列表
 const entities = ref<EntityMeta[]>([]);
@@ -297,7 +297,28 @@ async function loadEntities() {
 onMounted(() => {
   loadPages();
   loadEntities();
+  loadBusinessApps();
 });
+
+async function loadBusinessApps() {
+  try {
+    const res: any = await businessAppApi.getAll();
+    const apps: BusinessApp[] = res?.data?.data || res?.data || [];
+    // 为每个应用加载页面数量
+    for (const app of apps) {
+      try {
+        const pageRes: any = await businessAppApi.getPages(app.code);
+        const pages = pageRes?.data?.data || pageRes?.data || [];
+        (app as any).pageCount = Array.isArray(pages) ? pages.length : 0;
+      } catch {
+        (app as any).pageCount = 0;
+      }
+    }
+    businessApps.value = apps as any[];
+  } catch {
+    businessApps.value = [];
+  }
+}
 
 // 判断当前激活的页面
 function isPageActive(code: string): boolean {
