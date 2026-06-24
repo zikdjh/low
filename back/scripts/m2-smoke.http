@@ -1,0 +1,181 @@
+### M2 后端冒烟测试：菜单 CRUD + 发布挂载联调
+###
+### 适用：JetBrains HTTP Client / VSCode REST Client
+### 端口：见 application.yaml -> server.port=8082
+### 顺序：从上到下依次执行；releaseId 在 "发起发布" 后从响应里抓出，填到 @releaseId
+
+@host = http://localhost:8082
+@appCode = leave_management
+
+### 该文件的执行依赖：
+### 1. 服务已启动且数据库可写
+### 2. 已存在 appCode=leave_management 的 PageSchema / EntityMeta（用于 snapshot 阶段）
+
+# ============================================================
+# 一、草稿菜单 CRUD
+# ============================================================
+
+### 1.1 读空草稿（首次应返回 data: []）
+GET {{host}}/lowcode/app/{{appCode}}/menu/draft
+
+### 1.2 全量写入两层菜单草稿
+### 期望：返回挂着 id 的菜单树（递归落库后回填 DB id）
+PUT {{host}}/lowcode/app/{{appCode}}/menu/draft
+Content-Type: application/json
+
+[
+  {
+    "name": "请假管理",
+    "icon": "📋",
+    "sortOrder": 0,
+    "menuType": "group",
+    "visible": true,
+    "children": [
+      {
+        "name": "我的请假",
+        "sortOrder": 0,
+        "pageCode": "leave_my_list",
+        "routePath": "/run/leave_management/leave_my_list",
+        "menuType": "menu",
+        "visible": true
+      },
+      {
+        "name": "审批中心",
+        "sortOrder": 1,
+        "pageCode": "leave_approve",
+        "routePath": "/run/leave_management/leave_approve",
+        "menuType": "menu",
+        "visible": true
+      }
+    ]
+  },
+  {
+    "name": "统计",
+    "icon": "📊",
+    "sortOrder": 1,
+    "pageCode": "leave_stat",
+    "routePath": "/run/leave_management/leave_stat",
+    "menuType": "menu",
+    "visible": true
+  }
+]
+
+### 1.3 回读校验：树结构 / id / parentId / sortOrder 全部齐全
+GET {{host}}/lowcode/app/{{appCode}}/menu/draft
+
+### 1.4 SQL 自检（可选，直接连库执行）：
+### -- 应只有 3 个根 / 子节点共 4 行；release_id 全为 NULL
+### SELECT id, parent_id, sort_order, name, page_code, release_id
+### FROM lc_app_menu WHERE app_code = 'leave_management' ORDER BY COALESCE(parent_id, 0), sort_order;
+
+
+# ============================================================
+# 二、拖拽排序
+# ============================================================
+
+### 2.1 把根节点交换顺序：统计 (id=?) 放到第 0 位，请假管理 (id=?) 放到第 1 位
+### ⚠️ 执行前请把 id 改成 1.3 返回里的真实 id
+POST {{host}}/lowcode/app/{{appCode}}/menu/reorder
+Content-Type: application/json
+
+[
+  { "id": 3, "parentId": null, "sortOrder": 0 },
+  { "id": 1, "parentId": null, "sortOrder": 1 }
+]
+
+### 2.2 回读：根节点顺序应已互换
+GET {{host}}/lowcode/app/{{appCode}}/menu/draft
+
+
+# ============================================================
+# 三、发起发布（M1 + M2 联调）
+# ============================================================
+
+### 3.1 触发发布：会依次执行 validate → snapshot → generate(空) → mount → activate
+### 期望：返回的 release.status = "active"
+POST {{host}}/lowcode/release/{{appCode}}
+Content-Type: application/json
+
+{
+  "versionBump": "minor",
+  "notes": "M2 菜单首测",
+  "createdBy": "zc",
+  "activate": true
+}
+
+### 3.2 设置上一步返回的 release.id，后续接口复用
+@releaseId = 1
+
+### 3.3 查看发布详情（含五阶段日志）
+### 期望：logs 数组里 validate / snapshot / generate / mount / activate 全部 status=success
+GET {{host}}/lowcode/release/detail/{{releaseId}}
+
+### 3.4 查看 ReleaseItem 快照清单
+### 期望：包含至少一条 item_type=menu, item_code=leave_management 的行
+GET {{host}}/lowcode/release/{{releaseId}}/items
+
+
+# ============================================================
+# 四、读 active 菜单（终端运行时视图）
+# ============================================================
+
+### 4.1 当前 active release 的菜单树
+### 期望：等同于发布时刻的草稿树（顺序已经过 2.1 调整）
+GET {{host}}/lowcode/app/{{appCode}}/menu
+
+### 4.2 直查指定 release 的菜单（历史回看用，回滚 UI 会用到）
+GET {{host}}/lowcode/app/{{appCode}}/menu/release/{{releaseId}}
+
+### 4.3 SQL 自检：同一 app_code 应有两批菜单
+### -- A 批 release_id IS NULL：草稿，由 1.2/2.1 维护
+### -- B 批 release_id = <{{releaseId}}>：快照，由 MountPhase 克隆生成
+### -- 两批行数相同，结构同形
+### SELECT release_id, COUNT(*) FROM lc_app_menu
+### WHERE app_code = 'leave_management' GROUP BY release_id;
+
+
+# ============================================================
+# 五、二次草稿改动 → 不污染已发布快照
+# ============================================================
+
+### 5.1 草稿里删一个节点
+PUT {{host}}/lowcode/app/{{appCode}}/menu/draft
+Content-Type: application/json
+
+[
+  {
+    "name": "请假管理",
+    "icon": "📋",
+    "sortOrder": 0,
+    "menuType": "group",
+    "visible": true,
+    "children": [
+      {
+        "name": "我的请假",
+        "sortOrder": 0,
+        "pageCode": "leave_my_list",
+        "routePath": "/run/leave_management/leave_my_list",
+        "menuType": "menu",
+        "visible": true
+      }
+    ]
+  }
+]
+
+### 5.2 active 菜单应保持不变（仍是 2 层 4 节点的旧快照）
+GET {{host}}/lowcode/app/{{appCode}}/menu
+
+### 5.3 草稿菜单应只剩 2 行（请假管理 + 我的请假）
+GET {{host}}/lowcode/app/{{appCode}}/menu/draft
+
+
+# ============================================================
+# 六、回滚（可选）
+# ============================================================
+
+### 6.1 列出该应用所有 release
+GET {{host}}/lowcode/release/{{appCode}}
+
+### 6.2 回滚到指定 release（只能回滚 status=rolledback/draft 的）
+### 注意：active 状态不能直接 rollback，需先发新版让旧版降级为 rolledback
+# POST {{host}}/lowcode/release/{{releaseId}}/rollback
