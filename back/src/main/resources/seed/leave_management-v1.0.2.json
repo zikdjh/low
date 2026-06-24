@@ -1,0 +1,396 @@
+{
+  "schemaVersion" : 1,
+  "release" : {
+    "appCode" : "leave_management",
+    "version" : "1.0.2",
+    "status" : "active",
+    "notes" : "M4 baseline retry",
+    "checksum" : "c11521c570961e58348e1ff5908219130a03dd0a0bef9ae7875e01fc63eb2b7f",
+    "createdBy" : "seed-export"
+  },
+  "businessApp" : {
+    "id" : 1,
+    "name" : "请假管理系统",
+    "code" : "leave_management",
+    "description" : "学生请假申请、审批与记录管理——支持学生/辅导员/系主任/管理员四类角色",
+    "icon" : "calendar",
+    "color" : "#e8a317",
+    "createdAt" : "2026-06-24T19:21:51.187601",
+    "updatedAt" : "2026-06-24T20:21:56.65085"
+  },
+  "items" : [ {
+    "itemType" : "page",
+    "itemCode" : "leave_student_list",
+    "checksum" : "1cc13271ae6ae10f6958c45dac1d52cf1c77e446675247d39f0b653629ee683f",
+    "snapshotJson" : "{\"id\":1,\"pageCode\":\"leave_student_list\",\"name\":\"学生管理\",\"layoutJson\":\"[{\\\"id\\\":\\\"el_title\\\",\\\"type\\\":\\\"text\\\",\\\"name\\\":\\\"学生管理\\\",\\\"x\\\":24,\\\"y\\\":24,\\\"width\\\":400,\\\"height\\\":48,\\\"props\\\":{\\\"text\\\":\\\"学生管理\\\",\\\"fontSize\\\":24,\\\"fontWeight\\\":\\\"bold\\\"}},{\\\"id\\\":\\\"el_table\\\",\\\"type\\\":\\\"table\\\",\\\"name\\\":\\\"数据表格\\\",\\\"x\\\":24,\\\"y\\\":88,\\\"width\\\":1150,\\\"height\\\":520,\\\"props\\\":{\\\"entityCode\\\":\\\"student\\\",\\\"columns\\\":[{\\\"fieldCode\\\":\\\"student_no\\\",\\\"title\\\":\\\"学号\\\",\\\"width\\\":140,\\\"fieldType\\\":\\\"VARCHAR\\\"},{\\\"fieldCode\\\":\\\"name\\\",\\\"title\\\":\\\"姓名\\\",\\\"width\\\":140,\\\"fieldType\\\":\\\"VARCHAR\\\"},{\\\"fieldCode\\\":\\\"gender\\\",\\\"title\\\":\\\"性别\\\",\\\"width\\\":140,\\\"fieldType\\\":\\\"VARCHAR\\\"},{\\\"fieldCode\\\":\\\"class_name\\\",\\\"title\\\":\\\"班级\\\",\\\"width\\\":140,\\\"fieldType\\\":\\\"VARCHAR\\\"},{\\\"fieldCode\\\":\\\"grade\\\",\\\"title\\\":\\\"年级\\\",\\\"width\\\":140,\\\"fieldType\\\":\\\"VARCHAR\\\"},{\\\"fieldCode\\\":\\\"department\\\",\\\"title\\\":\\\"院系\\\",\\\"width\\\":140,\\\"fieldType\\\":\\\"VARCHAR\\\"},{\\\"fieldCode\\\":\\\"phone\\\",\\\"title\\\":\\\"联系电话\\\",\\\"width\\\":140,\\\"fieldType\\\":\\\"VARCHAR\\\"},{\\\"fieldCode\\\":\\\"email\\\",\\\"title\\\":\\\"邮箱\\\",\\\"width\\\":180,\\\"fieldType\\\":\\\"VARCHAR\\\"},{\\\"fieldCode\\\":\\\"user_id\\\",\\\"title\\\":\\\"关联用户\\\",\\\"width\\\":100,\\\"fieldType\\\":\\\"LONG\\\"},{\\\"fieldCode\\\":\\\"status\\\",\\\"title\\\":\\\"学籍状态\\\",\\\"width\\\":140,\\\"fieldType\\\":\\\"VARCHAR\\\"}],\\\"border\\\":true,\\\"showIndex\\\":true}}]\",\"pageType\":\"list\",\"entityCode\":\"student\",\"version\":1,\"status\":\"published\",\"description\":\"学生信息列表，支持搜索学号、姓名、班级\",\"createdAt\":\"2026-06-23T22:54:05.712835\",\"updatedAt\":\"2026-06-24T19:21:51.255245\",\"appCode\":\"leave_management\",\"publishedAt\":\"2026-06-23T22:54:05.710075\"}"
+  }, {
+    "itemType" : "page",
+    "itemCode" : "leave_student_form",
+    "checksum" : "5d9ee0328f9a2edce7ae831e26c38a89d821b571dca3b5e78b22252b9baeadd6",
+    "snapshotJson" : "{\"id\":2,\"pageCode\":\"leave_student_form\",\"name\":\"学生表单\",\"layoutJson\":\"[{\\\"id\\\":\\\"el_title\\\",\\\"type\\\":\\\"text\\\",\\\"name\\\":\\\"学生表单\\\",\\\"x\\\":24,\\\"y\\\":24,\\\"width\\\":400,\\\"height\\\":48,\\\"props\\\":{\\\"text\\\":\\\"学生表单\\\",\\\"fontSize\\\":24,\\\"fontWeight\\\":\\\"bold\\\"}},{\\\"id\\\":\\\"el_form\\\",\\\"type\\\":\\\"form\\\",\\\"name\\\":\\\"表单\\\",\\\"x\\\":24,\\\"y\\\":88,\\\"width\\\":700,\\\"height\\\":600,\\\"props\\\":{\\\"entityCode\\\":\\\"student\\\",\\\"labelWidth\\\":100,\\\"fields\\\":[{\\\"code\\\":\\\"student_no\\\",\\\"name\\\":\\\"学号\\\",\\\"fieldType\\\":\\\"VARCHAR\\\",\\\"required\\\":true,\\\"defaultValue\\\":null,\\\"referenceEntityCode\\\":null,\\\"referenceDisplayFieldCode\\\":null},{\\\"code\\\":\\\"name\\\",\\\"name\\\":\\\"姓名\\\",\\\"fieldType\\\":\\\"VARCHAR\\\",\\\"required\\\":true,\\\"defaultValue\\\":null,\\\"referenceEntityCode\\\":null,\\\"referenceDisplayFieldCode\\\":null},{\\\"code\\\":\\\"gender\\\",\\\"name\\\":\\\"性别\\\",\\\"fieldType\\\":\\\"VARCHAR\\\",\\\"required\\\":false,\\\"defaultValue\\\":null,\\\"referenceEntityCode\\\":null,\\\"referenceDisplayFieldCode\\\":null},{\\\"code\\\":\\\"class_name\\\",\\\"name\\\":\\\"班级\\\",\\\"fieldType\\\":\\\"VARCHAR\\\",\\\"required\\\":false,\\\"defaultValue\\\":null,\\\"referenceEntityCode\\\":null,\\\"referenceDisplayFieldCode\\\":null},{\\\"code\\\":\\\"grade\\\",\\\"name\\\":\\\"年级\\\",\\\"fieldType\\\":\\\"VARCHAR\\\",\\\"required\\\":false,\\\"defaultValue\\\":null,\\\"referenceEntityCode\\\":null,\\\"referenceDisplayFieldCode\\\":null},{\\\"code\\\":\\\"department\\\",\\\"name\\\":\\\"院系\\\",\\\"fieldType\\\":\\\"VARCHAR\\\",\\\"required\\\":false,\\\"defaultValue\\\":null,\\\"referenceEntityCode\\\":null,\\\"referenceDisplayFieldCode\\\":null},{\\\"code\\\":\\\"phone\\\",\\\"name\\\":\\\"联系电话\\\",\\\"fieldType\\\":\\\"VARCHAR\\\",\\\"required\\\":false,\\\"defaultValue\\\":null,\\\"referenceEntityCode\\\":null,\\\"referenceDisplayFieldCode\\\":null},{\\\"code\\\":\\\"email\\\",\\\"name\\\":\\\"邮箱\\\",\\\"fieldType\\\":\\\"VARCHAR\\\",\\\"required\\\":false,\\\"defaultValue\\\":null,\\\"referenceEntityCode\\\":null,\\\"referenceDisplayFieldCode\\\":null},{\\\"code\\\":\\\"status\\\",\\\"name\\\":\\\"学籍状态\\\",\\\"fieldType\\\":\\\"VARCHAR\\\",\\\"required\\\":true,\\\"defaultValue\\\":\\\"active\\\",\\\"referenceEntityCode\\\":null,\\\"referenceDisplayFieldCode\\\":null}]}}]\",\"pageType\":\"form\",\"entityCode\":\"student\",\"version\":1,\"status\":\"published\",\"description\":\"新增/编辑学生信息\",\"createdAt\":\"2026-06-23T22:54:05.735969\",\"updatedAt\":\"2026-06-24T19:21:51.258826\",\"appCode\":\"leave_management\",\"publishedAt\":\"2026-06-23T22:54:05.732571\"}"
+  }, {
+    "itemType" : "page",
+    "itemCode" : "leave_approver_list",
+    "checksum" : "fafd1d8612d2a75d7f77b3429c0fc46bc2077cb22c746fc22f15d4c8e7be8187",
+    "snapshotJson" : "{\"id\":3,\"pageCode\":\"leave_approver_list\",\"name\":\"教职工管理\",\"layoutJson\":\"[{\\\"id\\\":\\\"el_title\\\",\\\"type\\\":\\\"text\\\",\\\"name\\\":\\\"教职工管理\\\",\\\"x\\\":24,\\\"y\\\":24,\\\"width\\\":400,\\\"height\\\":48,\\\"props\\\":{\\\"text\\\":\\\"教职工管理\\\",\\\"fontSize\\\":24,\\\"fontWeight\\\":\\\"bold\\\"}},{\\\"id\\\":\\\"el_table\\\",\\\"type\\\":\\\"table\\\",\\\"name\\\":\\\"数据表格\\\",\\\"x\\\":24,\\\"y\\\":88,\\\"width\\\":1150,\\\"height\\\":520,\\\"props\\\":{\\\"entityCode\\\":\\\"approver\\\",\\\"columns\\\":[{\\\"fieldCode\\\":\\\"name\\\",\\\"title\\\":\\\"姓名\\\",\\\"width\\\":140,\\\"fieldType\\\":\\\"VARCHAR\\\"},{\\\"fieldCode\\\":\\\"approver_type\\\",\\\"title\\\":\\\"人员类型\\\",\\\"width\\\":140,\\\"fieldType\\\":\\\"VARCHAR\\\"},{\\\"fieldCode\\\":\\\"department\\\",\\\"title\\\":\\\"所属院系\\\",\\\"width\\\":140,\\\"fieldType\\\":\\\"VARCHAR\\\"},{\\\"fieldCode\\\":\\\"title\\\",\\\"title\\\":\\\"职称\\\",\\\"width\\\":140,\\\"fieldType\\\":\\\"VARCHAR\\\"},{\\\"fieldCode\\\":\\\"phone\\\",\\\"title\\\":\\\"联系电话\\\",\\\"width\\\":140,\\\"fieldType\\\":\\\"VARCHAR\\\"},{\\\"fieldCode\\\":\\\"email\\\",\\\"title\\\":\\\"邮箱\\\",\\\"width\\\":180,\\\"fieldType\\\":\\\"VARCHAR\\\"},{\\\"fieldCode\\\":\\\"user_id\\\",\\\"title\\\":\\\"关联用户\\\",\\\"width\\\":100,\\\"fieldType\\\":\\\"LONG\\\"},{\\\"fieldCode\\\":\\\"status\\\",\\\"title\\\":\\\"在职状态\\\",\\\"width\\\":140,\\\"fieldType\\\":\\\"VARCHAR\\\"}],\\\"border\\\":true,\\\"showIndex\\\":true}}]\",\"pageType\":\"list\",\"entityCode\":\"approver\",\"version\":1,\"status\":\"published\",\"description\":\"教职工信息列表，支持搜索姓名、类型、院系\",\"createdAt\":\"2026-06-23T22:54:05.7572\",\"updatedAt\":\"2026-06-24T19:21:51.26033\",\"appCode\":\"leave_management\",\"publishedAt\":\"2026-06-23T22:54:05.754491\"}"
+  }, {
+    "itemType" : "page",
+    "itemCode" : "leave_approver_form",
+    "checksum" : "92c1defcefe82d9c145bccae6b435aa3d34d0649df7475e436e98e292aceb8b0",
+    "snapshotJson" : "{\"id\":4,\"pageCode\":\"leave_approver_form\",\"name\":\"教职工表单\",\"layoutJson\":\"[{\\\"id\\\":\\\"el_title\\\",\\\"type\\\":\\\"text\\\",\\\"name\\\":\\\"教职工表单\\\",\\\"x\\\":24,\\\"y\\\":24,\\\"width\\\":400,\\\"height\\\":48,\\\"props\\\":{\\\"text\\\":\\\"教职工表单\\\",\\\"fontSize\\\":24,\\\"fontWeight\\\":\\\"bold\\\"}},{\\\"id\\\":\\\"el_form\\\",\\\"type\\\":\\\"form\\\",\\\"name\\\":\\\"表单\\\",\\\"x\\\":24,\\\"y\\\":88,\\\"width\\\":700,\\\"height\\\":600,\\\"props\\\":{\\\"entityCode\\\":\\\"approver\\\",\\\"labelWidth\\\":100,\\\"fields\\\":[{\\\"code\\\":\\\"name\\\",\\\"name\\\":\\\"姓名\\\",\\\"fieldType\\\":\\\"VARCHAR\\\",\\\"required\\\":true,\\\"defaultValue\\\":null,\\\"referenceEntityCode\\\":null,\\\"referenceDisplayFieldCode\\\":null},{\\\"code\\\":\\\"approver_type\\\",\\\"name\\\":\\\"人员类型\\\",\\\"fieldType\\\":\\\"VARCHAR\\\",\\\"required\\\":true,\\\"defaultValue\\\":null,\\\"referenceEntityCode\\\":null,\\\"referenceDisplayFieldCode\\\":null},{\\\"code\\\":\\\"department\\\",\\\"name\\\":\\\"所属院系\\\",\\\"fieldType\\\":\\\"VARCHAR\\\",\\\"required\\\":false,\\\"defaultValue\\\":null,\\\"referenceEntityCode\\\":null,\\\"referenceDisplayFieldCode\\\":null},{\\\"code\\\":\\\"title\\\",\\\"name\\\":\\\"职称\\\",\\\"fieldType\\\":\\\"VARCHAR\\\",\\\"required\\\":false,\\\"defaultValue\\\":null,\\\"referenceEntityCode\\\":null,\\\"referenceDisplayFieldCode\\\":null},{\\\"code\\\":\\\"phone\\\",\\\"name\\\":\\\"联系电话\\\",\\\"fieldType\\\":\\\"VARCHAR\\\",\\\"required\\\":false,\\\"defaultValue\\\":null,\\\"referenceEntityCode\\\":null,\\\"referenceDisplayFieldCode\\\":null},{\\\"code\\\":\\\"email\\\",\\\"name\\\":\\\"邮箱\\\",\\\"fieldType\\\":\\\"VARCHAR\\\",\\\"required\\\":false,\\\"defaultValue\\\":null,\\\"referenceEntityCode\\\":null,\\\"referenceDisplayFieldCode\\\":null},{\\\"code\\\":\\\"status\\\",\\\"name\\\":\\\"在职状态\\\",\\\"fieldType\\\":\\\"VARCHAR\\\",\\\"required\\\":true,\\\"defaultValue\\\":\\\"active\\\",\\\"referenceEntityCode\\\":null,\\\"referenceDisplayFieldCode\\\":null}]}}]\",\"pageType\":\"form\",\"entityCode\":\"approver\",\"version\":1,\"status\":\"published\",\"description\":\"新增/编辑教职工信息\",\"createdAt\":\"2026-06-23T22:54:05.781606\",\"updatedAt\":\"2026-06-24T19:21:51.26033\",\"appCode\":\"leave_management\",\"publishedAt\":\"2026-06-23T22:54:05.776095\"}"
+  }, {
+    "itemType" : "page",
+    "itemCode" : "leave_application_list",
+    "checksum" : "693897acd5caeeff45da587207ee038cbcbd91f80bfc8d05b4c998a956e76fff",
+    "snapshotJson" : "{\"id\":5,\"pageCode\":\"leave_application_list\",\"name\":\"请假记录\",\"layoutJson\":\"[{\\\"id\\\":\\\"el_title\\\",\\\"type\\\":\\\"text\\\",\\\"name\\\":\\\"请假记录\\\",\\\"x\\\":24,\\\"y\\\":24,\\\"width\\\":400,\\\"height\\\":48,\\\"props\\\":{\\\"text\\\":\\\"请假记录\\\",\\\"fontSize\\\":24,\\\"fontWeight\\\":\\\"bold\\\"}},{\\\"id\\\":\\\"el_table\\\",\\\"type\\\":\\\"table\\\",\\\"name\\\":\\\"数据表格\\\",\\\"x\\\":24,\\\"y\\\":88,\\\"width\\\":1150,\\\"height\\\":520,\\\"props\\\":{\\\"entityCode\\\":\\\"leave_application\\\",\\\"columns\\\":[{\\\"fieldCode\\\":\\\"student_id\\\",\\\"title\\\":\\\"学生\\\",\\\"width\\\":100,\\\"fieldType\\\":\\\"LONG\\\"},{\\\"fieldCode\\\":\\\"student_name\\\",\\\"title\\\":\\\"学生姓名\\\",\\\"width\\\":140,\\\"fieldType\\\":\\\"VARCHAR\\\"},{\\\"fieldCode\\\":\\\"leave_type\\\",\\\"title\\\":\\\"请假类型\\\",\\\"width\\\":140,\\\"fieldType\\\":\\\"VARCHAR\\\"},{\\\"fieldCode\\\":\\\"reason\\\",\\\"title\\\":\\\"请假原因\\\",\\\"width\\\":200,\\\"fieldType\\\":\\\"TEXT\\\"},{\\\"fieldCode\\\":\\\"start_date\\\",\\\"title\\\":\\\"开始日期\\\",\\\"width\\\":120,\\\"fieldType\\\":\\\"DATE\\\"},{\\\"fieldCode\\\":\\\"end_date\\\",\\\"title\\\":\\\"结束日期\\\",\\\"width\\\":120,\\\"fieldType\\\":\\\"DATE\\\"},{\\\"fieldCode\\\":\\\"leave_days\\\",\\\"title\\\":\\\"请假天数\\\",\\\"width\\\":100,\\\"fieldType\\\":\\\"INTEGER\\\"},{\\\"fieldCode\\\":\\\"status\\\",\\\"title\\\":\\\"审批状态\\\",\\\"width\\\":140,\\\"fieldType\\\":\\\"VARCHAR\\\"}],\\\"border\\\":true,\\\"showIndex\\\":true}}]\",\"pageType\":\"list\",\"entityCode\":\"leave_application\",\"version\":1,\"status\":\"published\",\"description\":\"请假申请记录列表，可按学生、状态筛选\",\"createdAt\":\"2026-06-23T22:54:05.803746\",\"updatedAt\":\"2026-06-24T19:21:51.26033\",\"appCode\":\"leave_management\",\"publishedAt\":\"2026-06-23T22:54:05.800479\"}"
+  }, {
+    "itemType" : "page",
+    "itemCode" : "leave_application_form",
+    "checksum" : "468d2b13f49930a0d593ae6ac1e941d7063fb41721b46b336412740e800767d1",
+    "snapshotJson" : "{\"id\":6,\"pageCode\":\"leave_application_form\",\"name\":\"请假申请\",\"layoutJson\":\"[{\\\"id\\\":\\\"el_title\\\",\\\"type\\\":\\\"text\\\",\\\"name\\\":\\\"请假申请\\\",\\\"x\\\":24,\\\"y\\\":24,\\\"width\\\":400,\\\"height\\\":48,\\\"props\\\":{\\\"text\\\":\\\"请假申请\\\",\\\"fontSize\\\":24,\\\"fontWeight\\\":\\\"bold\\\"}},{\\\"id\\\":\\\"el_form\\\",\\\"type\\\":\\\"form\\\",\\\"name\\\":\\\"表单\\\",\\\"x\\\":24,\\\"y\\\":88,\\\"width\\\":700,\\\"height\\\":600,\\\"props\\\":{\\\"entityCode\\\":\\\"leave_application\\\",\\\"labelWidth\\\":100,\\\"fields\\\":[{\\\"code\\\":\\\"student_id\\\",\\\"name\\\":\\\"学生\\\",\\\"fieldType\\\":\\\"LONG\\\",\\\"required\\\":true,\\\"defaultValue\\\":null,\\\"referenceEntityCode\\\":\\\"student\\\",\\\"referenceDisplayFieldCode\\\":\\\"name\\\"},{\\\"code\\\":\\\"leave_type\\\",\\\"name\\\":\\\"请假类型\\\",\\\"fieldType\\\":\\\"VARCHAR\\\",\\\"required\\\":true,\\\"defaultValue\\\":null,\\\"referenceEntityCode\\\":null,\\\"referenceDisplayFieldCode\\\":null},{\\\"code\\\":\\\"reason\\\",\\\"name\\\":\\\"请假原因\\\",\\\"fieldType\\\":\\\"TEXT\\\",\\\"required\\\":true,\\\"defaultValue\\\":null,\\\"referenceEntityCode\\\":null,\\\"referenceDisplayFieldCode\\\":null},{\\\"code\\\":\\\"start_date\\\",\\\"name\\\":\\\"开始日期\\\",\\\"fieldType\\\":\\\"DATE\\\",\\\"required\\\":true,\\\"defaultValue\\\":null,\\\"referenceEntityCode\\\":null,\\\"referenceDisplayFieldCode\\\":null},{\\\"code\\\":\\\"end_date\\\",\\\"name\\\":\\\"结束日期\\\",\\\"fieldType\\\":\\\"DATE\\\",\\\"required\\\":true,\\\"defaultValue\\\":null,\\\"referenceEntityCode\\\":null,\\\"referenceDisplayFieldCode\\\":null}]}}]\",\"pageType\":\"form\",\"entityCode\":\"leave_application\",\"version\":1,\"status\":\"published\",\"description\":\"提交请假申请\",\"createdAt\":\"2026-06-23T22:54:05.829168\",\"updatedAt\":\"2026-06-24T19:21:51.26033\",\"appCode\":\"leave_management\",\"publishedAt\":\"2026-06-23T22:54:05.825047\"}"
+  }, {
+    "itemType" : "page",
+    "itemCode" : "leave_student_apply",
+    "checksum" : "ed6e0b7e062a0cc8b067eebd1d8da845043d917f16299bcfef132d43253e7f03",
+    "snapshotJson" : "{\"id\":7,\"pageCode\":\"leave_student_apply\",\"name\":\"新建请假\",\"layoutJson\":\"[{\\\"id\\\":\\\"el_title\\\",\\\"type\\\":\\\"text\\\",\\\"name\\\":\\\"新建请假\\\",\\\"x\\\":24,\\\"y\\\":24,\\\"width\\\":300,\\\"height\\\":40,\\\"props\\\":{\\\"text\\\":\\\"新建请假\\\",\\\"fontSize\\\":22,\\\"fontWeight\\\":\\\"bold\\\"}},{\\\"id\\\":\\\"el_leave_form\\\",\\\"type\\\":\\\"form\\\",\\\"name\\\":\\\"请假表单\\\",\\\"x\\\":24,\\\"y\\\":80,\\\"width\\\":600,\\\"height\\\":550,\\\"props\\\":{\\\"submitApi\\\":\\\"/lowcode/leave/apply\\\",\\\"labelWidth\\\":100,\\\"fields\\\":[{\\\"code\\\":\\\"studentId\\\",\\\"fieldType\\\":\\\"LONG\\\",\\\"name\\\":\\\"学生ID\\\",\\\"required\\\":true},{\\\"code\\\":\\\"studentName\\\",\\\"fieldType\\\":\\\"VARCHAR\\\",\\\"name\\\":\\\"学生姓名\\\",\\\"required\\\":true},{\\\"code\\\":\\\"leaveType\\\",\\\"fieldType\\\":\\\"VARCHAR\\\",\\\"name\\\":\\\"请假类型\\\",\\\"required\\\":true},{\\\"code\\\":\\\"reason\\\",\\\"fieldType\\\":\\\"TEXT\\\",\\\"name\\\":\\\"请假原因\\\",\\\"required\\\":true},{\\\"code\\\":\\\"startDate\\\",\\\"fieldType\\\":\\\"DATE\\\",\\\"name\\\":\\\"开始日期\\\",\\\"required\\\":true},{\\\"code\\\":\\\"endDate\\\",\\\"fieldType\\\":\\\"DATE\\\",\\\"name\\\":\\\"结束日期\\\",\\\"required\\\":true}]}},{\\\"id\\\":\\\"el_hint\\\",\\\"type\\\":\\\"text\\\",\\\"name\\\":\\\"提示：请假≤3天仅需辅导员审批，>3天需系主任审批\\\",\\\"x\\\":24,\\\"y\\\":650,\\\"width\\\":600,\\\"height\\\":30,\\\"props\\\":{\\\"text\\\":\\\"提示：请假≤3天仅需辅导员审批，>3天需系主任审批\\\",\\\"fontSize\\\":13,\\\"fontWeight\\\":\\\"bold\\\"}}]\",\"pageType\":\"form\",\"entityCode\":\"leave_application\",\"version\":1,\"status\":\"published\",\"description\":\"在线填写学号、姓名、请假时间、请假理由并提交\",\"createdAt\":\"2026-06-24T20:21:56.415685\",\"updatedAt\":\"2026-06-24T20:21:56.65085\",\"appCode\":\"leave_management\",\"publishedAt\":\"2026-06-24T20:21:56.410756\"}"
+  }, {
+    "itemType" : "page",
+    "itemCode" : "leave_student_records",
+    "checksum" : "5e367d1538189ad307fd206f5b04c254efb99caa8b11327b5afea9622e8babda",
+    "snapshotJson" : "{\"id\":8,\"pageCode\":\"leave_student_records\",\"name\":\"请假记录\",\"layoutJson\":\"[{\\\"id\\\":\\\"el_title\\\",\\\"type\\\":\\\"text\\\",\\\"name\\\":\\\"我的请假记录\\\",\\\"x\\\":24,\\\"y\\\":24,\\\"width\\\":300,\\\"height\\\":40,\\\"props\\\":{\\\"text\\\":\\\"我的请假记录\\\",\\\"fontSize\\\":22,\\\"fontWeight\\\":\\\"bold\\\"}},{\\\"id\\\":\\\"el_records\\\",\\\"type\\\":\\\"table\\\",\\\"name\\\":\\\"数据表格\\\",\\\"x\\\":24,\\\"y\\\":80,\\\"width\\\":1200,\\\"height\\\":500,\\\"props\\\":{\\\"dataSource\\\":\\\"/lowcode/leave/student-records\\\",\\\"columns\\\":[{\\\"fieldCode\\\":\\\"student_name\\\",\\\"title\\\":\\\"学生姓名\\\",\\\"width\\\":100,\\\"fieldType\\\":\\\"VARCHAR\\\"},{\\\"fieldCode\\\":\\\"leave_type\\\",\\\"title\\\":\\\"请假类型\\\",\\\"width\\\":90,\\\"fieldType\\\":\\\"VARCHAR\\\"},{\\\"fieldCode\\\":\\\"reason\\\",\\\"title\\\":\\\"请假原因\\\",\\\"width\\\":180,\\\"fieldType\\\":\\\"TEXT\\\"},{\\\"fieldCode\\\":\\\"start_date\\\",\\\"title\\\":\\\"开始日期\\\",\\\"width\\\":120,\\\"fieldType\\\":\\\"DATE\\\"},{\\\"fieldCode\\\":\\\"end_date\\\",\\\"title\\\":\\\"结束日期\\\",\\\"width\\\":120,\\\"fieldType\\\":\\\"DATE\\\"},{\\\"fieldCode\\\":\\\"leave_days\\\",\\\"title\\\":\\\"天数\\\",\\\"width\\\":70,\\\"fieldType\\\":\\\"INTEGER\\\"},{\\\"fieldCode\\\":\\\"status\\\",\\\"title\\\":\\\"审核状态\\\",\\\"width\\\":130,\\\"fieldType\\\":\\\"VARCHAR\\\"}],\\\"border\\\":true,\\\"showIndex\\\":true,\\\"pageSize\\\":15}}]\",\"pageType\":\"list\",\"entityCode\":\"leave_application\",\"version\":1,\"status\":\"published\",\"description\":\"查看自己的请假信息和审核状态\",\"createdAt\":\"2026-06-24T20:21:56.429608\",\"updatedAt\":\"2026-06-24T20:21:56.65085\",\"appCode\":\"leave_management\",\"publishedAt\":\"2026-06-24T20:21:56.424695\"}"
+  }, {
+    "itemType" : "page",
+    "itemCode" : "leave_student_profile",
+    "checksum" : "e5c73d0ecef93b605a03bada123adf73392a20eb16c26bfab17fd7de9cb2e7ee",
+    "snapshotJson" : "{\"id\":9,\"pageCode\":\"leave_student_profile\",\"name\":\"个人信息\",\"layoutJson\":\"[{\\\"id\\\":\\\"el_title\\\",\\\"type\\\":\\\"text\\\",\\\"name\\\":\\\"个人信息\\\",\\\"x\\\":24,\\\"y\\\":24,\\\"width\\\":200,\\\"height\\\":40,\\\"props\\\":{\\\"text\\\":\\\"个人信息\\\",\\\"fontSize\\\":22,\\\"fontWeight\\\":\\\"bold\\\"}},{\\\"id\\\":\\\"el_info\\\",\\\"type\\\":\\\"text\\\",\\\"name\\\":\\\"基本信息\\\",\\\"x\\\":24,\\\"y\\\":80,\\\"width\\\":600,\\\"height\\\":400,\\\"props\\\":{\\\"text\\\":\\\"个人信息将通过关联账户自动展示\\\",\\\"fontSize\\\":14}}]\",\"pageType\":\"detail\",\"entityCode\":\"student\",\"version\":1,\"status\":\"published\",\"description\":\"查看我的基本信息\",\"createdAt\":\"2026-06-24T20:21:56.465822\",\"updatedAt\":\"2026-06-24T20:21:56.65085\",\"appCode\":\"leave_management\",\"publishedAt\":\"2026-06-24T20:21:56.460867\"}"
+  }, {
+    "itemType" : "page",
+    "itemCode" : "leave_counselor_review",
+    "checksum" : "1e070c528fa05aa1f82804a8910b0daa9c6d39087b51cffc9860a49c594865a4",
+    "snapshotJson" : "{\"id\":10,\"pageCode\":\"leave_counselor_review\",\"name\":\"请假审核\",\"layoutJson\":\"[{\\\"id\\\":\\\"el_title\\\",\\\"type\\\":\\\"text\\\",\\\"name\\\":\\\"请假审核 — 辅导员\\\",\\\"x\\\":24,\\\"y\\\":24,\\\"width\\\":400,\\\"height\\\":40,\\\"props\\\":{\\\"text\\\":\\\"请假审核 — 辅导员\\\",\\\"fontSize\\\":22,\\\"fontWeight\\\":\\\"bold\\\"}},{\\\"id\\\":\\\"el_sub\\\",\\\"type\\\":\\\"text\\\",\\\"name\\\":\\\"待辅导员审核的请假申请\\\",\\\"x\\\":24,\\\"y\\\":60,\\\"width\\\":400,\\\"height\\\":24,\\\"props\\\":{\\\"text\\\":\\\"待辅导员审核的请假申请\\\",\\\"fontSize\\\":13,\\\"fontWeight\\\":\\\"bold\\\"}},{\\\"id\\\":\\\"el_review\\\",\\\"type\\\":\\\"table\\\",\\\"name\\\":\\\"数据表格\\\",\\\"x\\\":24,\\\"y\\\":96,\\\"width\\\":1200,\\\"height\\\":480,\\\"props\\\":{\\\"dataSource\\\":\\\"/lowcode/leave/counselor-pending\\\",\\\"columns\\\":[{\\\"fieldCode\\\":\\\"student_name\\\",\\\"title\\\":\\\"学生姓名\\\",\\\"width\\\":100,\\\"fieldType\\\":\\\"VARCHAR\\\"},{\\\"fieldCode\\\":\\\"leave_type\\\",\\\"title\\\":\\\"请假类型\\\",\\\"width\\\":90,\\\"fieldType\\\":\\\"VARCHAR\\\"},{\\\"fieldCode\\\":\\\"reason\\\",\\\"title\\\":\\\"请假原因\\\",\\\"width\\\":180,\\\"fieldType\\\":\\\"TEXT\\\"},{\\\"fieldCode\\\":\\\"start_date\\\",\\\"title\\\":\\\"开始日期\\\",\\\"width\\\":120,\\\"fieldType\\\":\\\"DATE\\\"},{\\\"fieldCode\\\":\\\"end_date\\\",\\\"title\\\":\\\"结束日期\\\",\\\"width\\\":120,\\\"fieldType\\\":\\\"DATE\\\"},{\\\"fieldCode\\\":\\\"leave_days\\\",\\\"title\\\":\\\"天数\\\",\\\"width\\\":70,\\\"fieldType\\\":\\\"INTEGER\\\"},{\\\"fieldCode\\\":\\\"status\\\",\\\"title\\\":\\\"审核状态\\\",\\\"width\\\":130,\\\"fieldType\\\":\\\"VARCHAR\\\"}],\\\"border\\\":true,\\\"showIndex\\\":true,\\\"pageSize\\\":15}}]\",\"pageType\":\"list\",\"entityCode\":\"leave_application\",\"version\":1,\"status\":\"published\",\"description\":\"辅导员查看待审核的请假申请，可以审批通过或驳回\",\"createdAt\":\"2026-06-24T20:21:56.479715\",\"updatedAt\":\"2026-06-24T20:21:56.65085\",\"appCode\":\"leave_management\",\"publishedAt\":\"2026-06-24T20:21:56.474556\"}"
+  }, {
+    "itemType" : "page",
+    "itemCode" : "leave_counselor_profile",
+    "checksum" : "42cdd38f53883ed328ad83ba244a024ec0ebffef1b273cb728007d1c4b0c13b4",
+    "snapshotJson" : "{\"id\":11,\"pageCode\":\"leave_counselor_profile\",\"name\":\"个人信息\",\"layoutJson\":\"[{\\\"id\\\":\\\"el_title\\\",\\\"type\\\":\\\"text\\\",\\\"name\\\":\\\"个人信息\\\",\\\"x\\\":24,\\\"y\\\":24,\\\"width\\\":200,\\\"height\\\":40,\\\"props\\\":{\\\"text\\\":\\\"个人信息\\\",\\\"fontSize\\\":22,\\\"fontWeight\\\":\\\"bold\\\"}},{\\\"id\\\":\\\"el_info\\\",\\\"type\\\":\\\"text\\\",\\\"name\\\":\\\"基本信息\\\",\\\"x\\\":24,\\\"y\\\":80,\\\"width\\\":600,\\\"height\\\":400,\\\"props\\\":{\\\"text\\\":\\\"个人信息将通过关联账户自动展示\\\",\\\"fontSize\\\":14}}]\",\"pageType\":\"detail\",\"entityCode\":\"approver\",\"version\":1,\"status\":\"published\",\"description\":\"查看我的基本信息\",\"createdAt\":\"2026-06-24T20:21:56.501963\",\"updatedAt\":\"2026-06-24T20:21:56.65085\",\"appCode\":\"leave_management\",\"publishedAt\":\"2026-06-24T20:21:56.497336\"}"
+  }, {
+    "itemType" : "page",
+    "itemCode" : "leave_dean_review",
+    "checksum" : "c5fdcce9b6b98bfbe08fc55da7615a12c4396d1c64254fe9f39bd81a0bbc6829",
+    "snapshotJson" : "{\"id\":12,\"pageCode\":\"leave_dean_review\",\"name\":\"请假审核\",\"layoutJson\":\"[{\\\"id\\\":\\\"el_title\\\",\\\"type\\\":\\\"text\\\",\\\"name\\\":\\\"请假审核 — 系主任\\\",\\\"x\\\":24,\\\"y\\\":24,\\\"width\\\":400,\\\"height\\\":40,\\\"props\\\":{\\\"text\\\":\\\"请假审核 — 系主任\\\",\\\"fontSize\\\":22,\\\"fontWeight\\\":\\\"bold\\\"}},{\\\"id\\\":\\\"el_sub\\\",\\\"type\\\":\\\"text\\\",\\\"name\\\":\\\"待系主任审核的请假申请（仅超过3天的假条）\\\",\\\"x\\\":24,\\\"y\\\":60,\\\"width\\\":500,\\\"height\\\":24,\\\"props\\\":{\\\"text\\\":\\\"待系主任审核的请假申请（仅超过3天的假条）\\\",\\\"fontSize\\\":13,\\\"fontWeight\\\":\\\"bold\\\"}},{\\\"id\\\":\\\"el_review\\\",\\\"type\\\":\\\"table\\\",\\\"name\\\":\\\"数据表格\\\",\\\"x\\\":24,\\\"y\\\":96,\\\"width\\\":1200,\\\"height\\\":480,\\\"props\\\":{\\\"dataSource\\\":\\\"/lowcode/leave/dean-pending\\\",\\\"columns\\\":[{\\\"fieldCode\\\":\\\"student_name\\\",\\\"title\\\":\\\"学生姓名\\\",\\\"width\\\":100,\\\"fieldType\\\":\\\"VARCHAR\\\"},{\\\"fieldCode\\\":\\\"leave_type\\\",\\\"title\\\":\\\"请假类型\\\",\\\"width\\\":90,\\\"fieldType\\\":\\\"VARCHAR\\\"},{\\\"fieldCode\\\":\\\"reason\\\",\\\"title\\\":\\\"请假原因\\\",\\\"width\\\":180,\\\"fieldType\\\":\\\"TEXT\\\"},{\\\"fieldCode\\\":\\\"start_date\\\",\\\"title\\\":\\\"开始日期\\\",\\\"width\\\":120,\\\"fieldType\\\":\\\"DATE\\\"},{\\\"fieldCode\\\":\\\"end_date\\\",\\\"title\\\":\\\"结束日期\\\",\\\"width\\\":120,\\\"fieldType\\\":\\\"DATE\\\"},{\\\"fieldCode\\\":\\\"leave_days\\\",\\\"title\\\":\\\"天数\\\",\\\"width\\\":70,\\\"fieldType\\\":\\\"INTEGER\\\"},{\\\"fieldCode\\\":\\\"status\\\",\\\"title\\\":\\\"审核状态\\\",\\\"width\\\":130,\\\"fieldType\\\":\\\"VARCHAR\\\"}],\\\"border\\\":true,\\\"showIndex\\\":true,\\\"pageSize\\\":15}}]\",\"pageType\":\"list\",\"entityCode\":\"leave_application\",\"version\":1,\"status\":\"published\",\"description\":\"系主任查看待审核的请假申请（仅超过3天），可以审批通过或驳回\",\"createdAt\":\"2026-06-24T20:21:56.512645\",\"updatedAt\":\"2026-06-24T20:21:56.65085\",\"appCode\":\"leave_management\",\"publishedAt\":\"2026-06-24T20:21:56.508553\"}"
+  }, {
+    "itemType" : "page",
+    "itemCode" : "leave_dean_profile",
+    "checksum" : "ac76203c711c7f624b3226042a6027fc6c152857149c4d487585aba812d325fa",
+    "snapshotJson" : "{\"id\":13,\"pageCode\":\"leave_dean_profile\",\"name\":\"个人信息\",\"layoutJson\":\"[{\\\"id\\\":\\\"el_title\\\",\\\"type\\\":\\\"text\\\",\\\"name\\\":\\\"个人信息\\\",\\\"x\\\":24,\\\"y\\\":24,\\\"width\\\":200,\\\"height\\\":40,\\\"props\\\":{\\\"text\\\":\\\"个人信息\\\",\\\"fontSize\\\":22,\\\"fontWeight\\\":\\\"bold\\\"}},{\\\"id\\\":\\\"el_info\\\",\\\"type\\\":\\\"text\\\",\\\"name\\\":\\\"基本信息\\\",\\\"x\\\":24,\\\"y\\\":80,\\\"width\\\":600,\\\"height\\\":400,\\\"props\\\":{\\\"text\\\":\\\"个人信息将通过关联账户自动展示\\\",\\\"fontSize\\\":14}}]\",\"pageType\":\"detail\",\"entityCode\":\"approver\",\"version\":1,\"status\":\"published\",\"description\":\"查看我的基本信息\",\"createdAt\":\"2026-06-24T20:21:56.532692\",\"updatedAt\":\"2026-06-24T20:21:56.65085\",\"appCode\":\"leave_management\",\"publishedAt\":\"2026-06-24T20:21:56.52759\"}"
+  }, {
+    "itemType" : "page",
+    "itemCode" : "leave_admin_users",
+    "checksum" : "ddc9678e5c87b20c71cee85ea033a856311fbcec26049b2926cdffc996ade8c8",
+    "snapshotJson" : "{\"id\":14,\"pageCode\":\"leave_admin_users\",\"name\":\"用户管理\",\"layoutJson\":\"[{\\\"id\\\":\\\"el_title\\\",\\\"type\\\":\\\"text\\\",\\\"name\\\":\\\"用户管理\\\",\\\"x\\\":24,\\\"y\\\":24,\\\"width\\\":300,\\\"height\\\":40,\\\"props\\\":{\\\"text\\\":\\\"用户管理\\\",\\\"fontSize\\\":22,\\\"fontWeight\\\":\\\"bold\\\"}},{\\\"id\\\":\\\"el_users\\\",\\\"type\\\":\\\"table\\\",\\\"name\\\":\\\"数据表格\\\",\\\"x\\\":24,\\\"y\\\":80,\\\"width\\\":1200,\\\"height\\\":480,\\\"props\\\":{\\\"dataSource\\\":\\\"/lowcode/leave/admin/users\\\",\\\"columns\\\":[{\\\"fieldCode\\\":\\\"username\\\",\\\"title\\\":\\\"用户名\\\",\\\"width\\\":120,\\\"fieldType\\\":\\\"VARCHAR\\\"},{\\\"fieldCode\\\":\\\"nickname\\\",\\\"title\\\":\\\"昵称\\\",\\\"width\\\":120,\\\"fieldType\\\":\\\"VARCHAR\\\"},{\\\"fieldCode\\\":\\\"roles\\\",\\\"title\\\":\\\"角色\\\",\\\"width\\\":200,\\\"fieldType\\\":\\\"VARCHAR\\\"},{\\\"fieldCode\\\":\\\"status\\\",\\\"title\\\":\\\"状态\\\",\\\"width\\\":100,\\\"fieldType\\\":\\\"VARCHAR\\\"},{\\\"fieldCode\\\":\\\"createdAt\\\",\\\"title\\\":\\\"创建时间\\\",\\\"width\\\":160,\\\"fieldType\\\":\\\"DATETIME\\\"}],\\\"border\\\":true,\\\"showIndex\\\":true,\\\"pageSize\\\":15}}]\",\"pageType\":\"list\",\"entityCode\":null,\"version\":1,\"status\":\"published\",\"description\":\"管理员查看所有用户，冻结或解冻账号\",\"createdAt\":\"2026-06-24T20:21:56.541636\",\"updatedAt\":\"2026-06-24T20:21:56.65085\",\"appCode\":\"leave_management\",\"publishedAt\":\"2026-06-24T20:21:56.539299\"}"
+  }, {
+    "itemType" : "page",
+    "itemCode" : "leave_admin_leaves",
+    "checksum" : "b7bc4aa5e752708b0ab363d2a88a6c2c839c42e74c3904e8d99a28a2e0bb6dd9",
+    "snapshotJson" : "{\"id\":15,\"pageCode\":\"leave_admin_leaves\",\"name\":\"假条管理\",\"layoutJson\":\"[{\\\"id\\\":\\\"el_title\\\",\\\"type\\\":\\\"text\\\",\\\"name\\\":\\\"假条管理\\\",\\\"x\\\":24,\\\"y\\\":24,\\\"width\\\":300,\\\"height\\\":40,\\\"props\\\":{\\\"text\\\":\\\"假条管理\\\",\\\"fontSize\\\":22,\\\"fontWeight\\\":\\\"bold\\\"}},{\\\"id\\\":\\\"el_leaves\\\",\\\"type\\\":\\\"table\\\",\\\"name\\\":\\\"数据表格\\\",\\\"x\\\":24,\\\"y\\\":80,\\\"width\\\":1200,\\\"height\\\":480,\\\"props\\\":{\\\"dataSource\\\":\\\"/lowcode/leave/records\\\",\\\"columns\\\":[{\\\"fieldCode\\\":\\\"student_name\\\",\\\"title\\\":\\\"学生姓名\\\",\\\"width\\\":100,\\\"fieldType\\\":\\\"VARCHAR\\\"},{\\\"fieldCode\\\":\\\"leave_type\\\",\\\"title\\\":\\\"请假类型\\\",\\\"width\\\":90,\\\"fieldType\\\":\\\"VARCHAR\\\"},{\\\"fieldCode\\\":\\\"reason\\\",\\\"title\\\":\\\"请假原因\\\",\\\"width\\\":180,\\\"fieldType\\\":\\\"TEXT\\\"},{\\\"fieldCode\\\":\\\"start_date\\\",\\\"title\\\":\\\"开始日期\\\",\\\"width\\\":120,\\\"fieldType\\\":\\\"DATE\\\"},{\\\"fieldCode\\\":\\\"end_date\\\",\\\"title\\\":\\\"结束日期\\\",\\\"width\\\":120,\\\"fieldType\\\":\\\"DATE\\\"},{\\\"fieldCode\\\":\\\"leave_days\\\",\\\"title\\\":\\\"天数\\\",\\\"width\\\":70,\\\"fieldType\\\":\\\"INTEGER\\\"},{\\\"fieldCode\\\":\\\"status\\\",\\\"title\\\":\\\"审核状态\\\",\\\"width\\\":130,\\\"fieldType\\\":\\\"VARCHAR\\\"}],\\\"border\\\":true,\\\"showIndex\\\":true,\\\"pageSize\\\":15}}]\",\"pageType\":\"list\",\"entityCode\":\"leave_application\",\"version\":1,\"status\":\"published\",\"description\":\"管理员查看所有请假记录，可以删除假条\",\"createdAt\":\"2026-06-24T20:21:56.567172\",\"updatedAt\":\"2026-06-24T20:21:56.65085\",\"appCode\":\"leave_management\",\"publishedAt\":\"2026-06-24T20:21:56.563785\"}"
+  }, {
+    "itemType" : "page",
+    "itemCode" : "leave_admin_profile",
+    "checksum" : "34c033c84f3e2e5ccac8aae146fbd104cfcba388a855cd9936fa42d66919e5e8",
+    "snapshotJson" : "{\"id\":16,\"pageCode\":\"leave_admin_profile\",\"name\":\"个人信息\",\"layoutJson\":\"[{\\\"id\\\":\\\"el_title\\\",\\\"type\\\":\\\"text\\\",\\\"name\\\":\\\"个人信息\\\",\\\"x\\\":24,\\\"y\\\":24,\\\"width\\\":200,\\\"height\\\":40,\\\"props\\\":{\\\"text\\\":\\\"个人信息\\\",\\\"fontSize\\\":22,\\\"fontWeight\\\":\\\"bold\\\"}},{\\\"id\\\":\\\"el_info\\\",\\\"type\\\":\\\"text\\\",\\\"name\\\":\\\"基本信息\\\",\\\"x\\\":24,\\\"y\\\":80,\\\"width\\\":600,\\\"height\\\":400,\\\"props\\\":{\\\"text\\\":\\\"个人信息将通过关联账户自动展示\\\",\\\"fontSize\\\":14}}]\",\"pageType\":\"detail\",\"entityCode\":\"approver\",\"version\":1,\"status\":\"published\",\"description\":\"查看我的基本信息\",\"createdAt\":\"2026-06-24T20:21:56.586147\",\"updatedAt\":\"2026-06-24T20:21:56.65085\",\"appCode\":\"leave_management\",\"publishedAt\":\"2026-06-24T20:21:56.582528\"}"
+  }, {
+    "itemType" : "entity",
+    "itemCode" : "approver",
+    "checksum" : "baaea78bb5b2b84f534446cc1abd1cf1d8b6f62dab9bfe9f8d43124724744b7d",
+    "snapshotJson" : "{\"fields\":[{\"id\":11,\"entityId\":2,\"code\":\"name\",\"name\":\"姓名\",\"columnName\":\"name\",\"fieldType\":\"VARCHAR\",\"length\":64,\"precision\":null,\"scale\":null,\"nullable\":false,\"defaultValue\":null,\"isPrimaryKey\":false,\"isAutoIncrement\":false,\"sortOrder\":1,\"showInList\":true,\"showInForm\":true,\"showInSearch\":true,\"dictCode\":null,\"referenceEntityCode\":null,\"referenceDisplayFieldCode\":null,\"validationRule\":null},{\"id\":12,\"entityId\":2,\"code\":\"approver_type\",\"name\":\"人员类型\",\"columnName\":\"approver_type\",\"fieldType\":\"VARCHAR\",\"length\":32,\"precision\":null,\"scale\":null,\"nullable\":false,\"defaultValue\":null,\"isPrimaryKey\":false,\"isAutoIncrement\":false,\"sortOrder\":2,\"showInList\":true,\"showInForm\":true,\"showInSearch\":true,\"dictCode\":null,\"referenceEntityCode\":null,\"referenceDisplayFieldCode\":null,\"validationRule\":null},{\"id\":13,\"entityId\":2,\"code\":\"department\",\"name\":\"所属院系\",\"columnName\":\"department\",\"fieldType\":\"VARCHAR\",\"length\":64,\"precision\":null,\"scale\":null,\"nullable\":true,\"defaultValue\":null,\"isPrimaryKey\":false,\"isAutoIncrement\":false,\"sortOrder\":3,\"showInList\":true,\"showInForm\":true,\"showInSearch\":true,\"dictCode\":null,\"referenceEntityCode\":null,\"referenceDisplayFieldCode\":null,\"validationRule\":null},{\"id\":14,\"entityId\":2,\"code\":\"title\",\"name\":\"职称\",\"columnName\":\"title\",\"fieldType\":\"VARCHAR\",\"length\":32,\"precision\":null,\"scale\":null,\"nullable\":true,\"defaultValue\":null,\"isPrimaryKey\":false,\"isAutoIncrement\":false,\"sortOrder\":4,\"showInList\":true,\"showInForm\":true,\"showInSearch\":false,\"dictCode\":null,\"referenceEntityCode\":null,\"referenceDisplayFieldCode\":null,\"validationRule\":null},{\"id\":15,\"entityId\":2,\"code\":\"phone\",\"name\":\"联系电话\",\"columnName\":\"phone\",\"fieldType\":\"VARCHAR\",\"length\":20,\"precision\":null,\"scale\":null,\"nullable\":true,\"defaultValue\":null,\"isPrimaryKey\":false,\"isAutoIncrement\":false,\"sortOrder\":5,\"showInList\":true,\"showInForm\":true,\"showInSearch\":false,\"dictCode\":null,\"referenceEntityCode\":null,\"referenceDisplayFieldCode\":null,\"validationRule\":null},{\"id\":16,\"entityId\":2,\"code\":\"email\",\"name\":\"邮箱\",\"columnName\":\"email\",\"fieldType\":\"VARCHAR\",\"length\":128,\"precision\":null,\"scale\":null,\"nullable\":true,\"defaultValue\":null,\"isPrimaryKey\":false,\"isAutoIncrement\":false,\"sortOrder\":6,\"showInList\":true,\"showInForm\":true,\"showInSearch\":false,\"dictCode\":null,\"referenceEntityCode\":null,\"referenceDisplayFieldCode\":null,\"validationRule\":null},{\"id\":17,\"entityId\":2,\"code\":\"user_id\",\"name\":\"关联用户\",\"columnName\":\"user_id\",\"fieldType\":\"LONG\",\"length\":null,\"precision\":null,\"scale\":null,\"nullable\":true,\"defaultValue\":null,\"isPrimaryKey\":false,\"isAutoIncrement\":false,\"sortOrder\":7,\"showInList\":true,\"showInForm\":false,\"showInSearch\":false,\"dictCode\":null,\"referenceEntityCode\":null,\"referenceDisplayFieldCode\":null,\"validationRule\":null},{\"id\":18,\"entityId\":2,\"code\":\"status\",\"name\":\"在职状态\",\"columnName\":\"status\",\"fieldType\":\"VARCHAR\",\"length\":16,\"precision\":null,\"scale\":null,\"nullable\":false,\"defaultValue\":\"active\",\"isPrimaryKey\":false,\"isAutoIncrement\":false,\"sortOrder\":8,\"showInList\":true,\"showInForm\":true,\"showInSearch\":true,\"dictCode\":null,\"referenceEntityCode\":null,\"referenceDisplayFieldCode\":null,\"validationRule\":null}],\"entity\":{\"id\":2,\"code\":\"approver\",\"name\":\"教职工信息\",\"tableName\":\"lc_approver\",\"description\":\"教职工基本信息，通过 approver_type 区分辅导员(counselor)和系主任(dept_head)\",\"status\":\"published\",\"fieldCount\":null,\"createdAt\":\"2026-06-23T22:54:05.114508\",\"updatedAt\":\"2026-06-23T22:54:05.364355\"}}"
+  }, {
+    "itemType" : "entity",
+    "itemCode" : "student",
+    "checksum" : "31d86ce63589952382603238436c9a34748fd1d20fa261b98fcfb828414983f9",
+    "snapshotJson" : "{\"fields\":[{\"id\":1,\"entityId\":1,\"code\":\"student_no\",\"name\":\"学号\",\"columnName\":\"student_no\",\"fieldType\":\"VARCHAR\",\"length\":20,\"precision\":null,\"scale\":null,\"nullable\":false,\"defaultValue\":null,\"isPrimaryKey\":false,\"isAutoIncrement\":false,\"sortOrder\":1,\"showInList\":true,\"showInForm\":true,\"showInSearch\":true,\"dictCode\":null,\"referenceEntityCode\":null,\"referenceDisplayFieldCode\":null,\"validationRule\":null},{\"id\":2,\"entityId\":1,\"code\":\"name\",\"name\":\"姓名\",\"columnName\":\"name\",\"fieldType\":\"VARCHAR\",\"length\":64,\"precision\":null,\"scale\":null,\"nullable\":false,\"defaultValue\":null,\"isPrimaryKey\":false,\"isAutoIncrement\":false,\"sortOrder\":2,\"showInList\":true,\"showInForm\":true,\"showInSearch\":true,\"dictCode\":null,\"referenceEntityCode\":null,\"referenceDisplayFieldCode\":null,\"validationRule\":null},{\"id\":3,\"entityId\":1,\"code\":\"gender\",\"name\":\"性别\",\"columnName\":\"gender\",\"fieldType\":\"VARCHAR\",\"length\":8,\"precision\":null,\"scale\":null,\"nullable\":true,\"defaultValue\":null,\"isPrimaryKey\":false,\"isAutoIncrement\":false,\"sortOrder\":3,\"showInList\":true,\"showInForm\":true,\"showInSearch\":false,\"dictCode\":null,\"referenceEntityCode\":null,\"referenceDisplayFieldCode\":null,\"validationRule\":null},{\"id\":4,\"entityId\":1,\"code\":\"class_name\",\"name\":\"班级\",\"columnName\":\"class_name\",\"fieldType\":\"VARCHAR\",\"length\":64,\"precision\":null,\"scale\":null,\"nullable\":true,\"defaultValue\":null,\"isPrimaryKey\":false,\"isAutoIncrement\":false,\"sortOrder\":4,\"showInList\":true,\"showInForm\":true,\"showInSearch\":true,\"dictCode\":null,\"referenceEntityCode\":null,\"referenceDisplayFieldCode\":null,\"validationRule\":null},{\"id\":5,\"entityId\":1,\"code\":\"grade\",\"name\":\"年级\",\"columnName\":\"grade\",\"fieldType\":\"VARCHAR\",\"length\":16,\"precision\":null,\"scale\":null,\"nullable\":true,\"defaultValue\":null,\"isPrimaryKey\":false,\"isAutoIncrement\":false,\"sortOrder\":5,\"showInList\":true,\"showInForm\":true,\"showInSearch\":false,\"dictCode\":null,\"referenceEntityCode\":null,\"referenceDisplayFieldCode\":null,\"validationRule\":null},{\"id\":6,\"entityId\":1,\"code\":\"department\",\"name\":\"院系\",\"columnName\":\"department\",\"fieldType\":\"VARCHAR\",\"length\":64,\"precision\":null,\"scale\":null,\"nullable\":true,\"defaultValue\":null,\"isPrimaryKey\":false,\"isAutoIncrement\":false,\"sortOrder\":6,\"showInList\":true,\"showInForm\":true,\"showInSearch\":false,\"dictCode\":null,\"referenceEntityCode\":null,\"referenceDisplayFieldCode\":null,\"validationRule\":null},{\"id\":7,\"entityId\":1,\"code\":\"phone\",\"name\":\"联系电话\",\"columnName\":\"phone\",\"fieldType\":\"VARCHAR\",\"length\":20,\"precision\":null,\"scale\":null,\"nullable\":true,\"defaultValue\":null,\"isPrimaryKey\":false,\"isAutoIncrement\":false,\"sortOrder\":7,\"showInList\":true,\"showInForm\":true,\"showInSearch\":false,\"dictCode\":null,\"referenceEntityCode\":null,\"referenceDisplayFieldCode\":null,\"validationRule\":null},{\"id\":8,\"entityId\":1,\"code\":\"email\",\"name\":\"邮箱\",\"columnName\":\"email\",\"fieldType\":\"VARCHAR\",\"length\":128,\"precision\":null,\"scale\":null,\"nullable\":true,\"defaultValue\":null,\"isPrimaryKey\":false,\"isAutoIncrement\":false,\"sortOrder\":8,\"showInList\":true,\"showInForm\":true,\"showInSearch\":false,\"dictCode\":null,\"referenceEntityCode\":null,\"referenceDisplayFieldCode\":null,\"validationRule\":null},{\"id\":9,\"entityId\":1,\"code\":\"user_id\",\"name\":\"关联用户\",\"columnName\":\"user_id\",\"fieldType\":\"LONG\",\"length\":null,\"precision\":null,\"scale\":null,\"nullable\":true,\"defaultValue\":null,\"isPrimaryKey\":false,\"isAutoIncrement\":false,\"sortOrder\":9,\"showInList\":true,\"showInForm\":false,\"showInSearch\":false,\"dictCode\":null,\"referenceEntityCode\":null,\"referenceDisplayFieldCode\":null,\"validationRule\":null},{\"id\":10,\"entityId\":1,\"code\":\"status\",\"name\":\"学籍状态\",\"columnName\":\"status\",\"fieldType\":\"VARCHAR\",\"length\":16,\"precision\":null,\"scale\":null,\"nullable\":false,\"defaultValue\":\"active\",\"isPrimaryKey\":false,\"isAutoIncrement\":false,\"sortOrder\":10,\"showInList\":true,\"showInForm\":true,\"showInSearch\":true,\"dictCode\":null,\"referenceEntityCode\":null,\"referenceDisplayFieldCode\":null,\"validationRule\":null}],\"entity\":{\"id\":1,\"code\":\"student\",\"name\":\"学生信息\",\"tableName\":\"lc_student\",\"description\":\"学生基本信息，包含学号、班级、院系、联系方式等\",\"status\":\"published\",\"fieldCount\":null,\"createdAt\":\"2026-06-23T22:54:04.860086\",\"updatedAt\":\"2026-06-23T22:54:05.080766\"}}"
+  }, {
+    "itemType" : "entity",
+    "itemCode" : "leave_application",
+    "checksum" : "d3aae9add3036b90eed0ce7578e074806601498ee73e67d4ce319361aec0dbc3",
+    "snapshotJson" : "{\"fields\":[{\"id\":19,\"entityId\":3,\"code\":\"student_id\",\"name\":\"学生\",\"columnName\":\"student_id\",\"fieldType\":\"LONG\",\"length\":null,\"precision\":null,\"scale\":null,\"nullable\":false,\"defaultValue\":null,\"isPrimaryKey\":false,\"isAutoIncrement\":false,\"sortOrder\":1,\"showInList\":true,\"showInForm\":true,\"showInSearch\":true,\"dictCode\":null,\"referenceEntityCode\":\"student\",\"referenceDisplayFieldCode\":\"name\",\"validationRule\":null},{\"id\":20,\"entityId\":3,\"code\":\"student_name\",\"name\":\"学生姓名\",\"columnName\":\"student_name\",\"fieldType\":\"VARCHAR\",\"length\":64,\"precision\":null,\"scale\":null,\"nullable\":false,\"defaultValue\":null,\"isPrimaryKey\":false,\"isAutoIncrement\":false,\"sortOrder\":2,\"showInList\":true,\"showInForm\":false,\"showInSearch\":true,\"dictCode\":null,\"referenceEntityCode\":null,\"referenceDisplayFieldCode\":null,\"validationRule\":null},{\"id\":21,\"entityId\":3,\"code\":\"leave_type\",\"name\":\"请假类型\",\"columnName\":\"leave_type\",\"fieldType\":\"VARCHAR\",\"length\":32,\"precision\":null,\"scale\":null,\"nullable\":false,\"defaultValue\":null,\"isPrimaryKey\":false,\"isAutoIncrement\":false,\"sortOrder\":3,\"showInList\":true,\"showInForm\":true,\"showInSearch\":true,\"dictCode\":null,\"referenceEntityCode\":null,\"referenceDisplayFieldCode\":null,\"validationRule\":null},{\"id\":22,\"entityId\":3,\"code\":\"reason\",\"name\":\"请假原因\",\"columnName\":\"reason\",\"fieldType\":\"TEXT\",\"length\":null,\"precision\":null,\"scale\":null,\"nullable\":false,\"defaultValue\":null,\"isPrimaryKey\":false,\"isAutoIncrement\":false,\"sortOrder\":4,\"showInList\":true,\"showInForm\":true,\"showInSearch\":false,\"dictCode\":null,\"referenceEntityCode\":null,\"referenceDisplayFieldCode\":null,\"validationRule\":null},{\"id\":23,\"entityId\":3,\"code\":\"start_date\",\"name\":\"开始日期\",\"columnName\":\"start_date\",\"fieldType\":\"DATE\",\"length\":null,\"precision\":null,\"scale\":null,\"nullable\":false,\"defaultValue\":null,\"isPrimaryKey\":false,\"isAutoIncrement\":false,\"sortOrder\":5,\"showInList\":true,\"showInForm\":true,\"showInSearch\":false,\"dictCode\":null,\"referenceEntityCode\":null,\"referenceDisplayFieldCode\":null,\"validationRule\":null},{\"id\":24,\"entityId\":3,\"code\":\"end_date\",\"name\":\"结束日期\",\"columnName\":\"end_date\",\"fieldType\":\"DATE\",\"length\":null,\"precision\":null,\"scale\":null,\"nullable\":false,\"defaultValue\":null,\"isPrimaryKey\":false,\"isAutoIncrement\":false,\"sortOrder\":6,\"showInList\":true,\"showInForm\":true,\"showInSearch\":false,\"dictCode\":null,\"referenceEntityCode\":null,\"referenceDisplayFieldCode\":null,\"validationRule\":null},{\"id\":25,\"entityId\":3,\"code\":\"leave_days\",\"name\":\"请假天数\",\"columnName\":\"leave_days\",\"fieldType\":\"INTEGER\",\"length\":null,\"precision\":null,\"scale\":null,\"nullable\":false,\"defaultValue\":null,\"isPrimaryKey\":false,\"isAutoIncrement\":false,\"sortOrder\":7,\"showInList\":true,\"showInForm\":false,\"showInSearch\":false,\"dictCode\":null,\"referenceEntityCode\":null,\"referenceDisplayFieldCode\":null,\"validationRule\":null},{\"id\":26,\"entityId\":3,\"code\":\"status\",\"name\":\"审批状态\",\"columnName\":\"status\",\"fieldType\":\"VARCHAR\",\"length\":32,\"precision\":null,\"scale\":null,\"nullable\":false,\"defaultValue\":\"pending\",\"isPrimaryKey\":false,\"isAutoIncrement\":false,\"sortOrder\":8,\"showInList\":true,\"showInForm\":false,\"showInSearch\":true,\"dictCode\":null,\"referenceEntityCode\":null,\"referenceDisplayFieldCode\":null,\"validationRule\":null}],\"entity\":{\"id\":3,\"code\":\"leave_application\",\"name\":\"请假申请\",\"tableName\":\"lc_leave_application\",\"description\":\"学生请假申请记录，关联学生实体，通过工作流完成审批流程\",\"status\":\"published\",\"fieldCount\":null,\"createdAt\":\"2026-06-23T22:54:05.380193\",\"updatedAt\":\"2026-06-23T22:54:05.582614\"}}"
+  }, {
+    "itemType" : "component",
+    "itemCode" : "text",
+    "checksum" : "2bf617275f8aac1f9a10223654e0733b8590a686f686bac1d0ed1df95000e996",
+    "snapshotJson" : "{\"id\":1,\"compKey\":\"text\",\"name\":\"文本\",\"category\":\"基础\",\"icon\":\"font\",\"description\":\"文本展示组件\",\"defaultPropsJson\":\"{\\\"text\\\": \\\"Hello World\\\", \\\"color\\\": \\\"#333\\\", \\\"fontSize\\\": 14}\",\"propsSchemaJson\":\"{\\\"type\\\": \\\"object\\\", \\\"properties\\\": {\\\"text\\\": {\\\"type\\\": \\\"string\\\", \\\"title\\\": \\\"文本内容\\\"}, \\\"color\\\": {\\\"type\\\": \\\"string\\\", \\\"title\\\": \\\"颜色\\\"}, \\\"fontSize\\\": {\\\"type\\\": \\\"number\\\", \\\"title\\\": \\\"字体大小\\\"}}}\",\"groupIndex\":1,\"isSystem\":true,\"status\":\"active\",\"createdAt\":\"2026-06-23T22:54:05.853673\",\"updatedAt\":\"2026-06-23T22:54:05.853673\"}"
+  }, {
+    "itemType" : "component",
+    "itemCode" : "button",
+    "checksum" : "a11160ed4c493db080f13ff803cf7c22f974298d0ae0d392c63cea172f279ae5",
+    "snapshotJson" : "{\"id\":2,\"compKey\":\"button\",\"name\":\"按钮\",\"category\":\"基础\",\"icon\":\"button\",\"description\":\"按钮组件\",\"defaultPropsJson\":\"{\\\"content\\\": \\\"确定\\\", \\\"type\\\": \\\"primary\\\", \\\"size\\\": \\\"medium\\\"}\",\"propsSchemaJson\":\"{\\\"type\\\": \\\"object\\\", \\\"properties\\\": {\\\"content\\\": {\\\"type\\\": \\\"string\\\", \\\"title\\\": \\\"按钮文字\\\"}, \\\"type\\\": {\\\"type\\\": \\\"string\\\", \\\"title\\\": \\\"类型\\\", \\\"enum\\\": [\\\"primary\\\", \\\"secondary\\\", \\\"outline\\\", \\\"ghost\\\"]}, \\\"size\\\": {\\\"type\\\": \\\"string\\\", \\\"title\\\": \\\"大小\\\", \\\"enum\\\": [\\\"small\\\", \\\"medium\\\", \\\"large\\\"]}}}\",\"groupIndex\":2,\"isSystem\":true,\"status\":\"active\",\"createdAt\":\"2026-06-23T22:54:05.855503\",\"updatedAt\":\"2026-06-23T22:54:05.855503\"}"
+  }, {
+    "itemType" : "component",
+    "itemCode" : "divider",
+    "checksum" : "45a6a9afe01f759374c64819769d9f390192d00d19537103438ded8e1489b9d8",
+    "snapshotJson" : "{\"id\":3,\"compKey\":\"divider\",\"name\":\"分割线\",\"category\":\"基础\",\"icon\":\"minus\",\"description\":\"分割线组件\",\"defaultPropsJson\":\"{\\\"orientation\\\": \\\"horizontal\\\", \\\"dashed\\\": false}\",\"propsSchemaJson\":\"{\\\"type\\\": \\\"object\\\", \\\"properties\\\": {\\\"orientation\\\": {\\\"type\\\": \\\"string\\\", \\\"title\\\": \\\"方向\\\", \\\"enum\\\": [\\\"horizontal\\\", \\\"vertical\\\"]}, \\\"dashed\\\": {\\\"type\\\": \\\"boolean\\\", \\\"title\\\": \\\"虚线\\\"}}}\",\"groupIndex\":3,\"isSystem\":true,\"status\":\"active\",\"createdAt\":\"2026-06-23T22:54:05.857229\",\"updatedAt\":\"2026-06-23T22:54:05.857229\"}"
+  }, {
+    "itemType" : "component",
+    "itemCode" : "input",
+    "checksum" : "2a28c5d3d93750a60e6ae6d6250400d4e44f253575aa5086fcdf14c45bdfe767",
+    "snapshotJson" : "{\"id\":4,\"compKey\":\"input\",\"name\":\"输入框\",\"category\":\"表单\",\"icon\":\"edit\",\"description\":\"输入框组件\",\"defaultPropsJson\":\"{\\\"label\\\": \\\"输入\\\", \\\"placeholder\\\": \\\"请输入...\\\", \\\"required\\\": false}\",\"propsSchemaJson\":\"{\\\"type\\\": \\\"object\\\", \\\"properties\\\": {\\\"label\\\": {\\\"type\\\": \\\"string\\\", \\\"title\\\": \\\"标签\\\"}, \\\"placeholder\\\": {\\\"type\\\": \\\"string\\\", \\\"title\\\": \\\"占位符\\\"}, \\\"required\\\": {\\\"type\\\": \\\"boolean\\\", \\\"title\\\": \\\"必填\\\"}}}\",\"groupIndex\":1,\"isSystem\":true,\"status\":\"active\",\"createdAt\":\"2026-06-23T22:54:05.860023\",\"updatedAt\":\"2026-06-23T22:54:05.860023\"}"
+  }, {
+    "itemType" : "component",
+    "itemCode" : "select",
+    "checksum" : "f36b2d563590b319fcd2cc8698b4679fcf9906a20c78339dd0d729da20b1938d",
+    "snapshotJson" : "{\"id\":5,\"compKey\":\"select\",\"name\":\"下拉选择\",\"category\":\"表单\",\"icon\":\"chevron-down\",\"description\":\"下拉选择组件\",\"defaultPropsJson\":\"{\\\"label\\\": \\\"选择\\\", \\\"options\\\": [], \\\"dictCode\\\": \\\"\\\", \\\"required\\\": false}\",\"propsSchemaJson\":\"{\\\"type\\\": \\\"object\\\", \\\"properties\\\": {\\\"label\\\": {\\\"type\\\": \\\"string\\\", \\\"title\\\": \\\"标签\\\"}, \\\"dictCode\\\": {\\\"type\\\": \\\"string\\\", \\\"title\\\": \\\"字典编码\\\"}, \\\"required\\\": {\\\"type\\\": \\\"boolean\\\", \\\"title\\\": \\\"必填\\\"}}}\",\"groupIndex\":2,\"isSystem\":true,\"status\":\"active\",\"createdAt\":\"2026-06-23T22:54:05.86223\",\"updatedAt\":\"2026-06-23T22:54:05.86223\"}"
+  }, {
+    "itemType" : "component",
+    "itemCode" : "checkbox",
+    "checksum" : "f16428c6f92a112f14b25c597663c29c51bd7c1986469f53d9ff6ef82ea814b9",
+    "snapshotJson" : "{\"id\":6,\"compKey\":\"checkbox\",\"name\":\"复选框\",\"category\":\"表单\",\"icon\":\"check-circle\",\"description\":\"复选框组件\",\"defaultPropsJson\":\"{\\\"label\\\": \\\"选项\\\", \\\"checked\\\": false}\",\"propsSchemaJson\":\"{\\\"type\\\": \\\"object\\\", \\\"properties\\\": {\\\"label\\\": {\\\"type\\\": \\\"string\\\", \\\"title\\\": \\\"标签\\\"}, \\\"checked\\\": {\\\"type\\\": \\\"boolean\\\", \\\"title\\\": \\\"默认选中\\\"}}}\",\"groupIndex\":3,\"isSystem\":true,\"status\":\"active\",\"createdAt\":\"2026-06-23T22:54:05.86392\",\"updatedAt\":\"2026-06-23T22:54:05.86392\"}"
+  }, {
+    "itemType" : "component",
+    "itemCode" : "radio",
+    "checksum" : "f1e25c52f77e60be4be02cbca5786d8291c07dcdee6dc18e7b4e10e0cd7b953e",
+    "snapshotJson" : "{\"id\":7,\"compKey\":\"radio\",\"name\":\"单选框\",\"category\":\"表单\",\"icon\":\"circle\",\"description\":\"单选框组件\",\"defaultPropsJson\":\"{\\\"label\\\": \\\"选项\\\", \\\"options\\\": [], \\\"value\\\": \\\"\\\"}\",\"propsSchemaJson\":\"{\\\"type\\\": \\\"object\\\", \\\"properties\\\": {\\\"label\\\": {\\\"type\\\": \\\"string\\\", \\\"title\\\": \\\"标签\\\"}, \\\"options\\\": {\\\"type\\\": \\\"array\\\", \\\"items\\\": {\\\"type\\\": \\\"object\\\", \\\"properties\\\": {\\\"label\\\": {}, \\\"value\\\": {}}}, \\\"title\\\": \\\"选项\\\"}}}\",\"groupIndex\":4,\"isSystem\":true,\"status\":\"active\",\"createdAt\":\"2026-06-23T22:54:05.866239\",\"updatedAt\":\"2026-06-23T22:54:05.866239\"}"
+  }, {
+    "itemType" : "component",
+    "itemCode" : "date",
+    "checksum" : "205e05ab1b74b33aaa015faeb5827b50ec05436a56c8777c7f195bf7797f015c",
+    "snapshotJson" : "{\"id\":8,\"compKey\":\"date\",\"name\":\"日期选择\",\"category\":\"表单\",\"icon\":\"calendar\",\"description\":\"日期选择组件\",\"defaultPropsJson\":\"{\\\"label\\\": \\\"日期\\\", \\\"type\\\": \\\"date\\\", \\\"required\\\": false}\",\"propsSchemaJson\":\"{\\\"type\\\": \\\"object\\\", \\\"properties\\\": {\\\"label\\\": {\\\"type\\\": \\\"string\\\", \\\"title\\\": \\\"标签\\\"}, \\\"type\\\": {\\\"type\\\": \\\"string\\\", \\\"title\\\": \\\"类型\\\", \\\"enum\\\": [\\\"date\\\", \\\"datetime\\\", \\\"daterange\\\"]}, \\\"required\\\": {\\\"type\\\": \\\"boolean\\\", \\\"title\\\": \\\"必填\\\"}}}\",\"groupIndex\":5,\"isSystem\":true,\"status\":\"active\",\"createdAt\":\"2026-06-23T22:54:05.867817\",\"updatedAt\":\"2026-06-23T22:54:05.867817\"}"
+  }, {
+    "itemType" : "component",
+    "itemCode" : "grid",
+    "checksum" : "bcf9a0fb403c2f532268cf3fadd9005fb97e2178e75fa69ecf42af71d451c1eb",
+    "snapshotJson" : "{\"id\":9,\"compKey\":\"grid\",\"name\":\"栅格\",\"category\":\"布局\",\"icon\":\"layout-grid\",\"description\":\"栅格布局组件\",\"defaultPropsJson\":\"{\\\"columns\\\": 12, \\\"gutter\\\": 16, \\\"children\\\": []}\",\"propsSchemaJson\":\"{\\\"type\\\": \\\"object\\\", \\\"properties\\\": {\\\"columns\\\": {\\\"type\\\": \\\"number\\\", \\\"title\\\": \\\"总列数\\\"}, \\\"gutter\\\": {\\\"type\\\": \\\"number\\\", \\\"title\\\": \\\"间距\\\"}}}\",\"groupIndex\":1,\"isSystem\":true,\"status\":\"active\",\"createdAt\":\"2026-06-23T22:54:05.87004\",\"updatedAt\":\"2026-06-23T22:54:05.87004\"}"
+  }, {
+    "itemType" : "component",
+    "itemCode" : "space",
+    "checksum" : "2ab786e27550213597cc5d338eed65bae37e6f8e238cc60fd75104b6c030f8cf",
+    "snapshotJson" : "{\"id\":10,\"compKey\":\"space\",\"name\":\"间距\",\"category\":\"布局\",\"icon\":\"spacing-horizontal\",\"description\":\"间距组件\",\"defaultPropsJson\":\"{\\\"size\\\": \\\"medium\\\", \\\"direction\\\": \\\"horizontal\\\"}\",\"propsSchemaJson\":\"{\\\"type\\\": \\\"object\\\", \\\"properties\\\": {\\\"size\\\": {\\\"type\\\": \\\"string\\\", \\\"title\\\": \\\"大小\\\", \\\"enum\\\": [\\\"small\\\", \\\"medium\\\", \\\"large\\\"]}, \\\"direction\\\": {\\\"type\\\": \\\"string\\\", \\\"title\\\": \\\"方向\\\", \\\"enum\\\": [\\\"horizontal\\\", \\\"vertical\\\"]}}}\",\"groupIndex\":2,\"isSystem\":true,\"status\":\"active\",\"createdAt\":\"2026-06-23T22:54:05.87203\",\"updatedAt\":\"2026-06-23T22:54:05.87203\"}"
+  }, {
+    "itemType" : "component",
+    "itemCode" : "card",
+    "checksum" : "06b45fafe55964538d16ef868cfa66e2c6a9a5db12ef710346e645a0c46cfc86",
+    "snapshotJson" : "{\"id\":11,\"compKey\":\"card\",\"name\":\"卡片\",\"category\":\"容器\",\"icon\":\"credit-card\",\"description\":\"卡片容器组件\",\"defaultPropsJson\":\"{\\\"title\\\": \\\"\\\", \\\"bordered\\\": true, \\\"hoverable\\\": false}\",\"propsSchemaJson\":\"{\\\"type\\\": \\\"object\\\", \\\"properties\\\": {\\\"title\\\": {\\\"type\\\": \\\"string\\\", \\\"title\\\": \\\"标题\\\"}, \\\"bordered\\\": {\\\"type\\\": \\\"boolean\\\", \\\"title\\\": \\\"显示边框\\\"}, \\\"hoverable\\\": {\\\"type\\\": \\\"boolean\\\", \\\"title\\\": \\\"悬停效果\\\"}}}\",\"groupIndex\":1,\"isSystem\":true,\"status\":\"active\",\"createdAt\":\"2026-06-23T22:54:05.874831\",\"updatedAt\":\"2026-06-23T22:54:05.874831\"}"
+  }, {
+    "itemType" : "component",
+    "itemCode" : "form",
+    "checksum" : "644b6d06f23e9d9eb57847963fb215cf65babb63c65d46018fbb6f873beb3e96",
+    "snapshotJson" : "{\"id\":12,\"compKey\":\"form\",\"name\":\"表单\",\"category\":\"容器\",\"icon\":\"form\",\"description\":\"表单容器组件\",\"defaultPropsJson\":\"{\\\"labelWidth\\\": 100, \\\"colon\\\": true}\",\"propsSchemaJson\":\"{\\\"type\\\": \\\"object\\\", \\\"properties\\\": {\\\"labelWidth\\\": {\\\"type\\\": \\\"number\\\", \\\"title\\\": \\\"标签宽度\\\"}, \\\"colon\\\": {\\\"type\\\": \\\"boolean\\\", \\\"title\\\": \\\"显示冒号\\\"}}}\",\"groupIndex\":2,\"isSystem\":true,\"status\":\"active\",\"createdAt\":\"2026-06-23T22:54:05.876601\",\"updatedAt\":\"2026-06-23T22:54:05.876601\"}"
+  }, {
+    "itemType" : "component",
+    "itemCode" : "table",
+    "checksum" : "ff2055404e2d9435a3a824060fdbab6c18f5814b3f4b86218f427f004345a23f",
+    "snapshotJson" : "{\"id\":13,\"compKey\":\"table\",\"name\":\"表格\",\"category\":\"数据\",\"icon\":\"table\",\"description\":\"数据表格组件\",\"defaultPropsJson\":\"{\\\"columns\\\": [], \\\"entityCode\\\": \\\"\\\", \\\"pageSize\\\": 10}\",\"propsSchemaJson\":\"{\\\"type\\\": \\\"object\\\", \\\"properties\\\": {\\\"entityCode\\\": {\\\"type\\\": \\\"string\\\", \\\"title\\\": \\\"实体编码\\\"}, \\\"pageSize\\\": {\\\"type\\\": \\\"number\\\", \\\"title\\\": \\\"每页条数\\\"}}}\",\"groupIndex\":1,\"isSystem\":true,\"status\":\"active\",\"createdAt\":\"2026-06-23T22:54:05.878352\",\"updatedAt\":\"2026-06-23T22:54:05.878352\"}"
+  }, {
+    "itemType" : "component",
+    "itemCode" : "list",
+    "checksum" : "1ccf3302b8f8011cca2e7efe338c7dc1eaf5b0b3fe7999ca1cb6e0dbd9cd9743",
+    "snapshotJson" : "{\"id\":14,\"compKey\":\"list\",\"name\":\"列表\",\"category\":\"数据\",\"icon\":\"list\",\"description\":\"列表组件\",\"defaultPropsJson\":\"{\\\"data\\\": [], \\\"layout\\\": \\\"vertical\\\"}\",\"propsSchemaJson\":\"{\\\"type\\\": \\\"object\\\", \\\"properties\\\": {\\\"layout\\\": {\\\"type\\\": \\\"string\\\", \\\"title\\\": \\\"布局\\\", \\\"enum\\\": [\\\"vertical\\\", \\\"horizontal\\\"]}}}\",\"groupIndex\":2,\"isSystem\":true,\"status\":\"active\",\"createdAt\":\"2026-06-23T22:54:05.880452\",\"updatedAt\":\"2026-06-23T22:54:05.880452\"}"
+  }, {
+    "itemType" : "component",
+    "itemCode" : "chart",
+    "checksum" : "15913f639438548ef212d6293d13af86bf4ace3879200d7134b0e24877ecaa27",
+    "snapshotJson" : "{\"id\":15,\"compKey\":\"chart\",\"name\":\"图表\",\"category\":\"数据\",\"icon\":\"bar-chart\",\"description\":\"图表组件\",\"defaultPropsJson\":\"{\\\"type\\\": \\\"bar\\\", \\\"title\\\": \\\"\\\", \\\"data\\\": []}\",\"propsSchemaJson\":\"{\\\"type\\\": \\\"object\\\", \\\"properties\\\": {\\\"type\\\": {\\\"type\\\": \\\"string\\\", \\\"title\\\": \\\"图表类型\\\", \\\"enum\\\": [\\\"bar\\\", \\\"line\\\", \\\"pie\\\"]}, \\\"title\\\": {\\\"type\\\": \\\"string\\\", \\\"title\\\": \\\"标题\\\"}}}\",\"groupIndex\":3,\"isSystem\":true,\"status\":\"active\",\"createdAt\":\"2026-06-23T22:54:05.883029\",\"updatedAt\":\"2026-06-23T22:54:05.883029\"}"
+  }, {
+    "itemType" : "menu",
+    "itemCode" : "leave_management",
+    "checksum" : "87ee764a82c50393e7bf99fbf4331d0bbc7e9decfd8f49db239b967938104c89",
+    "snapshotJson" : "[{\"id\":42,\"parentId\":null,\"name\":\"学生中心\",\"icon\":\"user\",\"sortOrder\":10,\"pageCode\":null,\"routePath\":null,\"menuType\":\"group\",\"visible\":true,\"children\":[{\"id\":43,\"parentId\":42,\"name\":\"新建请假\",\"icon\":\"edit\",\"sortOrder\":1,\"pageCode\":\"leave_student_apply\",\"routePath\":null,\"menuType\":\"menu\",\"visible\":true,\"children\":[]},{\"id\":44,\"parentId\":42,\"name\":\"我的记录\",\"icon\":\"list\",\"sortOrder\":2,\"pageCode\":\"leave_student_records\",\"routePath\":null,\"menuType\":\"menu\",\"visible\":true,\"children\":[]},{\"id\":45,\"parentId\":42,\"name\":\"个人信息\",\"icon\":\"user-circle\",\"sortOrder\":3,\"pageCode\":\"leave_student_profile\",\"routePath\":null,\"menuType\":\"menu\",\"visible\":true,\"children\":[]}]},{\"id\":46,\"parentId\":null,\"name\":\"辅导员中心\",\"icon\":\"user-shield\",\"sortOrder\":20,\"pageCode\":null,\"routePath\":null,\"menuType\":\"group\",\"visible\":true,\"children\":[{\"id\":47,\"parentId\":46,\"name\":\"请假审核\",\"icon\":\"check-circle\",\"sortOrder\":1,\"pageCode\":\"leave_counselor_review\",\"routePath\":null,\"menuType\":\"menu\",\"visible\":true,\"children\":[]},{\"id\":48,\"parentId\":46,\"name\":\"个人信息\",\"icon\":\"user-circle\",\"sortOrder\":2,\"pageCode\":\"leave_counselor_profile\",\"routePath\":null,\"menuType\":\"menu\",\"visible\":true,\"children\":[]}]},{\"id\":49,\"parentId\":null,\"name\":\"系主任中心\",\"icon\":\"user-pin\",\"sortOrder\":30,\"pageCode\":null,\"routePath\":null,\"menuType\":\"group\",\"visible\":true,\"children\":[{\"id\":50,\"parentId\":49,\"name\":\"请假审核\",\"icon\":\"check-circle\",\"sortOrder\":1,\"pageCode\":\"leave_dean_review\",\"routePath\":null,\"menuType\":\"menu\",\"visible\":true,\"children\":[]},{\"id\":51,\"parentId\":49,\"name\":\"个人信息\",\"icon\":\"user-circle\",\"sortOrder\":2,\"pageCode\":\"leave_dean_profile\",\"routePath\":null,\"menuType\":\"menu\",\"visible\":true,\"children\":[]}]},{\"id\":52,\"parentId\":null,\"name\":\"管理员中心\",\"icon\":\"setting\",\"sortOrder\":40,\"pageCode\":null,\"routePath\":null,\"menuType\":\"group\",\"visible\":true,\"children\":[{\"id\":53,\"parentId\":52,\"name\":\"用户管理\",\"icon\":\"user-list\",\"sortOrder\":1,\"pageCode\":\"leave_admin_users\",\"routePath\":null,\"menuType\":\"menu\",\"visible\":true,\"children\":[]},{\"id\":54,\"parentId\":52,\"name\":\"假条管理\",\"icon\":\"file\",\"sortOrder\":2,\"pageCode\":\"leave_admin_leaves\",\"routePath\":null,\"menuType\":\"menu\",\"visible\":true,\"children\":[]},{\"id\":55,\"parentId\":52,\"name\":\"个人信息\",\"icon\":\"user-circle\",\"sortOrder\":3,\"pageCode\":\"leave_admin_profile\",\"routePath\":null,\"menuType\":\"menu\",\"visible\":true,\"children\":[]}]},{\"id\":56,\"parentId\":null,\"name\":\"基础数据\",\"icon\":\"database\",\"sortOrder\":50,\"pageCode\":null,\"routePath\":null,\"menuType\":\"group\",\"visible\":true,\"children\":[{\"id\":57,\"parentId\":56,\"name\":\"学生管理\",\"icon\":\"user\",\"sortOrder\":1,\"pageCode\":\"leave_student_list\",\"routePath\":null,\"menuType\":\"menu\",\"visible\":true,\"children\":[]},{\"id\":58,\"parentId\":56,\"name\":\"教职工管理\",\"icon\":\"user-talk\",\"sortOrder\":2,\"pageCode\":\"leave_approver_list\",\"routePath\":null,\"menuType\":\"menu\",\"visible\":true,\"children\":[]},{\"id\":59,\"parentId\":56,\"name\":\"请假记录\",\"icon\":\"browse\",\"sortOrder\":3,\"pageCode\":\"leave_application_list\",\"routePath\":null,\"menuType\":\"menu\",\"visible\":true,\"children\":[]}]}]"
+  } ],
+  "menus" : [ {
+    "exportId" : 60,
+    "exportParentId" : null,
+    "appCode" : "leave_management",
+    "name" : "学生中心",
+    "icon" : "user",
+    "sortOrder" : 10,
+    "pageCode" : null,
+    "routePath" : null,
+    "menuType" : "group",
+    "visible" : true
+  }, {
+    "exportId" : 61,
+    "exportParentId" : null,
+    "appCode" : "leave_management",
+    "name" : "辅导员中心",
+    "icon" : "user-shield",
+    "sortOrder" : 20,
+    "pageCode" : null,
+    "routePath" : null,
+    "menuType" : "group",
+    "visible" : true
+  }, {
+    "exportId" : 62,
+    "exportParentId" : null,
+    "appCode" : "leave_management",
+    "name" : "系主任中心",
+    "icon" : "user-pin",
+    "sortOrder" : 30,
+    "pageCode" : null,
+    "routePath" : null,
+    "menuType" : "group",
+    "visible" : true
+  }, {
+    "exportId" : 63,
+    "exportParentId" : null,
+    "appCode" : "leave_management",
+    "name" : "管理员中心",
+    "icon" : "setting",
+    "sortOrder" : 40,
+    "pageCode" : null,
+    "routePath" : null,
+    "menuType" : "group",
+    "visible" : true
+  }, {
+    "exportId" : 64,
+    "exportParentId" : null,
+    "appCode" : "leave_management",
+    "name" : "基础数据",
+    "icon" : "database",
+    "sortOrder" : 50,
+    "pageCode" : null,
+    "routePath" : null,
+    "menuType" : "group",
+    "visible" : true
+  }, {
+    "exportId" : 65,
+    "exportParentId" : 60,
+    "appCode" : "leave_management",
+    "name" : "新建请假",
+    "icon" : "edit",
+    "sortOrder" : 1,
+    "pageCode" : "leave_student_apply",
+    "routePath" : null,
+    "menuType" : "menu",
+    "visible" : true
+  }, {
+    "exportId" : 66,
+    "exportParentId" : 60,
+    "appCode" : "leave_management",
+    "name" : "我的记录",
+    "icon" : "list",
+    "sortOrder" : 2,
+    "pageCode" : "leave_student_records",
+    "routePath" : null,
+    "menuType" : "menu",
+    "visible" : true
+  }, {
+    "exportId" : 67,
+    "exportParentId" : 60,
+    "appCode" : "leave_management",
+    "name" : "个人信息",
+    "icon" : "user-circle",
+    "sortOrder" : 3,
+    "pageCode" : "leave_student_profile",
+    "routePath" : null,
+    "menuType" : "menu",
+    "visible" : true
+  }, {
+    "exportId" : 68,
+    "exportParentId" : 61,
+    "appCode" : "leave_management",
+    "name" : "请假审核",
+    "icon" : "check-circle",
+    "sortOrder" : 1,
+    "pageCode" : "leave_counselor_review",
+    "routePath" : null,
+    "menuType" : "menu",
+    "visible" : true
+  }, {
+    "exportId" : 69,
+    "exportParentId" : 61,
+    "appCode" : "leave_management",
+    "name" : "个人信息",
+    "icon" : "user-circle",
+    "sortOrder" : 2,
+    "pageCode" : "leave_counselor_profile",
+    "routePath" : null,
+    "menuType" : "menu",
+    "visible" : true
+  }, {
+    "exportId" : 70,
+    "exportParentId" : 62,
+    "appCode" : "leave_management",
+    "name" : "请假审核",
+    "icon" : "check-circle",
+    "sortOrder" : 1,
+    "pageCode" : "leave_dean_review",
+    "routePath" : null,
+    "menuType" : "menu",
+    "visible" : true
+  }, {
+    "exportId" : 71,
+    "exportParentId" : 62,
+    "appCode" : "leave_management",
+    "name" : "个人信息",
+    "icon" : "user-circle",
+    "sortOrder" : 2,
+    "pageCode" : "leave_dean_profile",
+    "routePath" : null,
+    "menuType" : "menu",
+    "visible" : true
+  }, {
+    "exportId" : 72,
+    "exportParentId" : 63,
+    "appCode" : "leave_management",
+    "name" : "用户管理",
+    "icon" : "user-list",
+    "sortOrder" : 1,
+    "pageCode" : "leave_admin_users",
+    "routePath" : null,
+    "menuType" : "menu",
+    "visible" : true
+  }, {
+    "exportId" : 73,
+    "exportParentId" : 63,
+    "appCode" : "leave_management",
+    "name" : "假条管理",
+    "icon" : "file",
+    "sortOrder" : 2,
+    "pageCode" : "leave_admin_leaves",
+    "routePath" : null,
+    "menuType" : "menu",
+    "visible" : true
+  }, {
+    "exportId" : 74,
+    "exportParentId" : 63,
+    "appCode" : "leave_management",
+    "name" : "个人信息",
+    "icon" : "user-circle",
+    "sortOrder" : 3,
+    "pageCode" : "leave_admin_profile",
+    "routePath" : null,
+    "menuType" : "menu",
+    "visible" : true
+  }, {
+    "exportId" : 75,
+    "exportParentId" : 64,
+    "appCode" : "leave_management",
+    "name" : "学生管理",
+    "icon" : "user",
+    "sortOrder" : 1,
+    "pageCode" : "leave_student_list",
+    "routePath" : null,
+    "menuType" : "menu",
+    "visible" : true
+  }, {
+    "exportId" : 76,
+    "exportParentId" : 64,
+    "appCode" : "leave_management",
+    "name" : "教职工管理",
+    "icon" : "user-talk",
+    "sortOrder" : 2,
+    "pageCode" : "leave_approver_list",
+    "routePath" : null,
+    "menuType" : "menu",
+    "visible" : true
+  }, {
+    "exportId" : 77,
+    "exportParentId" : 64,
+    "appCode" : "leave_management",
+    "name" : "请假记录",
+    "icon" : "browse",
+    "sortOrder" : 3,
+    "pageCode" : "leave_application_list",
+    "routePath" : null,
+    "menuType" : "menu",
+    "visible" : true
+  } ]
+}
