@@ -1,0 +1,79 @@
+### M4-01 / M4-02 冒烟：导出 release seed → 重启后自动回灌
+###
+### 目标：把现有 leave_management 应用打包成 seed JSON，落到 classpath:seed/，
+### 重启后 SeedReleaseLoader 自动回灌为 active release，从而可以删 4 个硬编码 Initializer。
+###
+### 适用：JetBrains HTTP Client / VSCode REST Client
+### 端口：见 application.yaml -> server.port=8082
+
+@host = http://localhost:8082
+@appCode = leave_management
+
+### ============================================================
+### 0. 登录拿 token
+### ============================================================
+# @name login
+POST {{host}}/auth/login
+Content-Type: application/json
+
+{ "username": "z2351006360", "password": "123456" }
+
+###
+@token = {{login.response.body.data.token}}
+
+### ============================================================
+### 1. 触发一次完整 release（含 5 阶段：validate→snapshot→generate→mount→activate）
+###    应自动 active，前端 /run/leave_management/* 应该立即可用
+### ============================================================
+# @name publish
+POST {{host}}/lowcode/release/{{appCode}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "versionBump": "patch",
+  "notes": "M4-01 seed 导出基线",
+  "createdBy": "seed-export",
+  "activate": true
+}
+
+###
+@releaseId = {{publish.response.body.data.id}}
+
+### 检查 release 的 5 阶段日志，全部应是 success
+GET {{host}}/lowcode/release/detail/{{releaseId}}
+Authorization: Bearer {{token}}
+
+### 检查快照清单（应至少有 ~10 个 page + 3 个 entity + 1 个 menu）
+GET {{host}}/lowcode/release/{{releaseId}}/items
+Authorization: Bearer {{token}}
+
+### ============================================================
+### 2. 导出 seed JSON（人类可读，用于检视）
+### ============================================================
+GET {{host}}/lowcode/release/{{releaseId}}/export
+Authorization: Bearer {{token}}
+
+### ============================================================
+### 3. 导出为文件 —— 浏览器/HTTP Client 会下载，落到
+###    back/src/main/resources/seed/leave_management-v{{version}}.json
+###    （强烈推荐 pretty=true，便于 PR review）
+###
+###    如果用 JetBrains HTTP Client：
+###      - 点 "Show response in editor" 按钮
+###      - 或在请求行后加 >> seed/leave_management-v1.0.0.json
+### ============================================================
+GET {{host}}/lowcode/release/{{releaseId}}/export/file?pretty=true
+Authorization: Bearer {{token}}
+
+>> ./../src/main/resources/seed/leave_management-v1.0.0.json
+
+### ============================================================
+### 4. 验证回灌：
+###    a) 关掉服务
+###    b) 把 lc_release / lc_release_item / lc_release_log / lc_app_menu 清空
+###    c) 重启服务 —— 看日志 "[seed:leave_management-v1.0.0.json] 回灌完成"
+###    d) 再次 GET /lowcode/release/{{appCode}} 应该看到刚回灌的 release（status=active）
+### ============================================================
+GET {{host}}/lowcode/release/{{appCode}}
+Authorization: Bearer {{token}}
