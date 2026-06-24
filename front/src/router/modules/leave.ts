@@ -3,55 +3,26 @@ import { CalendarIcon } from 'tdesign-icons-vue-next'
 import Layout from '../../layouts/index.vue'
 
 /**
- * 请假管理路由 —— 使用低代码平台 PageViewer 渲染 + 自定义管理员页面
- * 
- * 大部分页面均由 LeavePageInitializer/LeavePageInitializerV2 自动生成 PageSchema 记录，
- * 前端通过 PageViewer 组件根据 pageCode 动态加载 layoutJson 并渲染。
- * 管理员页面（用户管理、假条管理）使用独立的自定义组件。
+ * 请假管理路由 —— Phase 2 后大部分页面由 `/run/leave_management/*` 接管：
+ *   - 业务页面（学生/辅导员/系主任/管理员各端）走 SchemaRenderer + 菜单树（lc_app_menu）
+ *   - 此处仅保留管理员自定义组件页（独立逻辑，未迁低代码）
+ *
+ * 想看完整菜单：访问 `/run/leave_management`
  */
 export default [
   {
     path: '/leave',
     component: Layout,
-    redirect: '/leave/apply',
+    redirect: '/run/leave_management',
     name: 'leave',
     meta: {
       title: { zh_CN: '请假管理' },
       icon: shallowRef(CalendarIcon),
       orderNo: 50,
+      hidden: true, // 顶部菜单隐藏；用户通过业务应用入口或 /run/* 进入
     },
     children: [
-      {
-        path: 'apply',
-        name: 'LeaveApply',
-        component: () => import('../../pages/lowcode/page/PageViewer.vue'),
-        meta: { title: { zh_CN: '请假申请' }, pageCode: 'leave_application_form' },
-      },
-      {
-        path: 'my-list',
-        name: 'LeaveList',
-        component: () => import('../../pages/lowcode/page/PageViewer.vue'),
-        meta: { title: { zh_CN: '请假记录' }, pageCode: 'leave_application_list' },
-      },
-      {
-        path: 'students',
-        name: 'StudentManage',
-        component: () => import('../../pages/lowcode/page/PageViewer.vue'),
-        meta: { title: { zh_CN: '学生管理' }, pageCode: 'leave_student_list' },
-      },
-      {
-        path: 'approvers',
-        name: 'ApproverManage',
-        component: () => import('../../pages/lowcode/page/PageViewer.vue'),
-        meta: { title: { zh_CN: '教职工管理' }, pageCode: 'leave_approver_list' },
-      },
-      {
-        path: 'detail/:id',
-        name: 'LeaveDetail',
-        component: () => import('../../pages/lowcode/leave/LeaveDetail.vue'),
-        meta: { title: { zh_CN: '申请详情' } },
-      },
-      // ===== 管理员专用页面 =====
+      // ===== 管理员专用页面（独立组件，未走 PageViewer） =====
       {
         path: 'admin/users',
         name: 'LeaveAdminUsers',

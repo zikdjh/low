@@ -169,7 +169,7 @@ async function handleApprove() {
     })
     if (res.data.code === 1) {
       MessagePlugin.success('审批通过')
-      router.push('/leave/approvals')
+      router.push('/run/leave_management/leave_counselor_review')
     }
   } catch (e: any) {
     MessagePlugin.error(e?.response?.data?.msg || '审批失败')
@@ -194,7 +194,7 @@ async function handleReject() {
     })
     if (res.data.code === 1) {
       MessagePlugin.success('已驳回')
-      router.push('/leave/approvals')
+      router.push('/run/leave_management/leave_counselor_review')
     }
   } catch (e: any) {
     MessagePlugin.error(e?.response?.data?.msg || '驳回失败')

@@ -82,7 +82,8 @@ async function loadData() {
 }
 
 function goApprove(instanceId: number) {
-  router.push(`/leave/approval/${instanceId}`)
+  // 走业务应用菜单：辅导员审核页（系主任也可访问 dean_review）
+  router.push(`/run/leave_management/leave_counselor_review?instanceId=${instanceId}`)
 }
 
 onMounted(loadData)
