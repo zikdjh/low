@@ -6,6 +6,10 @@
         <p class="page-subtitle">管理业务实体和数据模型</p>
       </div>
       <div class="header-right">
+        <t-button variant="outline" @click="goHome">
+          <template #icon><HomeIcon /></template>
+          返回主页
+        </t-button>
         <t-button variant="outline" @click="goRelations">
           <template #icon><t-icon name="link" /></template>
           关系管理
@@ -129,13 +133,16 @@
           </a>
         </template>
         <template #status="{ row }">
-          <t-tag 
-            :theme="getStatusTheme(row.status)" 
+          <t-tag
+            :theme="getStatusTheme(row.status)"
             variant="light"
             size="small"
           >
             {{ getStatusText(row.status) }}
           </t-tag>
+        </template>
+        <template #updatedAt="{ row }">
+          {{ formatDateTime(row.updatedAt) }}
         </template>
         <template #tableName="{ row }">
           <code class="table-name">{{ row.tableName }}</code>
@@ -213,7 +220,7 @@ import { MessagePlugin } from 'tdesign-vue-next';
 import type { PrimaryTableCol } from 'tdesign-vue-next';
 import {
   PlusIcon, SearchIcon, DeleteIcon, DataBaseIcon, CheckCircleIcon,
-  FolderIcon, FileEditIcon, EditIcon, BrowseIcon
+  FolderIcon, FileEditIcon, EditIcon, BrowseIcon, HomeIcon
 } from 'tdesign-icons-vue-next';
 import entityMetaApi from '../../../api/lowcode/entityMeta';
 
@@ -312,6 +319,18 @@ function getStatusTheme(status: string) {
   return map[status] || 'default';
 }
 
+function formatDateTime(value: string): string {
+  if (!value) return '-';
+  const date = new Date(value);
+  const y = date.getFullYear();
+  const M = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  const h = String(date.getHours()).padStart(2, '0');
+  const m = String(date.getMinutes()).padStart(2, '0');
+  const s = String(date.getSeconds()).padStart(2, '0');
+  return `${y}-${M}-${d} ${h}:${m}:${s}`;
+}
+
 async function fetchData() {
   loading.value = true;
   try {
@@ -374,6 +393,10 @@ function onSelectChange(rows: any[]) {
 
 function handleCreate() {
   router.push('/lowcode/entity/new');
+}
+
+function goHome() {
+  router.push('/admin');
 }
 
 function goRelations() {

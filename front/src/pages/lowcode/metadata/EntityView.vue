@@ -84,6 +84,10 @@
               {{ row.fieldType }}
             </t-tag>
           </template>
+          <template #length="{ row }">
+            <span v-if="row.length">{{ row.length }}</span>
+            <span v-else style="color: #ccc;">-</span>
+          </template>
           <template #nullable="{ row }">
             <CheckCircleIcon v-if="row.nullable" style="color: #22c55e;" />
             <CircleIcon v-else style="color: #f59e0b;" />
