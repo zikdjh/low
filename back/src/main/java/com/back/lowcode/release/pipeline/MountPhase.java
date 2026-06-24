@@ -1,21 +1,33 @@
 package com.back.lowcode.release.pipeline;
 
 import com.back.lowcode.entity.Release;
+import com.back.lowcode.lcmenu.MenuService;
+import com.back.lowcode.repository.MenuRepository;
 import com.back.lowcode.repository.ReleaseLogRepository;
 import org.springframework.stereotype.Component;
 
 /**
- * Phase 4: mount — 把 release 关联的菜单结构写入 lc_app_menu
+ * Phase 4: mount — 把草稿菜单挂载为本次 release 的快照行
  * <p>
- * M1 阶段留空 stub。M2（菜单与路由挂载）落地后写入：
- * 拷贝当前 appCode 下 release_id IS NULL（草稿态）的 AppMenu 行，
- * 将 release_id 置为当前 release.id，形成菜单的不可变快照。
+ * 实现策略：
+ * <ol>
+ *   <li>清空 {@code lc_app_menu} 中 {@code release_id = release.id} 的旧行（容错重跑）</li>
+ *   <li>调 {@link MenuService#cloneDraftToRelease} 把当前应用草稿菜单复制到本 release</li>
+ * </ol>
+ * 草稿菜单本身不动；终端运行时通过 active release 的快照菜单获取一致视图。
  */
 @Component
 public class MountPhase extends ReleasePhase {
 
-    public MountPhase(ReleaseLogRepository releaseLogRepository) {
+    private final MenuService menuService;
+    private final MenuRepository menuRepository;
+
+    public MountPhase(ReleaseLogRepository releaseLogRepository,
+                      MenuService menuService,
+                      MenuRepository menuRepository) {
         super(releaseLogRepository);
+        this.menuService = menuService;
+        this.menuRepository = menuRepository;
     }
 
     @Override
@@ -25,6 +37,7 @@ public class MountPhase extends ReleasePhase {
 
     @Override
     protected void doExecute(Release release) {
-        // TODO M2: 拷贝草稿 AppMenu 到 release_id 下 — 此处 stub
+        menuRepository.deleteByReleaseId(release.getId());
+        menuService.cloneDraftToRelease(release.getAppCode(), release.getId());
     }
 }

@@ -1,6 +1,8 @@
 package com.back.lowcode.release.pipeline;
 
 import com.back.lowcode.entity.*;
+import com.back.lowcode.lcmenu.MenuNode;
+import com.back.lowcode.lcmenu.MenuService;
 import com.back.lowcode.repository.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Component;
@@ -36,6 +38,7 @@ public class SnapshotPhase extends ReleasePhase {
     private final DictItemRepository dictItemRepository;
     private final ReleaseItemRepository releaseItemRepository;
     private final ReleaseRepository releaseRepository;
+    private final MenuService menuService;
     private final ObjectMapper objectMapper;
 
     public SnapshotPhase(ReleaseLogRepository releaseLogRepository,
@@ -47,6 +50,7 @@ public class SnapshotPhase extends ReleasePhase {
                          DictItemRepository dictItemRepository,
                          ReleaseItemRepository releaseItemRepository,
                          ReleaseRepository releaseRepository,
+                         MenuService menuService,
                          ObjectMapper objectMapper) {
         super(releaseLogRepository);
         this.pageSchemaRepository = pageSchemaRepository;
@@ -57,6 +61,7 @@ public class SnapshotPhase extends ReleasePhase {
         this.dictItemRepository = dictItemRepository;
         this.releaseItemRepository = releaseItemRepository;
         this.releaseRepository = releaseRepository;
+        this.menuService = menuService;
         this.objectMapper = objectMapper;
     }
 
@@ -118,7 +123,13 @@ public class SnapshotPhase extends ReleasePhase {
             items.add(buildItem(release.getId(), "dict", dictCode, snapshot));
         }
 
-        // 5. 持久化 + 汇总 checksum
+        // 5. 菜单（M2 接入）：取草稿态菜单树作为快照载荷；运行时数据由 MountPhase 克隆生成
+        List<MenuNode> menuTree = menuService.getDraftTree(appCode);
+        if (!menuTree.isEmpty()) {
+            items.add(buildItem(release.getId(), "menu", appCode, menuTree));
+        }
+
+        // 6. 持久化 + 汇总 checksum
         releaseItemRepository.saveAll(items);
         String aggregateChecksum = sha256(items.stream()
                 .map(ReleaseItem::getChecksum)
