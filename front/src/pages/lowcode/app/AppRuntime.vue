@@ -12,24 +12,58 @@
         </div>
       </div>
 
-      <!-- 导航菜单 -->
+      <!-- 导航菜单（多级树） -->
       <nav class="ar-nav">
         <div class="ar-nav-label">导航菜单</div>
-        <div
-          v-for="page in pages"
-          :key="page.id"
-          class="ar-nav-item"
-          :class="{ active: activePage?.id === page.id }"
-          @click="switchPage(page)"
-        >
-          <div class="ar-nav-dot" :class="{ on: activePage?.id === page.id }"></div>
-          <FileIcon size="16" class="ar-nav-icon" />
-          <span class="ar-nav-text">{{ page.name }}</span>
-          <t-tag v-if="page.status !== 'published'" theme="warning" variant="light" size="small" class="ar-nav-badge">草稿</t-tag>
-        </div>
-        <div v-if="pages.length === 0 && !loading" class="ar-nav-empty">
+
+        <!-- 一级节点 -->
+        <template v-for="root in menuTree" :key="`r-${root.id || root.pageCode || root.name}`">
+          <!-- 分组节点（带 children）：可折叠 -->
+          <template v-if="root.children && root.children.length > 0">
+            <div
+              class="ar-nav-group-header"
+              :class="{ collapsed: collapsedGroups[String(root.id)] }"
+              @click="toggleGroup(root)"
+            >
+              <ChevronRightIcon
+                size="14"
+                class="ar-nav-arrow"
+                :class="{ expanded: !collapsedGroups[String(root.id)] }"
+              />
+              <FolderIcon size="16" class="ar-nav-icon" />
+              <span class="ar-nav-text">{{ root.name }}</span>
+            </div>
+            <div v-show="!collapsedGroups[String(root.id)]" class="ar-nav-children">
+              <div
+                v-for="leaf in root.children"
+                :key="`l-${leaf.id || leaf.pageCode}`"
+                class="ar-nav-item ar-nav-item-sub"
+                :class="{ active: isLeafActive(leaf) }"
+                @click="switchPage(leaf)"
+              >
+                <div class="ar-nav-dot" :class="{ on: isLeafActive(leaf) }"></div>
+                <FileIcon size="14" class="ar-nav-icon" />
+                <span class="ar-nav-text">{{ leaf.name }}</span>
+              </div>
+            </div>
+          </template>
+
+          <!-- 叶子根节点：直接渲染 -->
+          <div
+            v-else
+            class="ar-nav-item"
+            :class="{ active: isLeafActive(root) }"
+            @click="switchPage(root)"
+          >
+            <div class="ar-nav-dot" :class="{ on: isLeafActive(root) }"></div>
+            <FileIcon size="16" class="ar-nav-icon" />
+            <span class="ar-nav-text">{{ root.name }}</span>
+          </div>
+        </template>
+
+        <div v-if="menuTree.length === 0 && !loading" class="ar-nav-empty">
           <FileIcon size="20" />
-          <p>暂无页面</p>
+          <p>暂无菜单</p>
         </div>
       </nav>
 
@@ -48,16 +82,13 @@
       <header class="ar-topbar">
         <div class="ar-topbar-left">
           <ComponentBreadcrumbIcon size="18" />
-          <span class="ar-breadcrumb-app" @click="activePage = null">{{ app?.name }}</span>
+          <span class="ar-breadcrumb-app" @click="clearActive">{{ app?.name }}</span>
           <template v-if="activePage">
             <ChevronRightIcon size="14" class="ar-breadcrumb-sep" />
             <span class="ar-breadcrumb-page">{{ activePage.name }}</span>
           </template>
         </div>
         <div class="ar-topbar-right">
-          <t-tag v-if="activePage" :theme="activePage.status === 'published' ? 'success' : 'warning'" variant="light">
-            {{ activePage.status === 'published' ? '已发布' : '草稿' }}
-          </t-tag>
           <span class="ar-time">{{ currentTime }}</span>
         </div>
       </header>
@@ -78,27 +109,23 @@
           <p class="ar-welcome-desc">{{ app?.description || '由低代码平台构建的业务系统' }}</p>
           <div class="ar-welcome-stats">
             <div class="ar-stat-item">
-              <span class="ar-stat-num">{{ pages.length }}</span>
+              <span class="ar-stat-num">{{ flatLeaves.length }}</span>
               <span class="ar-stat-label">功能页面</span>
             </div>
-            <div class="ar-stat-item">
-              <span class="ar-stat-num">{{ publishedCount }}</span>
-              <span class="ar-stat-label">已发布</span>
-            </div>
           </div>
-          <div v-if="pages.length > 0" class="ar-welcome-nav">
+          <div v-if="flatLeaves.length > 0" class="ar-welcome-nav">
             <p>请从左侧菜单选择功能：</p>
             <div class="ar-shortcut-grid">
               <div
-                v-for="page in pages"
-                :key="page.id"
+                v-for="leaf in flatLeaves"
+                :key="`s-${leaf.id || leaf.pageCode}`"
                 class="ar-shortcut-card"
-                @click="switchPage(page)"
+                @click="switchPage(leaf)"
               >
                 <div class="ar-shortcut-icon">
                   <FileIcon size="20" />
                 </div>
-                <span>{{ page.name }}</span>
+                <span>{{ leaf.name }}</span>
                 <ChevronRightIcon size="14" class="ar-shortcut-arrow" />
               </div>
             </div>
@@ -107,38 +134,15 @@
 
         <!-- 页面渲染区 -->
         <div v-else class="ar-page-viewport">
-          <div class="ar-page-content">
-            <div
-              v-for="element in pageElements"
-              :key="element.id"
-              class="page-element"
-              :style="{
-                left: element.x + 'px',
-                top: element.y + 'px',
-                width: element.width + 'px',
-                height: element.height + 'px',
-              }"
-            >
-              <component
-                :is="getElementComponent(element.type)"
-                :element="element"
-                :enable-events="true"
-              />
-            </div>
-            <div v-if="pageElements.length === 0" class="ar-empty-page">
-              <LayoutIcon size="56" />
-              <h3>空白页面</h3>
-              <p>该页面尚未添加任何组件，请前往页面设计器编辑</p>
-              <t-button
-                theme="primary"
-                variant="outline"
-                size="small"
-                @click="goDesign(activePage)"
-              >
-                前往设计
-              </t-button>
-            </div>
-          </div>
+          <SchemaRenderer :elements="pageElements" :enable-events="true">
+            <template #empty>
+              <div class="ar-empty-page">
+                <LayoutIcon size="56" />
+                <h3>空白页面</h3>
+                <p>该页面尚未添加任何组件，请前往页面设计器编辑</p>
+              </div>
+            </template>
+          </SchemaRenderer>
         </div>
       </div>
     </div>
@@ -146,28 +150,48 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, computed, defineAsyncComponent } from 'vue';
+import { ref, onMounted, onUnmounted, computed, watch, reactive } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { businessAppApi, type BusinessApp } from '../../../api/lowcode/businessApp';
 import { pageSchemaApi } from '../../../api/lowcode/pageSchema';
+import { appMenuApi, type MenuNode } from '../../../api/lowcode/appMenu';
+import SchemaRenderer from '../../../components/lowcode/SchemaRenderer.vue';
 import {
-  AppIcon, FileIcon, ChevronRightIcon, HomeIcon,
+  AppIcon, FileIcon, FolderIcon, ChevronRightIcon, HomeIcon,
   ComponentBreadcrumbIcon, LayoutIcon,
 } from 'tdesign-icons-vue-next';
 
 const route = useRoute();
 const router = useRouter();
 
-const appCode = (route.params.appCode as string) || '';
+const appCode = computed(() => (route.params.appCode as string) || '');
 const app = ref<BusinessApp | null>(null);
-const pages = ref<any[]>([]);
-const activePage = ref<any>(null);
+
+/** 菜单树（active release）；空时回退到 businessApp.getPages 扁平列表 */
+const menuTree = ref<MenuNode[]>([]);
+
+/** 当前打开的页面节点（叶子节点） */
+const activePage = ref<MenuNode | null>(null);
 const pageElements = ref<any[]>([]);
 const loading = ref(true);
 
-const publishedCount = computed(() => pages.value.filter(p => p.status === 'published').length);
+/** 分组节点折叠状态 key=节点 id 字符串 */
+const collapsedGroups = reactive<Record<string, boolean>>({});
 
-// 当前时间
+/** 展开成一维列表的所有叶子，用于欢迎页快捷入口和深链匹配 */
+const flatLeaves = computed<MenuNode[]>(() => {
+  const out: MenuNode[] = [];
+  const walk = (nodes: MenuNode[]) => {
+    for (const n of nodes) {
+      if (n.children && n.children.length > 0) walk(n.children);
+      else if (n.pageCode) out.push(n);
+    }
+  };
+  walk(menuTree.value);
+  return out;
+});
+
+// ===== 当前时间 =====
 const currentTime = ref('');
 let timeTimer: ReturnType<typeof setInterval> | null = null;
 
@@ -182,111 +206,141 @@ function updateTime() {
   });
 }
 
-// ===== 组件映射表（与 PageViewer 保持一致） =====
-const componentMap: Record<string, any> = {
-  text: () => import('../page/components/TextElement.vue'),
-  button: () => import('../page/components/ButtonElement.vue'),
-  link: () => import('../page/components/LinkElement.vue'),
-  image: () => import('../page/components/ImageElement.vue'),
-  input: () => import('../page/components/InputElement.vue'),
-  textarea: () => import('../page/components/TextareaElement.vue'),
-  inputNumber: () => import('../page/components/InputNumberElement.vue'),
-  select: () => import('../page/components/SelectElement.vue'),
-  date: () => import('../page/components/DateElement.vue'),
-  time: () => import('../page/components/TimeElement.vue'),
-  switch: () => import('../page/components/SwitchElement.vue'),
-  checkbox: () => import('../page/components/CheckboxElement.vue'),
-  radio: () => import('../page/components/RadioElement.vue'),
-  slider: () => import('../page/components/SliderElement.vue'),
-  rate: () => import('../page/components/RateElement.vue'),
-  upload: () => import('../page/components/UploadElement.vue'),
-  table: () => import('../page/components/TableElement.vue'),
-  form: () => import('../page/components/FormElement.vue'),
-  list: () => import('../page/components/ListElement.vue'),
-  chart: () => import('../page/components/ChartElement.vue'),
-  card: () => import('../page/components/CardElement.vue'),
-  tag: () => import('../page/components/TagElement.vue'),
-  progress: () => import('../page/components/ProgressElement.vue'),
-  steps: () => import('../page/components/StepsElement.vue'),
-  alert: () => import('../page/components/AlertElement.vue'),
-  divider: () => import('../page/components/DividerElement.vue'),
-  container: () => import('../page/components/ContainerElement.vue'),
-  grid: () => import('../page/components/GridElement.vue'),
-  tabs: () => import('../page/components/TabsElement.vue'),
-  collapse: () => import('../page/components/CollapseElement.vue'),
-  space: () => import('../page/components/SpaceElement.vue'),
-  breadcrumb: () => import('../page/components/BreadcrumbElement.vue'),
-};
+function toggleGroup(node: MenuNode) {
+  const key = String(node.id);
+  collapsedGroups[key] = !collapsedGroups[key];
+}
 
-function getElementComponent(type: string) {
-  const loader = componentMap[type];
-  if (loader) {
-    return defineAsyncComponent(loader);
-  }
-  return null;
+function isLeafActive(leaf: MenuNode): boolean {
+  if (!activePage.value) return false;
+  // 优先用 id 比对（菜单树带 id），降级到 pageCode
+  if (activePage.value.id && leaf.id) return activePage.value.id === leaf.id;
+  return activePage.value.pageCode === leaf.pageCode;
 }
 
 // ===== 加载数据 =====
 async function loadData() {
   loading.value = true;
   try {
-    // 加载应用信息
-    const appRes = await businessAppApi.getByCode(appCode);
+    // 1) 应用信息
+    const appRes = await businessAppApi.getByCode(appCode.value);
     app.value = (appRes.data as any)?.data || appRes.data;
 
-    // 加载应用页面
-    const pageRes = await businessAppApi.getPages(appCode);
-    const data = (pageRes.data as any)?.data || pageRes.data || [];
-    pages.value = Array.isArray(data) ? data : [];
+    // 2) 菜单树（active release）
+    let tree: MenuNode[] = [];
+    try {
+      const menuRes = await appMenuApi.getActive(appCode.value);
+      tree = (menuRes.data as any)?.data || [];
+    } catch {
+      tree = [];
+    }
+
+    // 3) 菜单为空（无 active release）则回退到旧的扁平 pages 列表，保持兼容
+    if (!Array.isArray(tree) || tree.length === 0) {
+      try {
+        const pageRes = await businessAppApi.getPages(appCode.value);
+        const pages = ((pageRes.data as any)?.data || pageRes.data || []) as any[];
+        tree = (Array.isArray(pages) ? pages : []).map((p: any) => ({
+          id: p.id,
+          name: p.name,
+          pageCode: p.pageCode || p.code,
+          menuType: 'menu' as const,
+          visible: true,
+        }));
+      } catch {
+        tree = [];
+      }
+    }
+
+    menuTree.value = tree;
+
+    // 4) URL 带 pageCode 时自动打开对应页面（深链）
+    const urlPageCode = (route.params.pageCode as string) || '';
+    if (urlPageCode) {
+      const leaf = flatLeaves.value.find(l => l.pageCode === urlPageCode);
+      if (leaf) {
+        await openLeaf(leaf, false);
+      }
+    }
   } catch {
     app.value = null;
-    pages.value = [];
+    menuTree.value = [];
   } finally {
     loading.value = false;
   }
 }
 
-// ===== 切换页面 =====
-async function switchPage(page: any) {
-  activePage.value = page;
+/** 切到指定叶子并把 pageCode 同步到 URL（pushUrl=true） */
+async function switchPage(leaf: MenuNode) {
+  if (!leaf.pageCode) {
+    // 分组节点点击不导航
+    return;
+  }
+  await openLeaf(leaf, true);
+}
+
+/** 真正加载并渲染页面 */
+async function openLeaf(leaf: MenuNode, pushUrl: boolean) {
+  activePage.value = leaf;
   pageElements.value = [];
-  
-  const code = page.pageCode || page.code;
-  if (!code) return;
+
+  if (pushUrl && route.params.pageCode !== leaf.pageCode) {
+    router.replace({
+      name: 'AppRuntime',
+      params: { appCode: appCode.value, pageCode: leaf.pageCode },
+    }).catch(() => {});
+  }
 
   try {
-    const res = await pageSchemaApi.getByPageCode(code);
-    if ((res.data as any)?.code === 1 && (res.data as any)?.data) {
-      const pageData = (res.data as any).data;
+    const res = await pageSchemaApi.getByPageCode(leaf.pageCode!);
+    const data = (res.data as any)?.data ?? res.data;
+    if (data && data.layoutJson !== undefined) {
       try {
-        const layout = typeof pageData.layoutJson === 'string'
-          ? JSON.parse(pageData.layoutJson)
-          : (pageData.layoutJson || []);
+        const layout = typeof data.layoutJson === 'string'
+          ? JSON.parse(data.layoutJson)
+          : (data.layoutJson || []);
         pageElements.value = Array.isArray(layout) ? layout : [];
-      } catch { pageElements.value = []; }
-    } else if (res.data && res.data.layoutJson) {
-      try {
-        const layout = typeof res.data.layoutJson === 'string'
-          ? JSON.parse(res.data.layoutJson)
-          : (res.data.layoutJson || []);
-        pageElements.value = Array.isArray(layout) ? layout : [];
-      } catch { pageElements.value = []; }
+      } catch {
+        pageElements.value = [];
+      }
     }
   } catch {
     pageElements.value = [];
   }
 }
 
-// ===== 导航 =====
+function clearActive() {
+  activePage.value = null;
+  pageElements.value = [];
+  // 回欢迎页时把 URL 也清回 /run/:appCode
+  if (route.params.pageCode) {
+    router.replace({
+      name: 'AppRuntime',
+      params: { appCode: appCode.value },
+    }).catch(() => {});
+  }
+}
+
 function goHome() {
   router.push('/home');
 }
 
-function goDesign(page: any) {
-  if (page?.id) {
-    router.push(`/lowcode/page/design?id=${page.id}`);
-  }
-}
+// 当 URL 上 pageCode 变化时（前进后退 / 外部跳转）同步内部状态
+watch(
+  () => route.params.pageCode,
+  (next, prev) => {
+    if (next === prev) return;
+    if (!next) {
+      activePage.value = null;
+      pageElements.value = [];
+      return;
+    }
+    const leaf = flatLeaves.value.find(l => l.pageCode === next);
+    if (leaf) {
+      openLeaf(leaf, false);
+    }
+  },
+);
 
 onMounted(() => {
   loadData();
@@ -372,6 +426,40 @@ onUnmounted(() => {
   padding: 8px 12px 6px;
 }
 
+// 分组（带 children 的一级节点）
+.ar-nav-group-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  margin: 2px 0;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s;
+  color: #1a1a2e;
+  font-size: 14px;
+  font-weight: 600;
+
+  &:hover {
+    background: #f5f7fa;
+  }
+}
+
+.ar-nav-arrow {
+  color: #8c8c8c;
+  transition: transform 0.18s;
+  flex-shrink: 0;
+
+  &.expanded {
+    transform: rotate(90deg);
+  }
+}
+
+.ar-nav-children {
+  padding-left: 8px;
+}
+
+// 叶子节点
 .ar-nav-item {
   display: flex;
   align-items: center;
@@ -401,6 +489,11 @@ onUnmounted(() => {
   }
 }
 
+.ar-nav-item-sub {
+  padding-left: 24px;
+  font-size: 13px;
+}
+
 .ar-nav-dot {
   width: 6px;
   height: 6px;
@@ -425,10 +518,6 @@ onUnmounted(() => {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-.ar-nav-badge {
-  flex-shrink: 0;
 }
 
 .ar-nav-empty {
@@ -640,16 +729,6 @@ onUnmounted(() => {
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
   min-height: 500px;
   padding: 24px;
-}
-
-.ar-page-content {
-  position: relative;
-  min-height: 400px;
-}
-
-.page-element {
-  position: absolute;
-  overflow: hidden;
 }
 
 .ar-empty-page {

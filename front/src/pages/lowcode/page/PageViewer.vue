@@ -29,29 +29,15 @@
       </div>
       <div v-else class="viewer-frame">
         <div class="viewer-page-content">
-          <!-- 按类型渲染每个元素，使用组件渲染器并启用事件 -->
-          <div 
-            v-for="element in pageElements" 
-            :key="element.id" 
-            class="page-element"
-            :style="{
-              left: element.x + 'px',
-              top: element.y + 'px',
-              width: element.width + 'px',
-              height: element.height + 'px',
-            }"
-          >
-            <component 
-              :is="getElementComponent(element.type)" 
-              :element="element"
-              :enable-events="true"
-            />
-          </div>
-          <div v-if="pageElements.length === 0" class="empty-page-hint">
-            <LayoutIcon size="64" />
-            <h3>空白页面</h3>
-            <p>该页面尚未添加任何组件</p>
-          </div>
+          <SchemaRenderer :elements="pageElements" :enable-events="true">
+            <template #empty>
+              <div class="empty-page-hint">
+                <LayoutIcon size="64" />
+                <h3>空白页面</h3>
+                <p>该页面尚未添加任何组件</p>
+              </div>
+            </template>
+          </SchemaRenderer>
         </div>
       </div>
     </div>
@@ -59,18 +45,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch, markRaw } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { MessagePlugin } from 'tdesign-vue-next';
 import {
-  BrowseIcon, FullscreenIcon, FullscreenExitIcon,
-  ImageIcon, LayoutIcon, EditIcon, ButtonIcon, LinkIcon, TapeIcon,
-  FormIcon, TextboxIcon, CalendarIcon, TimeIcon, CheckCircleFilledIcon,
-  CircleIcon, StarFilledIcon, ControlPlatformIcon, AddCircleIcon,
-  ChevronDownIcon, ChevronUpIcon, LayersIcon, CodeIcon, FrameIcon,
-  FolderIcon, RootListIcon, SwapIcon, UploadIcon, SettingIcon,
+  BrowseIcon, FullscreenIcon, FullscreenExitIcon, LayoutIcon,
 } from 'tdesign-icons-vue-next';
 import BackButton from '../../../components/common/BackButton.vue';
+import SchemaRenderer from '../../../components/lowcode/SchemaRenderer.vue';
 import { pageSchemaApi } from '../../../api/lowcode/pageSchema';
 
 const router = useRouter();
@@ -81,55 +63,11 @@ const pageElements = ref<any[]>([]);
 const loading = ref(true);
 const isFullscreen = ref(false);
 
-// 组件映射表
-const componentMap: Record<string, any> = {
-  text: () => import('./components/TextElement.vue'),
-  button: () => import('./components/ButtonElement.vue'),
-  link: () => import('./components/LinkElement.vue'),
-  image: () => import('./components/ImageElement.vue'),
-  input: () => import('./components/InputElement.vue'),
-  textarea: () => import('./components/TextareaElement.vue'),
-  inputNumber: () => import('./components/InputNumberElement.vue'),
-  select: () => import('./components/SelectElement.vue'),
-  date: () => import('./components/DateElement.vue'),
-  time: () => import('./components/TimeElement.vue'),
-  switch: () => import('./components/SwitchElement.vue'),
-  checkbox: () => import('./components/CheckboxElement.vue'),
-  radio: () => import('./components/RadioElement.vue'),
-  slider: () => import('./components/SliderElement.vue'),
-  rate: () => import('./components/RateElement.vue'),
-  upload: () => import('./components/UploadElement.vue'),
-  table: () => import('./components/TableElement.vue'),
-  form: () => import('./components/FormElement.vue'),
-  list: () => import('./components/ListElement.vue'),
-  chart: () => import('./components/ChartElement.vue'),
-  card: () => import('./components/CardElement.vue'),
-  tag: () => import('./components/TagElement.vue'),
-  progress: () => import('./components/ProgressElement.vue'),
-  steps: () => import('./components/StepsElement.vue'),
-  alert: () => import('./components/AlertElement.vue'),
-  divider: () => import('./components/DividerElement.vue'),
-  container: () => import('./components/ContainerElement.vue'),
-  grid: () => import('./components/GridElement.vue'),
-  tabs: () => import('./components/TabsElement.vue'),
-  collapse: () => import('./components/CollapseElement.vue'),
-  space: () => import('./components/SpaceElement.vue'),
-  breadcrumb: () => import('./components/BreadcrumbElement.vue'),
-};
-
-import { defineAsyncComponent } from 'vue';
-
-function getElementComponent(type: string) {
-  const loader = componentMap[type];
-  if (loader) {
-    return defineAsyncComponent(loader);
-  }
-  return null;
-}
-
 async function loadPage() {
   loading.value = true;
-  const code = (route.query.code as string) || (route.meta.pageCode as string);
+  const code = (route.query.code as string)
+    || (route.params.pageCode as string)
+    || (route.meta.pageCode as string);
   if (!code) {
     loading.value = false;
     return;
@@ -156,11 +94,12 @@ onMounted(() => {
   loadPage();
 });
 
-// 监听路由变化（同一组件不同路由时重新加载页面）
+// 监听路由 pageCode（query.code 或 meta.pageCode）变化重新加载
+// 不再硬编码 /leave/ 前缀，新版业务应用走 /run/:appCode/:pageCode 也能复用
 watch(
-  () => route.fullPath,
-  () => {
-    if (route.path.startsWith('/leave/')) {
+  () => [route.query.code, route.params.pageCode, route.meta.pageCode],
+  (next, prev) => {
+    if (next.join('|') !== (prev || []).join('|')) {
       loadPage();
     }
   },
@@ -246,11 +185,6 @@ function goBack() {
 .viewer-page-content {
   position: relative;
   min-height: 400px;
-}
-
-.page-element {
-  position: absolute;
-  overflow: hidden;
 }
 
 .empty-page-hint {
