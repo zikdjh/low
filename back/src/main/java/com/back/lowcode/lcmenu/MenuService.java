@@ -69,9 +69,9 @@ public class MenuService {
     public void reorder(String appCode, List<ReorderItem> items) {
         for (ReorderItem it : items) {
             Menu m = menuRepository.findById(it.getId())
-                    .orElseThrow(() -> new RuntimeException("菜单不存在: " + it.getId()));
+                    .orElseThrow(() -> new IllegalArgumentException("菜单不存在: " + it.getId()));
             if (!appCode.equals(m.getAppCode()) || m.getReleaseId() != null) {
-                throw new RuntimeException("仅允许调整当前应用的草稿菜单: id=" + it.getId());
+                throw new IllegalStateException("仅允许调整当前应用的草稿菜单: id=" + it.getId());
             }
             m.setParentId(it.getParentId());
             m.setSortOrder(it.getSortOrder() == null ? 0 : it.getSortOrder());

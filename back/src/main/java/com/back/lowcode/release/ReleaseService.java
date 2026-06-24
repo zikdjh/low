@@ -82,7 +82,7 @@ public class ReleaseService {
             self.runPipeline(release, activate);
         } catch (PipelineException ex) {
             self.markReleaseFailed(release.getId(), ex.getMessage());
-            throw new RuntimeException("发布失败 @ phase=" + ex.getPhase() + ": " + ex.getMessage(), ex);
+            throw new IllegalStateException("发布失败 @ phase=" + ex.getPhase() + ": " + ex.getMessage());
         }
         return releaseRepository.findById(release.getId()).orElse(release);
     }
@@ -90,7 +90,7 @@ public class ReleaseService {
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public Release createDraftRelease(String appCode, String version, String notes, String createdBy) {
         if (releaseRepository.existsByAppCodeAndVersion(appCode, version)) {
-            throw new RuntimeException("版本号已存在: " + appCode + " " + version);
+            throw new IllegalArgumentException("版本号已存在: " + appCode + " " + version);
         }
         Release release = Release.builder()
                 .appCode(appCode)
@@ -135,9 +135,9 @@ public class ReleaseService {
     @Transactional
     public Release rollback(Long releaseId) {
         Release target = releaseRepository.findById(releaseId)
-                .orElseThrow(() -> new RuntimeException("Release 不存在: " + releaseId));
+                .orElseThrow(() -> new IllegalArgumentException("Release 不存在: " + releaseId));
         if (!"rolledback".equals(target.getStatus()) && !"draft".equals(target.getStatus())) {
-            throw new RuntimeException("只能回滚到 rolledback 或 draft 状态的 release，当前=" + target.getStatus());
+            throw new IllegalStateException("只能回滚到 rolledback 或 draft 状态的 release，当前=" + target.getStatus());
         }
         releaseRepository.findByAppCodeAndStatus(target.getAppCode(), "active").ifPresent(active -> {
             active.setStatus("rolledback");
@@ -151,9 +151,9 @@ public class ReleaseService {
     @Transactional
     public Release activate(Long releaseId) {
         Release target = releaseRepository.findById(releaseId)
-                .orElseThrow(() -> new RuntimeException("Release 不存在: " + releaseId));
+                .orElseThrow(() -> new IllegalArgumentException("Release 不存在: " + releaseId));
         if (!"draft".equals(target.getStatus())) {
-            throw new RuntimeException("只能激活 draft 状态的 release，当前=" + target.getStatus());
+            throw new IllegalStateException("只能激活 draft 状态的 release，当前=" + target.getStatus());
         }
         releaseRepository.findByAppCodeAndStatus(target.getAppCode(), "active").ifPresent(active -> {
             active.setStatus("rolledback");
