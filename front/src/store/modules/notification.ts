@@ -12,33 +12,44 @@ export interface AppNotification {
   category: 'system' | 'task' | 'team' | 'other';
 }
 
+const READ_IDS_KEY = 'app_read_notification_ids';
+
+function getReadIds(): Set<string> {
+  try {
+    const raw = localStorage.getItem(READ_IDS_KEY);
+    if (raw) {
+      return new Set(JSON.parse(raw));
+    }
+  } catch {}
+  return new Set();
+}
+
+function saveReadIds(ids: Set<string>) {
+  localStorage.setItem(READ_IDS_KEY, JSON.stringify([...ids]));
+}
+
 export const useNotificationStore = defineStore('notification', () => {
   const notifications = ref<AppNotification[]>([]);
+  const readIds = ref(getReadIds());
 
   async function loadNotifications() {
     try {
       const response = await notificationApi.getPublishedNotifications();
       const data = response.data || response;
+      const currentReadIds = readIds.value;
+      const mapper = (item: any): AppNotification => ({
+        id: String(item.id),
+        title: item.title,
+        description: item.content,
+        time: formatTime(item.publishedAt || item.createdAt),
+        read: currentReadIds.has(String(item.id)),
+        type: item.type === 'warning' ? 'warning' : item.type === 'error' ? 'error' : item.type === 'success' ? 'success' : 'info',
+        category: 'system',
+      });
       if (Array.isArray(data)) {
-        notifications.value = data.map((item: any) => ({
-          id: String(item.id),
-          title: item.title,
-          description: item.content,
-          time: formatTime(item.publishedAt || item.createdAt),
-          read: false,
-          type: item.type === 'warning' ? 'warning' : item.type === 'error' ? 'error' : item.type === 'success' ? 'success' : 'info',
-          category: 'system',
-        }));
+        notifications.value = data.map(mapper);
       } else if (data.code === 1 && data.data) {
-        notifications.value = data.data.map((item: any) => ({
-          id: String(item.id),
-          title: item.title,
-          description: item.content,
-          time: formatTime(item.publishedAt || item.createdAt),
-          read: false,
-          type: item.type === 'warning' ? 'warning' : item.type === 'error' ? 'error' : item.type === 'success' ? 'success' : 'info',
-          category: 'system',
-        }));
+        notifications.value = data.data.map(mapper);
       }
     } catch (error) {
       console.error('Failed to load notifications:', error);
@@ -81,11 +92,17 @@ export const useNotificationStore = defineStore('notification', () => {
     const n = notifications.value.find(n => n.id === id);
     if (n && !n.read) {
       n.read = true;
+      readIds.value.add(id);
+      saveReadIds(readIds.value);
     }
   }
 
   function markAllAsRead() {
-    notifications.value.forEach(n => (n.read = true));
+    notifications.value.forEach(n => {
+      n.read = true;
+      readIds.value.add(n.id);
+    });
+    saveReadIds(readIds.value);
   }
 
   function removeNotification(id: string) {
@@ -96,6 +113,8 @@ export const useNotificationStore = defineStore('notification', () => {
   }
 
   function clearAll() {
+    notifications.value.forEach(n => readIds.value.add(n.id));
+    saveReadIds(readIds.value);
     notifications.value = [];
   }
 
