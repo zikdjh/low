@@ -51,11 +51,18 @@ public class PageSchemaController {
         return Result.success(pageSchemaService.update(id, pageSchema));
     }
 
+    /**
+     * @deprecated Phase 2 起页面发布改由 {@code POST /lowcode/release/{appCode}} 走应用级 release 流水线驱动；
+     * 单页 publish 仅作过渡期保留，不写入 ReleaseItem，运行时不可见。
+     */
+    @Deprecated
     @PostMapping("/{id}/publish")
     public Result publish(@PathVariable Long id) {
         return Result.success(pageSchemaService.publish(id));
     }
 
+    /** @deprecated 同 {@link #publish}，过渡期保留。 */
+    @Deprecated
     @PostMapping("/{id}/unpublish")
     public Result unpublish(@PathVariable Long id) {
         return Result.success(pageSchemaService.unpublish(id));
