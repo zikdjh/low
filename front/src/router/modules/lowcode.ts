@@ -27,6 +27,12 @@ export default [
         meta: { title: { zh_CN: '业务应用详情' }, hidden: true },
       },
       {
+        path: 'app/:appCode/menu',
+        name: 'AppMenuEditor',
+        component: () => import('../../pages/lowcode/app/AppMenuEditor.vue'),
+        meta: { title: { zh_CN: '编辑应用菜单' }, hidden: true },
+      },
+      {
         path: 'entity',
         name: 'EntityList',
         component: () => import('../../pages/lowcode/metadata/EntityList.vue'),

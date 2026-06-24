@@ -25,7 +25,19 @@
           </div>
           <div class="all-app-meta">
             <span>{{ (a as any).pageCount ?? 0 }} 个页面</span>
-            <ChevronRightIcon size="16" />
+            <div class="all-app-actions" @click.stop>
+              <t-button
+                size="small"
+                variant="text"
+                theme="primary"
+                title="编辑该应用的菜单"
+                @click.stop="goEditMenu(a)"
+              >
+                <template #icon><SettingIcon size="14" /></template>
+                菜单
+              </t-button>
+              <ChevronRightIcon size="16" />
+            </div>
           </div>
         </div>
       </div>
@@ -49,7 +61,7 @@
 import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { businessAppApi, type BusinessApp } from '../../../api/lowcode/businessApp';
-import { AppIcon, ChevronRightIcon, ChevronLeftIcon } from 'tdesign-icons-vue-next';
+import { AppIcon, ChevronRightIcon, ChevronLeftIcon, SettingIcon } from 'tdesign-icons-vue-next';
 
 const route = useRoute();
 const router = useRouter();
@@ -86,6 +98,10 @@ async function loadAllApps() {
 
 function goToApp(app: BusinessApp) {
   router.push(`/run/${app.code}`);
+}
+
+function goEditMenu(app: BusinessApp) {
+  router.push(`/lowcode/app/${app.code}/menu`);
 }
 
 onMounted(loadData);
@@ -187,12 +203,18 @@ onMounted(loadData);
 .all-app-meta {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 4px;
+  align-items: flex-end;
+  gap: 6px;
   color: #ccc;
   span {
     font-size: 12px;
     color: #999;
   }
+}
+
+.all-app-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
 }
 </style>
