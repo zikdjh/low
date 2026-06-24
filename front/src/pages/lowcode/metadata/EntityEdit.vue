@@ -62,36 +62,39 @@
         <template #length="{ row }">
           <t-input-number
             v-if="row.fieldType === 'VARCHAR'"
-            v-model="row.length"
+            :value="row.length ?? 255"
             size="small"
-            style="width: 70px"
+            style="width: 90px"
             :min="1"
             :max="4000"
             placeholder="长度"
+            @change="(val: number) => row.length = val"
           />
           <span v-else>-</span>
         </template>
         <template #precision="{ row }">
           <t-input-number
             v-if="row.fieldType === 'DECIMAL'"
-            v-model="row.precision"
+            :value="row.precision ?? 10"
             size="small"
-            style="width: 60px"
+            style="width: 70px"
             :min="1"
             :max="65"
             placeholder="精度"
+            @change="(val: number) => row.precision = val"
           />
           <span v-else>-</span>
         </template>
         <template #scale="{ row }">
           <t-input-number
             v-if="row.fieldType === 'DECIMAL'"
-            v-model="row.scale"
+            :value="row.scale ?? 2"
             size="small"
-            style="width: 60px"
+            style="width: 70px"
             :min="0"
             :max="30"
             placeholder="小数"
+            @change="(val: number) => row.scale = val"
           />
           <span v-else>-</span>
         </template>
