@@ -10,23 +10,38 @@ USE low_end;
 -- 1) 库级默认字符集（影响之后 JPA ddl-auto 新建的表）
 ALTER DATABASE low_end CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
--- 2) 把所有 lc_ 前缀的低代码表转 utf8mb4（含表 default 和已有列）
---    使用 INFORMATION_SCHEMA 自动批量，避免漏表
-SET @s := NULL;
-SELECT GROUP_CONCAT(
-         CONCAT('ALTER TABLE `', table_name, '` CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci')
-         SEPARATOR '; '
-       )
-INTO @s
-FROM information_schema.tables
-WHERE table_schema = 'low_end'
-  AND table_name LIKE 'lc\_%' ESCAPE '\\';
+-- 2) 逐表 ALTER（PREPARE 不支持多语句，必须用存储过程游标循环）
+DROP PROCEDURE IF EXISTS lc_convert_utf8mb4;
+DELIMITER $$
+CREATE PROCEDURE lc_convert_utf8mb4()
+BEGIN
+    DECLARE done INT DEFAULT 0;
+    DECLARE tname VARCHAR(128);
+    DECLARE cur CURSOR FOR
+        SELECT table_name
+        FROM information_schema.tables
+        WHERE table_schema = 'low_end'
+          AND table_name LIKE 'lc\_%' ESCAPE '\\';
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = 1;
 
--- 直接拼成单语句执行；@s 为 NULL（无 lc_* 表）则跳过
-SET @s := IFNULL(CONCAT(@s, ';'), 'SELECT 1');
-PREPARE stmt FROM @s;
-EXECUTE stmt;
-DEALLOCATE PREPARE stmt;
+    OPEN cur;
+    convert_loop: LOOP
+        FETCH cur INTO tname;
+        IF done THEN
+            LEAVE convert_loop;
+        END IF;
+        SET @sql := CONCAT('ALTER TABLE `', tname,
+                           '` CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci');
+        PREPARE stmt FROM @sql;
+        EXECUTE stmt;
+        DEALLOCATE PREPARE stmt;
+    END LOOP;
+    CLOSE cur;
+END$$
+DELIMITER ;
+
+CALL lc_convert_utf8mb4();
+DROP PROCEDURE lc_convert_utf8mb4;
 
 -- 3) 校验：列出当前 lc_* 表的字符集与列字符集
 SELECT t.table_name,
