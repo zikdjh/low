@@ -70,14 +70,6 @@
         <span class="collab-count">{{ onlineCount }}</span>
       </div>
 
-      <!-- 预览 -->
-      <t-tooltip content="预览应用">
-        <t-button variant="text" class="header-action-btn" @click="handlePreview">
-          <BrowseIcon size="18" />
-          <span class="btn-label">预览</span>
-        </t-button>
-      </t-tooltip>
-
       <!-- 发布 -->
       <t-tooltip content="发布到生产环境">
         <t-button variant="text" class="header-action-btn header-action-publish" @click="handlePublish">
@@ -256,7 +248,7 @@ import {
   InfoCircleFilledIcon, NotificationIcon, SunnyIcon,
   UserCircleIcon, LogoutIcon, HelpCircleIcon,
   LayoutIcon, AppIcon, DataBaseIcon,
-  BrowseIcon, RocketIcon, EditIcon, HomeIcon, SecuredIcon
+  RocketIcon, EditIcon, HomeIcon, SecuredIcon
 } from 'tdesign-icons-vue-next';
 import { useSettingStore, useUserStore, useNotificationStore } from '../../store';
 import { smoothThemeTransition } from '../../utils/theme';
@@ -454,9 +446,7 @@ function toggleTheme() {
   });
 }
 
-function handlePreview() {
-  router.push('/lowcode/page/view');
-}
+
 function handlePublish() {
   // 简单模拟发布
   const msg = '应用发布成功！生产环境已更新。';

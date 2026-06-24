@@ -201,7 +201,7 @@
       <div class="version-bar" v-show="!settingStore.isSidebarCollapsed">
         <div class="version-left">
           <span class="version-dot"></span>
-          <span class="version-text">v2.0.0</span>
+          <span class="version-text">v1.0.0</span>
         </div>
         <span class="version-status">运行中</span>
       </div>
