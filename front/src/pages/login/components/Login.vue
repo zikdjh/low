@@ -2,10 +2,26 @@
   <div class="login-form">
     <div class="form-header">
       <h2 class="form-title">欢迎回来</h2>
-      <p class="form-subtitle">没有账号会自动注册</p>
+      <p class="form-subtitle">{{ loginMode === 'phone' ? '没有账号会自动注册' : '使用账号密码登录' }}</p>
     </div>
 
+    <!-- 登录模式切换 -->
+    <div class="login-mode-tabs">
+      <button
+        class="mode-tab"
+        :class="{ active: loginMode === 'phone' }"
+        @click="loginMode = 'phone'"
+      >手机号登录</button>
+      <button
+        class="mode-tab"
+        :class="{ active: loginMode === 'password' }"
+        @click="loginMode = 'password'"
+      >账号密码登录</button>
+    </div>
+
+    <!-- 手机号登录 -->
     <t-form
+        v-if="loginMode === 'phone'"
         :data="formData"
         :rules="formRules"
         label-width="0"
@@ -24,7 +40,6 @@
         </t-input>
       </t-form-item>
 
-      <!-- 验证码登录 -->
       <t-form-item name="code">
         <t-input
             v-model="formData.code"
@@ -64,6 +79,44 @@
       </t-form-item>
     </t-form>
 
+    <!-- 账号密码登录 -->
+    <div v-if="loginMode === 'password'" class="password-login">
+      <div class="pwd-form-item">
+        <label>用户名</label>
+        <input
+          v-model="pwdForm.username"
+          type="text"
+          class="pwd-input"
+          placeholder="请输入用户名（如：student01）"
+          @keyup.enter="handlePwdLogin"
+        />
+      </div>
+      <div class="pwd-form-item">
+        <label>密码</label>
+        <input
+          v-model="pwdForm.password"
+          type="password"
+          class="pwd-input"
+          placeholder="请输入密码"
+          @keyup.enter="handlePwdLogin"
+        />
+      </div>
+      <t-button
+        theme="primary"
+        size="large"
+        block
+        :loading="pwdLoading"
+        class="login-button"
+        @click="handlePwdLogin"
+      >
+        登 录
+      </t-button>
+      <p class="demo-hint">
+        演示账号：student01 / counselor01 / dept_head01 / admin01<br/>
+        密码统一：123456
+      </p>
+    </div>
+
     <!-- 第三方登录区域 -->
     <div class="divider">
       <span>或</span>
@@ -92,17 +145,26 @@ import type {SubmitContext} from 'tdesign-vue-next';
 import type {LoginForm} from "../../../api/model/user/Login.ts";
 import {validateCode, validatePhone} from "../../../utils/formatVerification.ts";
 import userApi from "../../../api/user";
+import request from "../../../api/index";
 import {useRouter} from "vue-router";
 
 const router = useRouter();
 
 const loading = ref(false);
 const smsCountdown = ref(0);
+const loginMode = ref<'phone' | 'password'>('phone');
+const pwdLoading = ref(false);
 
-// 表单数据
+// 手机号表单
 const formData = reactive<LoginForm>({
   phone: '',
   code: '',
+});
+
+// 账号密码表单
+const pwdForm = reactive({
+  username: '',
+  password: '',
 });
 
 // 表单验证规则
@@ -160,7 +222,7 @@ const handleWechatLogin = () => {
   MessagePlugin.info('微信登录功能开发中...');
 };
 
-// 提交表单
+// 提交表单（手机号）
 const onSubmit = async ({validateResult}: SubmitContext) => {
   if (validateResult !== true) return;
 
@@ -188,6 +250,42 @@ const onSubmit = async ({validateResult}: SubmitContext) => {
     console.error('Login error:', error);
   } finally {
     loading.value = false;
+  }
+};
+
+// 账号密码登录
+const handlePwdLogin = async () => {
+  if (!pwdForm.username || !pwdForm.password) {
+    await MessagePlugin.warning('请输入用户名和密码');
+    return;
+  }
+  pwdLoading.value = true;
+  try {
+    const res = await request.post('/auth/login', {
+      username: pwdForm.username,
+      password: pwdForm.password,
+    });
+    const data = res.data;
+    if (data.code === 1 || data.code === 0) {
+      const token = data.data?.token || data.token;
+      const user = data.data?.user || data.user;
+      const accessPayload = {
+        token: token,
+        expiresAt: Date.now() + 45 * 60 * 1000
+      };
+      sessionStorage.setItem('access', JSON.stringify(accessPayload));
+      if (user) {
+        localStorage.setItem('userInfo', JSON.stringify(user));
+      }
+      await MessagePlugin.success('登录成功');
+      await router.push('/home');
+    } else {
+      await MessagePlugin.error(data.msg || data.message || '登录失败');
+    }
+  } catch (e: any) {
+    await MessagePlugin.error(e?.response?.data?.msg || '登录失败，请检查账号密码');
+  } finally {
+    pwdLoading.value = false;
   }
 };
 </script>
@@ -321,5 +419,67 @@ const onSubmit = async ({validateResult}: SubmitContext) => {
 
 :deep(.t-radio-button:hover) {
   border-color: var(--td-brand-color);
+}
+
+/* 登录模式切换 */
+.login-mode-tabs {
+  display: flex;
+  margin-bottom: 1.5rem;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid #e5e5e5;
+}
+.login-mode-tabs .mode-tab {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  background: #f8f9fb;
+  color: #999;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.login-mode-tabs .mode-tab.active {
+  background: var(--td-brand-color);
+  color: #fff;
+  font-weight: 600;
+}
+.login-mode-tabs .mode-tab:not(.active):hover {
+  background: #eee;
+}
+.password-login {
+  margin-bottom: 0;
+}
+.pwd-form-item {
+  margin-bottom: 16px;
+}
+.pwd-form-item label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 6px;
+}
+.pwd-input {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1.5px solid #e5e5e5;
+  border-radius: 8px;
+  font-size: 14px;
+  outline: none;
+  transition: all 0.2s;
+  box-sizing: border-box;
+  background: #fff;
+}
+.pwd-input:focus {
+  border-color: var(--td-brand-color);
+  box-shadow: 0 0 0 3px rgba(0, 82, 217, 0.08);
+}
+.demo-hint {
+  margin-top: 12px;
+  font-size: 11px;
+  color: #bbb;
+  text-align: center;
+  line-height: 1.8;
 }
 </style>

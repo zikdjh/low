@@ -56,10 +56,20 @@ public class AuthServiceImpl implements AuthService {
         if (userRepository.existsByUsername(req.getUsername())) {
             return Result.error("用户名已存在");
         }
-        Role defaultRole = roleRepository.findByCode(DEFAULT_ROLE_CODE)
-                .orElseThrow(() -> new IllegalStateException("默认角色 " + DEFAULT_ROLE_CODE + " 未初始化"));
 
         Set<Role> roles = new HashSet<>();
+
+        // 如果指定了角色编码，使用指定角色
+        if (req.getRoleCode() != null && !req.getRoleCode().isEmpty()) {
+            Role specifiedRole = roleRepository.findByCode(req.getRoleCode()).orElse(null);
+            if (specifiedRole != null) {
+                roles.add(specifiedRole);
+            }
+        }
+
+        // 始终加上默认的 user 角色
+        Role defaultRole = roleRepository.findByCode(DEFAULT_ROLE_CODE)
+                .orElseThrow(() -> new IllegalStateException("默认角色 " + DEFAULT_ROLE_CODE + " 未初始化"));
         roles.add(defaultRole);
 
         User user = User.builder()
@@ -69,7 +79,8 @@ public class AuthServiceImpl implements AuthService {
                 .roles(roles)
                 .build();
         User saved = userRepository.save(user);
-        log.info("注册新用户 id={} username={}", saved.getId(), saved.getUsername());
+        log.info("注册新用户 id={} username={} roles={}", saved.getId(), saved.getUsername(),
+                roles.stream().map(Role::getCode).toList());
 
         return Result.success(buildLoginPayload(saved, response));
     }

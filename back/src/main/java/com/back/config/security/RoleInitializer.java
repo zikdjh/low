@@ -65,61 +65,58 @@ public class RoleInitializer implements CommandLineRunner {
     }
 
     private void initDemoUsers() {
-        if (userRepository.count() > 0) {
-            return;
+        // 初始化 root 账户（幂等）
+        if (!userRepository.existsByUsername(DEFAULT_ROOT_USERNAME)) {
+            Optional<Role> rootRole = roleRepository.findByCode("root");
+            rootRole.ifPresent(role -> {
+                Set<Role> roles = new HashSet<>(List.of(role));
+                User root = User.builder()
+                        .username(DEFAULT_ROOT_USERNAME)
+                        .password(passwordEncoder.encode(DEFAULT_ROOT_PASSWORD))
+                        .nickname(DEFAULT_ROOT_NICKNAME)
+                        .roles(roles)
+                        .build();
+                userRepository.save(root);
+                log.info("初始化 root 账户: username={} password={}", DEFAULT_ROOT_USERNAME, DEFAULT_ROOT_PASSWORD);
+            });
         }
 
-        // 初始化 root 账户
-        Optional<Role> rootRole = roleRepository.findByCode("root");
-        rootRole.ifPresent(role -> {
-            Set<Role> roles = new HashSet<>(List.of(role));
-            User root = User.builder()
-                    .username(DEFAULT_ROOT_USERNAME)
-                    .password(passwordEncoder.encode(DEFAULT_ROOT_PASSWORD))
-                    .nickname(DEFAULT_ROOT_NICKNAME)
-                    .roles(roles)
-                    .build();
-            userRepository.save(root);
-            log.info("初始化 root 账户: username={} password={}", DEFAULT_ROOT_USERNAME, DEFAULT_ROOT_PASSWORD);
-        });
+        Role studentRole = roleRepository.findByCode("student").orElse(null);
+        Role counselorRole = roleRepository.findByCode("counselor").orElse(null);
+        Role deptHeadRole = roleRepository.findByCode("dept_head").orElse(null);
+        Role adminRole = roleRepository.findByCode("admin").orElse(null);
+        Role userRole = roleRepository.findByCode("user").orElse(null);
 
-        // 初始化演示用户：学生
-        Optional<Role> studentRole = roleRepository.findByCode("student");
-        studentRole.ifPresent(role -> {
-            User student = User.builder()
-                    .username("zhangsan")
-                    .password(passwordEncoder.encode("123456"))
-                    .nickname("张三（学生）")
-                    .roles(new HashSet<>(List.of(role)))
-                    .build();
-            userRepository.save(student);
-            log.info("初始化学生账户: username=zhangsan password=123456");
-        });
+        // 初始化演示学生
+        createDemoUser("zhangsan", "张三（学生）", Set.of(studentRole));
+        createDemoUser("student01", "张三同学", Set.of(studentRole, userRole));
+        createDemoUser("student02", "李四同学", Set.of(studentRole, userRole));
 
-        // 初始化演示用户：辅导员
-        Optional<Role> counselorRole = roleRepository.findByCode("counselor");
-        counselorRole.ifPresent(role -> {
-            User counselor = User.builder()
-                    .username("fdy")
-                    .password(passwordEncoder.encode("123456"))
-                    .nickname("李辅导员")
-                    .roles(new HashSet<>(List.of(role)))
-                    .build();
-            userRepository.save(counselor);
-            log.info("初始化辅导员账户: username=fdy password=123456");
-        });
+        // 初始化演示辅导员
+        createDemoUser("fdy", "李辅导员", Set.of(counselorRole));
+        createDemoUser("counselor01", "李辅导员", Set.of(counselorRole, userRole));
 
-        // 初始化演示用户：系主任
-        Optional<Role> deptHeadRole = roleRepository.findByCode("dept_head");
-        deptHeadRole.ifPresent(role -> {
-            User deptHead = User.builder()
-                    .username("xizhuren")
-                    .password(passwordEncoder.encode("123456"))
-                    .nickname("王主任（系主任）")
-                    .roles(new HashSet<>(List.of(role)))
-                    .build();
-            userRepository.save(deptHead);
-            log.info("初始化系主任账户: username=xizhuren password=123456");
-        });
+        // 初始化演示系主任
+        createDemoUser("xizhuren", "王主任（系主任）", Set.of(deptHeadRole));
+        createDemoUser("dept_head01", "王主任", Set.of(deptHeadRole, userRole));
+
+        // 初始化演示管理员
+        createDemoUser("admin01", "系统管理员", Set.of(adminRole, userRole));
+
+        log.info("演示用户初始化完成（学生/辅导员/系主任/管理员密码均为 123456，root 密码为 root123）");
+    }
+
+    private void createDemoUser(String username, String nickname, Set<Role> roles) {
+        if (userRepository.existsByUsername(username)) {
+            return; // 已存在，幂等跳过
+        }
+        User user = User.builder()
+                .username(username)
+                .password(passwordEncoder.encode("123456"))
+                .nickname(nickname)
+                .roles(roles)
+                .build();
+        userRepository.save(user);
+        log.info("初始化演示账户: username={} nickname={} password=123456", username, nickname);
     }
 }

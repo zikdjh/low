@@ -66,7 +66,7 @@ const isInitiator = computed(() => {
 })
 
 const leaveTypeMap: Record<string, string> = { sick: '病假', personal: '事假', public: '公假' }
-const statusMap: Record<string, string> = { pending: '待审批', approved: '已通过', rejected: '已驳回', cancelled: '已撤回' }
+const statusMap: Record<string, string> = { pending_counselor: '待辅导员审核', pending_dean: '待系主任审核', pending: '待审批', approved: '审核通过', rejected: '已驳回', cancelled: '已撤回' }
 function leaveTypeLabel(v: string) { return leaveTypeMap[v] || v }
 function statusLabel(v: string) { return statusMap[v] || v }
 function statusTheme(v: string): string {

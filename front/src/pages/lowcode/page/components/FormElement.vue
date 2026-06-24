@@ -143,9 +143,11 @@ const staticOptionsMap: Record<string, { value: string; label: string }[]> = {
     { value: 'other', label: '其他' },
   ],
   status: [
-    { value: 'pending', label: '待审批' },
-    { value: 'approved', label: '已通过' },
+    { value: 'pending_counselor', label: '待辅导员审核' },
+    { value: 'pending_dean', label: '待系主任审核' },
+    { value: 'approved', label: '审核通过' },
     { value: 'rejected', label: '已驳回' },
+    { value: 'cancelled', label: '已撤回' },
   ],
 };
 
@@ -208,7 +210,8 @@ async function handleSubmit() {
   submitting.value = true;
   try {
     const entityCode = props.element.props?.entityCode;
-    if (!entityCode) return;
+    const submitApi = props.element.props?.submitApi; // 自定义提交API
+    const submitMethod = props.element.props?.submitMethod || 'post'; // 默认POST
 
     const payload: Record<string, any> = {};
     for (const field of fields.value) {
@@ -218,22 +221,40 @@ async function handleSubmit() {
     }
 
     const editId = route.query?.editId;
-    if (editId) {
-      await dynamicDataApi.update(entityCode, String(editId), payload);
+    
+    if (submitApi) {
+      // 使用自定义提交API
+      const axios = (await import('../../../../api/index')).default;
+      const method = submitMethod.toLowerCase();
+      let res;
+      if (method === 'post') {
+        res = await axios.post(submitApi, payload);
+      } else if (method === 'put') {
+        res = await axios.put(submitApi, payload);
+      } else {
+        res = await axios.post(submitApi, payload);
+      }
+      resultType.value = res.data?.code === 1 || res.data?.code === 0 ? 'success' : 'error';
+      resultMsg.value = res.data?.message || res.data?.msg || '提交成功';
+    } else if (entityCode) {
+      if (editId) {
+        await dynamicDataApi.update(entityCode, String(editId), payload);
+      } else {
+        await dynamicDataApi.create(entityCode, payload);
+      }
+      resultType.value = 'success';
+      resultMsg.value = editId ? '更新成功' : '提交成功';
     } else {
-      await dynamicDataApi.create(entityCode, payload);
+      return;
     }
 
-    resultType.value = 'success';
-    resultMsg.value = editId ? '更新成功' : '提交成功';
-
     // 新增成功后重置表单
-    if (!editId) {
+    if (!editId && resultType.value === 'success') {
       handleReset();
     }
   } catch (e: any) {
     resultType.value = 'error';
-    resultMsg.value = '操作失败: ' + (e?.message || '未知错误');
+    resultMsg.value = '操作失败: ' + (e?.response?.data?.msg || e?.message || '未知错误');
   } finally {
     submitting.value = false;
   }

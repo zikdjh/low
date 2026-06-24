@@ -103,22 +103,38 @@ function formatDateTime(value: string): string {
 
 async function fetchData() {
   const entityCode = props.element.props?.entityCode;
-  if (!entityCode) {
+  const dataSource = props.element.props?.dataSource; // 自定义API路径
+  
+  if (!entityCode && !dataSource) {
     tableData.value = getMockData();
     return;
   }
   
   loading.value = true;
   try {
-    const params = {
+    const params: any = {
       page: pagination.current,
       pageSize: pagination.pageSize,
     };
-    const res = await dynamicDataApi.list(entityCode, params);
-    if (res.data.code === 1) {
+    
+    // 合并自定义参数
+    if (props.element.props?.dataSourceParams) {
+      Object.assign(params, props.element.props.dataSourceParams);
+    }
+    
+    let res;
+    if (dataSource) {
+      // 使用自定义数据源API
+      res = await import('../../../../api/index').then(m => m.default.get(dataSource, { params }));
+    } else {
+      // 使用通用实体数据API
+      res = await dynamicDataApi.list(entityCode!, params);
+    }
+    
+    if (res.data && (res.data.code === 1 || res.data.code === 0)) {
       const data = res.data.data;
-      tableData.value = data.content || data.records || [];
-      pagination.total = data.totalElements || data.total || 0;
+      tableData.value = data?.content || data?.records || (Array.isArray(data) ? data : []);
+      pagination.total = data?.totalElements || data?.total || tableData.value.length;
       
       if (props.element.props?.showIndex) {
         tableData.value = tableData.value.map((row: any, index: number) => ({
@@ -126,6 +142,9 @@ async function fetchData() {
           index: (pagination.current - 1) * pagination.pageSize + index + 1,
         }));
       }
+    } else if (res.data && Array.isArray(res.data)) {
+      tableData.value = res.data;
+      pagination.total = res.data.length;
     }
   } catch {
     tableData.value = getMockData();

@@ -67,6 +67,7 @@ public class SecurityConfig {
                         .requestMatchers("/lowcode/component/**").permitAll()
                         .requestMatchers("/lowcode/dict/**").permitAll()
                         // 请假管理接口 — 需要认证
+                        .requestMatchers("/lowcode/leave/admin/**").hasAnyRole("admin")
                         .requestMatchers("/lowcode/leave/**").authenticated()
                         // 通知管理接口 — 公开获取已发布通知，其他需要ADMIN角色
                         .requestMatchers("/api/notifications/published").permitAll()

@@ -40,11 +40,30 @@ public class WorkflowService {
     );
 
     /**
-     * 发起流程
+     * 发起流程（兼容旧接口，默认2个审批节点）
      */
     @Transactional
     public WorkflowInstance startWorkflow(String businessCode, Long businessId, String workflowCode,
                                           String workflowName, Long initiatorId, String initiatorName) {
+        return startWorkflow(businessCode, businessId, workflowCode, workflowName, initiatorId, initiatorName, 0);
+    }
+
+    /**
+     * 发起流程 — 根据请假天数动态决定审批节点数
+     * @param leaveDays 请假天数：≤3天仅辅导员审批(1节点)，>3天需辅导员+系主任(2节点)
+     */
+    @Transactional
+    public WorkflowInstance startWorkflow(String businessCode, Long businessId, String workflowCode,
+                                          String workflowName, Long initiatorId, String initiatorName,
+                                          long leaveDays) {
+        // 根据请假天数决定审批节点
+        List<Map<String, String>> nodes;
+        if (leaveDays <= 3) {
+            nodes = List.of(Map.of("name", "辅导员审批", "role", "counselor"));
+        } else {
+            nodes = LEAVE_APPROVAL_NODES; // 辅导员 + 系主任
+        }
+
         // 创建流程实例
         WorkflowInstance instance = WorkflowInstance.builder()
                 .businessId(businessId)
@@ -55,12 +74,12 @@ public class WorkflowService {
                 .initiatorName(initiatorName)
                 .status("pending")
                 .currentNodeIndex(0)
-                .totalNodes(LEAVE_APPROVAL_NODES.size())
+                .totalNodes(nodes.size())
                 .build();
         instance = instanceRepository.save(instance);
 
         // 创建第一个审批节点任务
-        Map<String, String> firstNode = LEAVE_APPROVAL_NODES.get(0);
+        Map<String, String> firstNode = nodes.get(0);
         WorkflowTask task = WorkflowTask.builder()
                 .instanceId(instance.getId())
                 .nodeName(firstNode.get("name"))
@@ -70,7 +89,8 @@ public class WorkflowService {
                 .build();
         taskRepository.save(task);
 
-        log.info("工作流启动: instanceId={}, workflowCode={}, initiator={}", instance.getId(), workflowCode, initiatorName);
+        log.info("工作流启动: instanceId={}, workflowCode={}, initiator={}, leaveDays={}, totalNodes={}",
+                instance.getId(), workflowCode, initiatorName, leaveDays, nodes.size());
         return instance;
     }
 
@@ -110,8 +130,8 @@ public class WorkflowService {
         task.setProcessedAt(LocalDateTime.now());
         taskRepository.save(task);
 
-        // 判断是否还有下一个节点
-        if (currentNode + 1 < LEAVE_APPROVAL_NODES.size()) {
+        // 判断是否还有下一个节点（使用实例的 totalNodes 而非静态常量，支持动态节点数）
+        if (currentNode + 1 < instance.getTotalNodes()) {
             // 流转到下一节点
             instance.setCurrentNodeIndex(currentNode + 1);
             Map<String, String> nextNode = LEAVE_APPROVAL_NODES.get(currentNode + 1);
@@ -137,6 +157,7 @@ public class WorkflowService {
         result.put("instance", instance);
         result.put("task", task);
         result.put("message", "审批通过");
+        result.put("nextNodeIndex", instance.getCurrentNodeIndex());
         return result;
     }
 

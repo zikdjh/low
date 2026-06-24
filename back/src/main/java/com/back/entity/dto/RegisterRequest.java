@@ -17,4 +17,7 @@ public class RegisterRequest {
 
     @Size(max = 64, message = "昵称长度不能超过 64")
     private String nickname;
+
+    /** 可选：角色编码（如 student / counselor / dept_head），不传则默认 user */
+    private String roleCode;
 }

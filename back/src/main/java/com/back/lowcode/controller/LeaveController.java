@@ -115,11 +115,19 @@ public class LeaveController {
         String comment = (String) request.getOrDefault("comment", "");
 
         Map<String, Object> resultMap = workflowService.approve(instanceId, userId, username, comment);
-
-        // 如果是最终审批通过，更新请假记录状态
         WorkflowInstance wfi = (WorkflowInstance) resultMap.get("instance");
+
+        // 更新请假记录状态
         if ("approved".equals(wfi.getStatus())) {
+            // 最终审批通过
             leaveService.updateLeaveStatus(wfi.getBusinessId(), "approved");
+        } else if ("pending".equals(wfi.getStatus())) {
+            // 还有下一节点（辅导员审批通过但还需系主任审批）
+            // 判断当前节点：如果流转到节点1（系主任），改为待系主任审核
+            int currentNode = (int) resultMap.getOrDefault("nextNodeIndex", 0);
+            if (currentNode == 1) {
+                leaveService.updateLeaveStatus(wfi.getBusinessId(), "pending_dean");
+            }
         }
 
         return Result.success(resultMap);
@@ -174,5 +182,44 @@ public class LeaveController {
     @GetMapping("/approval-nodes")
     public Result getApprovalNodes() {
         return Result.success(workflowService.getApprovalNodes());
+    }
+
+    // ==================== 角色特定查询 ====================
+
+    /**
+     * 学生：获取自己的请假记录
+     */
+    @GetMapping("/student-records")
+    public Result getStudentRecords(
+            @RequestParam Long studentId,
+            @RequestParam(defaultValue = "1") Integer page,
+            @RequestParam(defaultValue = "10") Integer pageSize) {
+        Page<Map<String, Object>> records = leaveService.queryLeaveRecords(
+                page, pageSize, studentId, null, null);
+        return Result.success(records);
+    }
+
+    /**
+     * 辅导员：获取待辅导员审核的请假列表
+     */
+    @GetMapping("/counselor-pending")
+    public Result getCounselorPending(
+            @RequestParam(defaultValue = "1") Integer page,
+            @RequestParam(defaultValue = "10") Integer pageSize) {
+        Page<Map<String, Object>> records = leaveService.queryLeaveRecords(
+                page, pageSize, null, "pending_counselor", null);
+        return Result.success(records);
+    }
+
+    /**
+     * 系主任：获取待系主任审核的请假列表（仅>3天的）
+     */
+    @GetMapping("/dean-pending")
+    public Result getDeanPending(
+            @RequestParam(defaultValue = "1") Integer page,
+            @RequestParam(defaultValue = "10") Integer pageSize) {
+        Page<Map<String, Object>> records = leaveService.queryLeaveRecords(
+                page, pageSize, null, "pending_dean", null);
+        return Result.success(records);
     }
 }

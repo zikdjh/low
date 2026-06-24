@@ -46,20 +46,23 @@ public class LeaveService {
         // 计算请假天数
         long days = ChronoUnit.DAYS.between(startDate, endDate) + 1;
         data.put("leave_days", days);
-        data.put("status", "pending");
+        // 初始状态：统一为待辅导员审核（工作流引擎根据天数决定审批节点数，审批通过时由Controller更新为 pending_dean 或 approved）
+        String initialStatus = "pending_counselor";
+        data.put("status", initialStatus);
 
         // 创建业务数据
         Map<String, Object> savedData = dynamicDataService.createData(LEAVE_ENTITY_CODE, data);
         Long businessId = Long.valueOf(savedData.get("id").toString());
 
-        // 发起工作流
+        // 发起工作流（根据请假天数决定审批节点数）
         WorkflowInstance wf = workflowService.startWorkflow(
                 LEAVE_ENTITY_CODE,
                 businessId,
                 "leave_approval",
                 "学生请假审批",
                 studentId,
-                studentName
+                studentName,
+                days
         );
 
         Map<String, Object> result = new LinkedHashMap<>();
@@ -138,9 +141,11 @@ public class LeaveService {
 
         // 请假状态数据源
         sources.put("leaveStatuses", List.of(
-                Map.of("value", "pending", "label", "待审批"),
-                Map.of("value", "approved", "label", "已通过"),
-                Map.of("value", "rejected", "label", "已驳回")
+                Map.of("value", "pending_counselor", "label", "待辅导员审核"),
+                Map.of("value", "pending_dean", "label", "待系主任审核"),
+                Map.of("value", "approved", "label", "审核通过"),
+                Map.of("value", "rejected", "label", "已驳回"),
+                Map.of("value", "cancelled", "label", "已撤回")
         ));
 
         // 审批节点数据源
