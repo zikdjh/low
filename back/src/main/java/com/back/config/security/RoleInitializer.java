@@ -5,7 +5,6 @@ import com.back.entity.po.User;
 import com.back.repository.RoleRepository;
 import com.back.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -23,7 +22,6 @@ import java.util.Set;
  * 启动时初始化角色 (user / admin / root)，并在 lc_user 为空时创建一个 root 账户便于登录调试。
  * 与 lowcode {@code DataInitializer} 解耦，跑在更早的阶段（{@link Order} 较小）。
  */
-@Slf4j
 @Component
 @Order(0)
 @RequiredArgsConstructor
@@ -59,7 +57,6 @@ public class RoleInitializer implements CommandLineRunner {
         roleSpecs.forEach((code, name) -> {
             if (!roleRepository.existsByCode(code)) {
                 roleRepository.save(Role.builder().code(code).name(name).build());
-                log.info("初始化角色: {} ({})", code, name);
             }
         });
     }
@@ -77,7 +74,6 @@ public class RoleInitializer implements CommandLineRunner {
                         .roles(roles)
                         .build();
                 userRepository.save(root);
-                log.info("初始化 root 账户: username={} password={}", DEFAULT_ROOT_USERNAME, DEFAULT_ROOT_PASSWORD);
             });
         }
 
@@ -101,9 +97,8 @@ public class RoleInitializer implements CommandLineRunner {
         createDemoUser("dept_head01", "王主任", Set.of(deptHeadRole, userRole));
 
         // 初始化演示管理员
-        createDemoUser("admin01", "系统管理员", Set.of(adminRole, userRole));
 
-        log.info("演示用户初始化完成（学生/辅导员/系主任/管理员密码均为 123456，root 密码为 root123）");
+        createDemoUser("admin01", "系统管理员", Set.of(adminRole, userRole));
     }
 
     private void createDemoUser(String username, String nickname, Set<Role> roles) {
@@ -117,6 +112,5 @@ public class RoleInitializer implements CommandLineRunner {
                 .roles(roles)
                 .build();
         userRepository.save(user);
-        log.info("初始化演示账户: username={} nickname={} password=123456", username, nickname);
     }
 }

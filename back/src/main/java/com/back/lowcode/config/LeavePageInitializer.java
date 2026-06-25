@@ -59,7 +59,6 @@ public class LeavePageInitializer implements CommandLineRunner {
 
         Optional<EntityMeta> entityOpt = entityMetaRepository.findByCode(entityCode);
         if (entityOpt.isEmpty()) {
-            System.err.println("[WARN] LeavePageInitializer: 实体 " + entityCode + " 不存在，跳过页面 " + pageCode);
             return;
         }
         List<FieldMeta> fields = fieldMetaRepository.findByEntityIdOrderBySortOrderAsc(entityOpt.get().getId());
@@ -90,7 +89,6 @@ public class LeavePageInitializer implements CommandLineRunner {
 
         Optional<EntityMeta> entityOpt = entityMetaRepository.findByCode(entityCode);
         if (entityOpt.isEmpty()) {
-            System.err.println("[WARN] LeavePageInitializer: 实体 " + entityCode + " 不存在，跳过页面 " + pageCode);
             return;
         }
         List<FieldMeta> fields = fieldMetaRepository.findByEntityIdOrderBySortOrderAsc(entityOpt.get().getId());

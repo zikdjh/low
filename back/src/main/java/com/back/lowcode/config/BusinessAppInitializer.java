@@ -41,7 +41,6 @@ public class BusinessAppInitializer implements CommandLineRunner {
             leaveApp.setIcon("calendar");
             leaveApp.setColor("#e8a317");
             leaveApp = businessAppRepository.save(leaveApp);
-            System.out.println("[INFO] BusinessAppInitializer: 创建业务应用 - " + LEAVE_APP_NAME);
         } else {
             // 更新描述
             if (!LEAVE_APP_DESC.equals(leaveApp.getDescription())) {
@@ -65,9 +64,6 @@ public class BusinessAppInitializer implements CommandLineRunner {
                 pageSchemaRepository.save(page);
                 count++;
             }
-        }
-        if (count > 0) {
-            System.out.println("[INFO] BusinessAppInitializer: 已将 " + count + " 个页面归入 " + LEAVE_APP_NAME);
         }
     }
 }
