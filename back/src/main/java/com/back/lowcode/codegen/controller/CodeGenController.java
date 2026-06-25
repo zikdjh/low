@@ -9,11 +9,14 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.Map;
 
 /**
  * 低代码代码生成器 REST 入口。
@@ -47,5 +50,28 @@ public class CodeGenController {
                 "attachment; filename=\"" + fileName + "\"; filename*=UTF-8''" + encoded);
         headers.setContentLength(zip.length);
         return new ResponseEntity<>(zip, headers, org.springframework.http.HttpStatus.OK);
+    }
+
+    /**
+     * 安装到当前项目源码目录 —— 重启后端 + 重启前端 dev server 后生效。
+     *
+     * @param force {@code true} 强制覆盖已存在文件，默认 {@code false}
+     */
+    @PostMapping("/install/{entityId}")
+    public Result install(@PathVariable Long entityId,
+                          @RequestParam(defaultValue = "false") boolean force) {
+        CodeGenService.InstallResult r = codeGenService.installToProject(entityId, force);
+        Map<String, Object> body = Map.of(
+                "className", r.className,
+                "entityCode", r.entityCode,
+                "projectRoot", r.projectRoot.toString(),
+                "written", r.written,
+                "skipped", r.skipped,
+                "force", r.force,
+                "note", r.skipped.isEmpty()
+                        ? "全部文件已写入，请重启后端和前端 dev server 后访问 /lowcode/gen/" + r.entityCode + "/list"
+                        : "存在 " + r.skipped.size() + " 个文件已存在被跳过，如需覆盖请传 force=true"
+        );
+        return Result.success(body);
     }
 }

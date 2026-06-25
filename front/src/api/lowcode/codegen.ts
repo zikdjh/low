@@ -20,6 +20,10 @@ const codeGenApi = {
     service.get(`/lowcode/codegen/download/${entityId}`, {
       responseType: 'blob',
     }),
+
+  /** 安装到当前项目源码目录（重启后端 + 重启前端 dev server 后生效） */
+  install: (entityId: number, force = false) =>
+    service.post(`/lowcode/codegen/install/${entityId}`, null, { params: { force } }),
 };
 
 export default codeGenApi;

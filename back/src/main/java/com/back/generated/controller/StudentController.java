@@ -1,8 +1,8 @@
-package ${pkgBase}.controller;
+package com.back.generated.controller;
 
-import ${pkgBase}.dto.${entity.className}DTO;
-import ${pkgBase}.entity.${entity.className};
-import ${pkgBase}.service.${entity.className}Service;
+import com.back.generated.dto.StudentDTO;
+import com.back.generated.entity.Student;
+import com.back.generated.service.StudentService;
 import com.back.common.Result;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -13,21 +13,21 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * ${entity.description!entity.name} Controller
- * 由低代码代码生成器生成 @ ${now}
+ * 学生基本信息，包含学号、班级、院系、联系方式等 Controller
+ * 由低代码代码生成器生成 @ 2026-06-25T21:02:06.2970011
  */
 @RestController
-@RequestMapping("/lowcode/gen/${entity.code}")
+@RequestMapping("/lowcode/gen/student")
 @RequiredArgsConstructor
-public class ${entity.className}Controller {
+public class StudentController {
 
-    private final ${entity.className}Service service;
+    private final StudentService service;
 
     @GetMapping("/list")
-    public Result list(${entity.className}DTO query,
+    public Result list(StudentDTO query,
                        @RequestParam(defaultValue = "1") int pageNum,
                        @RequestParam(defaultValue = "10") int pageSize) {
-        Page<${entity.className}> page = service.page(query, pageNum, pageSize);
+        Page<Student> page = service.page(query, pageNum, pageSize);
         return Result.success(Map.of(
                 "list", page.getContent(),
                 "total", page.getTotalElements(),
@@ -38,20 +38,20 @@ public class ${entity.className}Controller {
 
     @GetMapping("/{id}")
     public Result getById(@PathVariable Long id) {
-        ${entity.className} entity = service.getById(id);
+        Student entity = service.getById(id);
         if (entity == null) {
-            return Result.error("${entity.name}不存在: " + id);
+            return Result.error("学生信息不存在: " + id);
         }
         return Result.success(entity);
     }
 
     @PostMapping
-    public Result create(@Valid @RequestBody ${entity.className}DTO dto) {
+    public Result create(@Valid @RequestBody StudentDTO dto) {
         return Result.success(service.create(dto));
     }
 
     @PutMapping("/{id}")
-    public Result update(@PathVariable Long id, @Valid @RequestBody ${entity.className}DTO dto) {
+    public Result update(@PathVariable Long id, @Valid @RequestBody StudentDTO dto) {
         return Result.success(service.update(id, dto));
     }
 

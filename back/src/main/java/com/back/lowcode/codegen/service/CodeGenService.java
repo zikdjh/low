@@ -15,6 +15,10 @@ import org.springframework.stereotype.Service;
 import jakarta.annotation.PostConstruct;
 import java.io.ByteArrayOutputStream;
 import java.io.StringWriter;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -109,6 +113,80 @@ public class CodeGenService {
             throw new IllegalStateException("打包 ZIP 失败: " + e.getMessage(), e);
         }
         return baos.toByteArray();
+    }
+
+    /**
+     * 安装结果摘要 —— 写入了哪些文件，跳过了哪些（已存在且未强制覆盖）。
+     */
+    public static class InstallResult {
+        public String className;
+        public String entityCode;
+        public Path projectRoot;
+        public List<String> written = new ArrayList<>();
+        public List<String> skipped = new ArrayList<>();
+        public boolean force;
+    }
+
+    /**
+     * 把渲染结果直接写入项目源码目录，重启后即可访问 /lowcode/gen/{entityCode}/* 接口。
+     *
+     * <p>项目根目录通过定位 {@code back/pom.xml} 自动识别：从当前工作目录向上回溯查找，
+     * 这样无论 Spring Boot 是从 {@code back/} 还是从仓库根目录启动都能正确解析。</p>
+     *
+     * @param entityId 实体 ID
+     * @param force    {@code false} 时遇到已存在文件会跳过（计入 skipped）；{@code true} 时强制覆盖
+     */
+    public InstallResult installToProject(Long entityId, boolean force) {
+        CodeGenPreviewDTO preview = preview(entityId);
+        Path projectRoot = locateProjectRoot();
+
+        InstallResult result = new InstallResult();
+        result.className = preview.getClassName();
+        result.entityCode = preview.getEntityCode();
+        result.projectRoot = projectRoot;
+        result.force = force;
+
+        for (Map.Entry<String, String> e : preview.getFiles().entrySet()) {
+            Path target = projectRoot.resolve(e.getKey()).normalize();
+            // 安全检查：目标路径必须落在项目根目录下，且必须落在 back/ 或 front/ 之内
+            if (!target.startsWith(projectRoot)) {
+                throw new IllegalStateException("目标路径越界: " + target);
+            }
+            String rel = projectRoot.relativize(target).toString().replace('\\', '/');
+            if (!rel.startsWith("back/") && !rel.startsWith("front/")) {
+                throw new IllegalStateException("目标路径不在允许的子目录下: " + rel);
+            }
+
+            if (Files.exists(target) && !force) {
+                result.skipped.add(rel);
+                continue;
+            }
+            try {
+                Files.createDirectories(target.getParent());
+                Files.writeString(target, e.getValue(), StandardCharsets.UTF_8);
+                result.written.add(rel);
+            } catch (Exception ex) {
+                throw new IllegalStateException("写入文件失败 " + rel + ": " + ex.getMessage(), ex);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * 定位项目根目录 —— 包含 {@code back/} 和 {@code front/} 两个子目录的那一层。
+     * 从当前工作目录向上回溯，最多查 5 层。
+     */
+    static Path locateProjectRoot() {
+        Path cwd = Paths.get("").toAbsolutePath();
+        Path p = cwd;
+        for (int i = 0; i < 5 && p != null; i++) {
+            if (Files.isDirectory(p.resolve("back")) && Files.isDirectory(p.resolve("front"))) {
+                return p;
+            }
+            p = p.getParent();
+        }
+        throw new IllegalStateException(
+                "无法定位项目根目录（需要同级包含 back/ 和 front/），当前工作目录: " + cwd);
     }
 
     // -----------------------------------------------------------------
@@ -207,12 +285,16 @@ public class CodeGenService {
         return m;
     }
 
-    /** 按上下文渲染 8 个模板，返回 {相对路径 -> 内容}。 */
+    /** 按上下文渲染 8 个模板，返回 {相对路径 -> 内容}。路径布局与 installToProject 的写入位置一致。 */
     private Map<String, String> renderAll(Map<String, Object> ctx) {
         Map<String, Object> entity = castMap(ctx.get("entity"));
         String className = (String) entity.get("className");
+        String classNameLower = (String) entity.get("classNameLower");
         String pkgPath = ((String) ctx.get("pkgBase")).replace('.', '/');
-        String backendBase = "backend/src/main/java/" + pkgPath;
+        // 路径布局与 installToProject 落盘位置一致 —— zip 里也是这个结构
+        String backendBase = "back/src/main/java/" + pkgPath;
+        String frontApiBase = "front/src/api/lowcode/generated";
+        String frontPageBase = "front/src/pages/lowcode/generated";
 
         Map<String, String> out = new LinkedHashMap<>();
         out.put(backendBase + "/entity/" + className + ".java", render("java/Entity.java.ftl", ctx));
@@ -221,10 +303,9 @@ public class CodeGenService {
         out.put(backendBase + "/service/" + className + "Service.java", render("java/Service.java.ftl", ctx));
         out.put(backendBase + "/controller/" + className + "Controller.java", render("java/Controller.java.ftl", ctx));
 
-        String classNameLower = (String) entity.get("classNameLower");
-        out.put("frontend/api/" + classNameLower + ".ts", render("vue/api.ts.ftl", ctx));
-        out.put("frontend/views/" + className + "List.vue", render("vue/List.vue.ftl", ctx));
-        out.put("frontend/views/" + className + "Edit.vue", render("vue/Edit.vue.ftl", ctx));
+        out.put(frontApiBase + "/" + classNameLower + ".ts", render("vue/api.ts.ftl", ctx));
+        out.put(frontPageBase + "/" + className + "List.vue", render("vue/List.vue.ftl", ctx));
+        out.put(frontPageBase + "/" + className + "Edit.vue", render("vue/Edit.vue.ftl", ctx));
         return out;
     }
 

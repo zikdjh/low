@@ -1,7 +1,7 @@
 <template>
-  <div class="${entity.classNameLower}-list-page">
+  <div class="student-list-page">
     <t-card :bordered="false">
-      <template #title>${entity.name}列表</template>
+      <template #title>学生信息列表</template>
       <template #actions>
         <t-button theme="primary" @click="handleCreate">
           <template #icon><plus-icon /></template>
@@ -10,30 +10,24 @@
       </template>
 
       <!-- 搜索栏 -->
-<#if searchFields?size gt 0>
       <t-form :data="searchForm" layout="inline" @submit="handleSearch" @reset="handleReset" class="search-form">
-  <#list searchFields as f>
-        <t-form-item label="${f.name}" name="${f.camelName}">
-    <#if f.javaType == "Boolean">
-          <t-select v-model="searchForm.${f.camelName}" placeholder="请选择" clearable style="width: 160px">
-            <t-option :value="true" label="是" />
-            <t-option :value="false" label="否" />
-          </t-select>
-    <#elseif f.javaType == "LocalDate">
-          <t-date-picker v-model="searchForm.${f.camelName}" clearable />
-    <#elseif f.javaType == "LocalDateTime">
-          <t-date-picker v-model="searchForm.${f.camelName}" mode="date" clearable />
-    <#else>
-          <t-input v-model="searchForm.${f.camelName}" placeholder="请输入${f.name}" clearable style="width: 200px" />
-    </#if>
+        <t-form-item label="学号" name="studentNo">
+          <t-input v-model="searchForm.studentNo" placeholder="请输入学号" clearable style="width: 200px" />
         </t-form-item>
-  </#list>
+        <t-form-item label="姓名" name="name">
+          <t-input v-model="searchForm.name" placeholder="请输入姓名" clearable style="width: 200px" />
+        </t-form-item>
+        <t-form-item label="班级" name="className">
+          <t-input v-model="searchForm.className" placeholder="请输入班级" clearable style="width: 200px" />
+        </t-form-item>
+        <t-form-item label="学籍状态" name="status">
+          <t-input v-model="searchForm.status" placeholder="请输入学籍状态" clearable style="width: 200px" />
+        </t-form-item>
         <t-form-item>
           <t-button theme="primary" type="submit">查询</t-button>
           <t-button theme="default" type="reset" style="margin-left: 8px">重置</t-button>
         </t-form-item>
       </t-form>
-</#if>
 
       <t-table
         :data="tableData"
@@ -62,7 +56,7 @@ import { useRouter } from 'vue-router';
 import { MessagePlugin } from 'tdesign-vue-next';
 import type { PrimaryTableCol } from 'tdesign-vue-next';
 import { PlusIcon } from 'tdesign-icons-vue-next';
-import ${entity.classNameLower}Api from '@/api/lowcode/generated/${entity.classNameLower}';
+import studentApi from '@/api/lowcode/generated/student';
 
 const router = useRouter();
 const loading = ref(false);
@@ -71,9 +65,16 @@ const searchForm = reactive<Record<string, any>>({});
 const pagination = reactive({ current: 1, pageSize: 10, total: 0 });
 
 const columns: PrimaryTableCol[] = [
-<#list listFields as f>
-  { colKey: '${f.camelName}', title: '${f.name}', ellipsis: true },
-</#list>
+  { colKey: 'studentNo', title: '学号', ellipsis: true },
+  { colKey: 'name', title: '姓名', ellipsis: true },
+  { colKey: 'gender', title: '性别', ellipsis: true },
+  { colKey: 'className', title: '班级', ellipsis: true },
+  { colKey: 'grade', title: '年级', ellipsis: true },
+  { colKey: 'department', title: '院系', ellipsis: true },
+  { colKey: 'phone', title: '联系电话', ellipsis: true },
+  { colKey: 'email', title: '邮箱', ellipsis: true },
+  { colKey: 'userId', title: '关联用户', ellipsis: true },
+  { colKey: 'status', title: '学籍状态', ellipsis: true },
   { colKey: 'operation', title: '操作', width: 160, fixed: 'right' },
 ];
 
@@ -86,7 +87,7 @@ async function loadData() {
         params[k] = searchForm[k];
       }
     });
-    const res: any = await ${entity.classNameLower}Api.list(params);
+    const res: any = await studentApi.list(params);
     tableData.value = res.data?.list || [];
     pagination.total = res.data?.total || 0;
   } catch (e: any) {
@@ -111,13 +112,13 @@ function onPageChange(p: { current: number; pageSize: number }) {
   loadData();
 }
 function handleCreate() {
-  router.push(`/lowcode/gen/${entity.code}/edit/new`);
+  router.push(`/lowcode/gen/student/edit/new`);
 }
 function handleEdit(row: any) {
-  router.push(`/lowcode/gen/${entity.code}/edit/${r"${row.id}"}`);
+  router.push(`/lowcode/gen/student/edit/${row.id}`);
 }
 async function handleDelete(row: any) {
-  await ${entity.classNameLower}Api.delete(row.id);
+  await studentApi.delete(row.id);
   MessagePlugin.success('删除成功');
   loadData();
 }
@@ -126,6 +127,6 @@ onMounted(loadData);
 </script>
 
 <style scoped>
-.${entity.classNameLower}-list-page { padding: 16px; }
+.student-list-page { padding: 16px; }
 .search-form { margin-bottom: 16px; }
 </style>

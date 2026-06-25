@@ -1,7 +1,7 @@
 <template>
-  <div class="${entity.classNameLower}-list-page">
+  <div class="leaveApplication-list-page">
     <t-card :bordered="false">
-      <template #title>${entity.name}列表</template>
+      <template #title>请假申请列表</template>
       <template #actions>
         <t-button theme="primary" @click="handleCreate">
           <template #icon><plus-icon /></template>
@@ -10,30 +10,24 @@
       </template>
 
       <!-- 搜索栏 -->
-<#if searchFields?size gt 0>
       <t-form :data="searchForm" layout="inline" @submit="handleSearch" @reset="handleReset" class="search-form">
-  <#list searchFields as f>
-        <t-form-item label="${f.name}" name="${f.camelName}">
-    <#if f.javaType == "Boolean">
-          <t-select v-model="searchForm.${f.camelName}" placeholder="请选择" clearable style="width: 160px">
-            <t-option :value="true" label="是" />
-            <t-option :value="false" label="否" />
-          </t-select>
-    <#elseif f.javaType == "LocalDate">
-          <t-date-picker v-model="searchForm.${f.camelName}" clearable />
-    <#elseif f.javaType == "LocalDateTime">
-          <t-date-picker v-model="searchForm.${f.camelName}" mode="date" clearable />
-    <#else>
-          <t-input v-model="searchForm.${f.camelName}" placeholder="请输入${f.name}" clearable style="width: 200px" />
-    </#if>
+        <t-form-item label="学生" name="studentId">
+          <t-input v-model="searchForm.studentId" placeholder="请输入学生" clearable style="width: 200px" />
         </t-form-item>
-  </#list>
+        <t-form-item label="学生姓名" name="studentName">
+          <t-input v-model="searchForm.studentName" placeholder="请输入学生姓名" clearable style="width: 200px" />
+        </t-form-item>
+        <t-form-item label="请假类型" name="leaveType">
+          <t-input v-model="searchForm.leaveType" placeholder="请输入请假类型" clearable style="width: 200px" />
+        </t-form-item>
+        <t-form-item label="审批状态" name="status">
+          <t-input v-model="searchForm.status" placeholder="请输入审批状态" clearable style="width: 200px" />
+        </t-form-item>
         <t-form-item>
           <t-button theme="primary" type="submit">查询</t-button>
           <t-button theme="default" type="reset" style="margin-left: 8px">重置</t-button>
         </t-form-item>
       </t-form>
-</#if>
 
       <t-table
         :data="tableData"
@@ -62,7 +56,7 @@ import { useRouter } from 'vue-router';
 import { MessagePlugin } from 'tdesign-vue-next';
 import type { PrimaryTableCol } from 'tdesign-vue-next';
 import { PlusIcon } from 'tdesign-icons-vue-next';
-import ${entity.classNameLower}Api from '@/api/lowcode/generated/${entity.classNameLower}';
+import leaveApplicationApi from '@/api/lowcode/generated/leaveApplication';
 
 const router = useRouter();
 const loading = ref(false);
@@ -71,9 +65,14 @@ const searchForm = reactive<Record<string, any>>({});
 const pagination = reactive({ current: 1, pageSize: 10, total: 0 });
 
 const columns: PrimaryTableCol[] = [
-<#list listFields as f>
-  { colKey: '${f.camelName}', title: '${f.name}', ellipsis: true },
-</#list>
+  { colKey: 'studentId', title: '学生', ellipsis: true },
+  { colKey: 'studentName', title: '学生姓名', ellipsis: true },
+  { colKey: 'leaveType', title: '请假类型', ellipsis: true },
+  { colKey: 'reason', title: '请假原因', ellipsis: true },
+  { colKey: 'startDate', title: '开始日期', ellipsis: true },
+  { colKey: 'endDate', title: '结束日期', ellipsis: true },
+  { colKey: 'leaveDays', title: '请假天数', ellipsis: true },
+  { colKey: 'status', title: '审批状态', ellipsis: true },
   { colKey: 'operation', title: '操作', width: 160, fixed: 'right' },
 ];
 
@@ -86,7 +85,7 @@ async function loadData() {
         params[k] = searchForm[k];
       }
     });
-    const res: any = await ${entity.classNameLower}Api.list(params);
+    const res: any = await leaveApplicationApi.list(params);
     tableData.value = res.data?.list || [];
     pagination.total = res.data?.total || 0;
   } catch (e: any) {
@@ -111,13 +110,13 @@ function onPageChange(p: { current: number; pageSize: number }) {
   loadData();
 }
 function handleCreate() {
-  router.push(`/lowcode/gen/${entity.code}/edit/new`);
+  router.push(`/lowcode/gen/leave_application/edit/new`);
 }
 function handleEdit(row: any) {
-  router.push(`/lowcode/gen/${entity.code}/edit/${r"${row.id}"}`);
+  router.push(`/lowcode/gen/leave_application/edit/${row.id}`);
 }
 async function handleDelete(row: any) {
-  await ${entity.classNameLower}Api.delete(row.id);
+  await leaveApplicationApi.delete(row.id);
   MessagePlugin.success('删除成功');
   loadData();
 }
@@ -126,6 +125,6 @@ onMounted(loadData);
 </script>
 
 <style scoped>
-.${entity.classNameLower}-list-page { padding: 16px; }
+.leaveApplication-list-page { padding: 16px; }
 .search-form { margin-bottom: 16px; }
 </style>

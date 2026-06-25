@@ -66,6 +66,9 @@ public class SecurityConfig {
                         .requestMatchers("/lowcode/page/**").permitAll()
                         .requestMatchers("/lowcode/component/**").permitAll()
                         .requestMatchers("/lowcode/dict/**").permitAll()
+                        // 代码生成器：管理端点 + 生成出来的业务接口 — 临时放行
+                        .requestMatchers("/lowcode/codegen/**").permitAll()
+                        .requestMatchers("/lowcode/gen/**").permitAll()
                         // 请假管理接口 — 需要认证
                         .requestMatchers("/lowcode/leave/admin/**").hasAnyRole("admin")
                         .requestMatchers("/lowcode/leave/**").authenticated()

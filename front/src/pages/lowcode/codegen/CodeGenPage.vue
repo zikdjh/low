@@ -15,6 +15,16 @@
             <template #icon><download-icon /></template>
             下载 ZIP
           </t-button>
+          <t-popconfirm
+            theme="warning"
+            content="将把生成的代码直接写入项目源码目录。如果文件已存在会自动跳过，确认继续吗？"
+            @confirm="() => handleInstall(false)"
+          >
+            <t-button theme="success" :loading="installing" :disabled="!preview">
+              <template #icon><rocket-icon /></template>
+              安装到项目
+            </t-button>
+          </t-popconfirm>
         </t-space>
       </template>
 
@@ -67,7 +77,7 @@
 import { ref, computed, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { MessagePlugin } from 'tdesign-vue-next';
-import { CodeIcon, DownloadIcon, FileIcon, CopyIcon } from 'tdesign-icons-vue-next';
+import { CodeIcon, DownloadIcon, FileIcon, CopyIcon, RocketIcon } from 'tdesign-icons-vue-next';
 import codeGenApi, { type CodeGenPreview } from '@/api/lowcode/codegen';
 
 const route = useRoute();
@@ -75,6 +85,7 @@ const router = useRouter();
 
 const loading = ref(false);
 const downloading = ref(false);
+const installing = ref(false);
 const error = ref('');
 const preview = ref<CodeGenPreview | null>(null);
 const activePath = ref('');
@@ -140,6 +151,38 @@ async function handleDownload() {
     MessagePlugin.error(e?.message || '下载失败');
   } finally {
     downloading.value = false;
+  }
+}
+
+async function handleInstall(force: boolean) {
+  if (!entityId.value) return;
+  installing.value = true;
+  try {
+    const res: any = await codeGenApi.install(entityId.value, force);
+    if (res?.data?.code !== 1) {
+      MessagePlugin.error(res?.data?.msg || '安装失败');
+      return;
+    }
+    const r = res.data.data as { written: string[]; skipped: string[]; note: string };
+    if (r.skipped?.length) {
+      // 有跳过的文件 —— 提供强制覆盖入口
+      const ok = window.confirm(
+        `已写入 ${r.written.length} 个文件，${r.skipped.length} 个文件已存在被跳过：\n` +
+          r.skipped.join('\n') +
+          '\n\n是否强制覆盖这些文件？'
+      );
+      if (ok) {
+        await handleInstall(true);
+        return;
+      }
+      MessagePlugin.warning(r.note);
+    } else {
+      MessagePlugin.success(r.note);
+    }
+  } catch (e: any) {
+    MessagePlugin.error(e?.response?.data?.msg || e?.message || '安装失败');
+  } finally {
+    installing.value = false;
   }
 }
 
