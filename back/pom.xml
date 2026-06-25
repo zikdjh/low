@@ -67,6 +67,13 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-security</artifactId>
         </dependency>
+
+        <!-- Freemarker 模板引擎，用于低代码代码生成器（不引入 starter 以避免 MVC 视图解析器自动配置） -->
+        <dependency>
+            <groupId>org.freemarker</groupId>
+            <artifactId>freemarker</artifactId>
+            <version>2.3.34</version>
+        </dependency>
     </dependencies>
 
     <build>

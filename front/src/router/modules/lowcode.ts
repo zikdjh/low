@@ -45,6 +45,12 @@ export default [
         meta: { title: { zh_CN: '实体详情' }, hidden: true },
       },
       {
+        path: 'entity/:id/codegen',
+        name: 'CodeGenPage',
+        component: () => import('../../pages/lowcode/codegen/CodeGenPage.vue'),
+        meta: { title: { zh_CN: '代码生成' }, hidden: true },
+      },
+      {
         path: 'entity/relations',
         name: 'EntityRelationList',
         component: () => import('../../pages/lowcode/metadata/EntityRelationList.vue'),

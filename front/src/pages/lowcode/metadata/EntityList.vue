@@ -179,6 +179,16 @@
               数据管理
             </t-button>
             <t-button
+              v-if="row.status === 'published'"
+              size="small"
+              variant="text"
+              theme="primary"
+              @click="handleCodeGen(row)"
+            >
+              <template #icon><t-icon name="code" /></template>
+              生成代码
+            </t-button>
+            <t-button
               v-if="row.status === 'draft'"
               size="small"
               theme="success"
@@ -413,6 +423,10 @@ function handleEdit(row: any) {
 
 function handleDataManage(row: any) {
   router.push(`/lowcode/data/${row.code}`);
+}
+
+function handleCodeGen(row: any) {
+  router.push(`/lowcode/entity/${row.id}/codegen`);
 }
 
 async function handlePublish(row: any) {
