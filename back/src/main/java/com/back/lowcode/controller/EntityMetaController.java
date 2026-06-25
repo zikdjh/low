@@ -5,13 +5,23 @@ import com.back.lowcode.dto.EntityListRequest;
 import com.back.lowcode.entity.EntityMeta;
 import com.back.lowcode.entity.FieldMeta;
 import com.back.lowcode.service.EntityMetaService;
+import com.back.lowcode.service.SqlExportService;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 实体元数据管理 Controller
@@ -22,6 +32,7 @@ import java.util.List;
 public class EntityMetaController {
 
     private final EntityMetaService entityMetaService;
+    private final SqlExportService sqlExportService;
 
     // ---- 实体 CRUD ----
 
@@ -112,5 +123,59 @@ public class EntityMetaController {
     public Result updateFields(@PathVariable Long entityId, @RequestBody List<FieldMeta> fields) {
         List<FieldMeta> saved = entityMetaService.updateFields(entityId, fields);
         return Result.success(saved);
+    }
+
+    // ---- SQL 导出 ----
+
+    /**
+     * 批量导出实体为 SQL 脚本文件（MySQL 语法）
+     * 请求体: { "entityIds": [1, 2, 3] }
+     */
+    @PostMapping("/export-sql")
+    public void exportSql(@RequestBody Map<String, List<Long>> body, HttpServletResponse response) throws IOException {
+        List<Long> entityIds = body.get("entityIds");
+        if (entityIds == null || entityIds.isEmpty()) {
+            response.setStatus(400);
+            response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+            response.setCharacterEncoding(StandardCharsets.UTF_8.name());
+            response.getWriter().write("{\"code\":0,\"msg\":\"请选择要导出的实体\"}");
+            return;
+        }
+
+        String sql = sqlExportService.exportEntities(entityIds);
+
+        String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
+        String fileName = "entity_export_" + timestamp + ".sql";
+
+        response.setContentType(MediaType.APPLICATION_OCTET_STREAM_VALUE);
+        response.setHeader(HttpHeaders.CONTENT_DISPOSITION,
+                "attachment; filename=\"" + URLEncoder.encode(fileName, StandardCharsets.UTF_8) + "\"");
+        response.setCharacterEncoding(StandardCharsets.UTF_8.name());
+        response.getWriter().write(sql);
+        response.getWriter().flush();
+    }
+
+    /**
+     * 导出单个实体为 SQL 脚本文件
+     */
+    @GetMapping("/{id}/export-sql")
+    public void exportSqlForEntity(@PathVariable Long id, HttpServletResponse response) throws IOException {
+        EntityMeta entity = entityMetaService.getEntityById(id).orElse(null);
+        if (entity == null) {
+            response.setStatus(404);
+            response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+            response.setCharacterEncoding(StandardCharsets.UTF_8.name());
+            response.getWriter().write("{\"code\":0,\"msg\":\"实体不存在\"}");
+            return;
+        }
+
+        String sql = sqlExportService.exportEntity(id);
+
+        response.setContentType(MediaType.APPLICATION_OCTET_STREAM_VALUE);
+        response.setHeader(HttpHeaders.CONTENT_DISPOSITION,
+                "attachment; filename=\"" + URLEncoder.encode(entity.getCode() + ".sql", StandardCharsets.UTF_8) + "\"");
+        response.setCharacterEncoding(StandardCharsets.UTF_8.name());
+        response.getWriter().write(sql);
+        response.getWriter().flush();
     }
 }

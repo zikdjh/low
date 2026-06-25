@@ -50,6 +50,14 @@
       <div class="toolbar-right" v-if="selectedRows.length > 0">
         <t-button
           variant="outline"
+          theme="primary"
+          @click="handleBatchExportSql"
+        >
+          <template #icon><DownloadIcon /></template>
+          导出SQL
+        </t-button>
+        <t-button
+          variant="outline"
           @click="handleBatchArchive"
           :disabled="!canBatchArchive"
         >
@@ -196,6 +204,14 @@
               <template #icon><FolderIcon /></template>
               归档
             </t-button>
+            <t-button
+              size="small"
+              variant="text"
+              @click="handleExportSingle(row)"
+            >
+              <template #icon><DownloadIcon /></template>
+              SQL
+            </t-button>
             <t-popconfirm
               v-if="row.status === 'draft'"
               content="确认删除该实体？此操作不可恢复。"
@@ -220,7 +236,7 @@ import { MessagePlugin } from 'tdesign-vue-next';
 import type { PrimaryTableCol } from 'tdesign-vue-next';
 import {
   PlusIcon, SearchIcon, DeleteIcon, DataBaseIcon, CheckCircleIcon,
-  FolderIcon, FileEditIcon, EditIcon, BrowseIcon, HomeIcon
+  FolderIcon, FileEditIcon, EditIcon, BrowseIcon, HomeIcon, DownloadIcon
 } from 'tdesign-icons-vue-next';
 import entityMetaApi from '../../../api/lowcode/entityMeta';
 
@@ -280,7 +296,7 @@ const columns: PrimaryTableCol[] = [
   { 
     colKey: 'fieldCount', 
     title: '字段数量', 
-    width: 100,
+    width: 120,
   },
   { 
     colKey: 'status', 
@@ -396,7 +412,7 @@ function handleCreate() {
 }
 
 function goHome() {
-  router.push('/admin');
+  router.push('/');
 }
 
 function goRelations() {
@@ -492,6 +508,30 @@ async function handleBatchDelete() {
     fetchData();
   } catch (e: any) {
     MessagePlugin.error(e?.response?.data?.msg || '批量删除失败');
+  }
+}
+
+async function handleBatchExportSql() {
+  if (selectedRows.value.length === 0) {
+    MessagePlugin.warning('请选择要导出的实体');
+    return;
+  }
+  try {
+    const ids = selectedRows.value.map(r => r.id);
+    await entityMetaApi.exportSql(ids);
+    MessagePlugin.success(`已导出 ${ids.length} 个实体的 SQL 脚本`);
+    selectedRows.value = [];
+  } catch (e: any) {
+    MessagePlugin.error(e?.response?.data?.msg || '导出失败');
+  }
+}
+
+async function handleExportSingle(row: any) {
+  try {
+    await entityMetaApi.exportSingleSql(row.id, row.code);
+    MessagePlugin.success(`实体 "${row.name}" SQL 脚本已下载`);
+  } catch (e: any) {
+    MessagePlugin.error(e?.response?.data?.msg || '导出失败');
   }
 }
 
@@ -657,6 +697,7 @@ onMounted(() => {
       background: var(--td-brand-color-1, #fffbeb);
       padding: 3px 10px;
       border-radius: 6px;
+      white-space: nowrap;
     }
     
     .field-badge {
@@ -666,6 +707,7 @@ onMounted(() => {
       border-radius: 6px;
       font-size: 12px;
       font-weight: 500;
+      white-space: nowrap;
     }
   }
 }
